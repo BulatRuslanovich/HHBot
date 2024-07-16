@@ -23,25 +23,13 @@
 hs_err_pid*
 replay_pid*
 
-<<<<<<< HEAD
 # IntelliJ IDEA
 .idea/*
 
 # Properties file
 dispatcher/src/main/resources/application.properties
-=======
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
-*.iml
-*.ipr
+dispatcher/src/main/resources/application.yaml
 
-# Properties file
-src/main/resources/application.properties
->>>>>>> 284c69d29cfdb4292a17bcb3760085eb56279360
 
 target/
 !.mvn/wrapper/maven-wrapper.jar

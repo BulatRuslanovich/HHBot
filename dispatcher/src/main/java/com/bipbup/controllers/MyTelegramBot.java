@@ -1,5 +1,6 @@
 package com.bipbup.controllers;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -13,23 +14,26 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 public class MyTelegramBot extends TelegramLongPollingBot {
     @Value("${bot.username}")
     private String botUsername;
+    @Value("${bot.token}")
+    private String botToken;
+    private final UpdateController updateController;
 
-    public MyTelegramBot(@Value("${bot.token}") String botToken) {
-        super(botToken);
+    @PostConstruct
+    private void init() {
+        updateController.registerBot(this);
     }
+
+    public MyTelegramBot(UpdateController updateController) {
+        this.updateController = updateController;
+    }
+
 
     @Override
     public void onUpdateReceived(Update update) {
-        var originalMessage = update.getMessage();
-        log.debug(originalMessage.getText());
-
-        SendMessage response = new SendMessage();
-        response.setChatId(originalMessage.getChatId());
-        response.setText(originalMessage.getText());
-        sendAnswerMessage(response);
+        updateController.processUpdate(update);
     }
 
-    private void sendAnswerMessage(SendMessage message) {
+    public void sendAnswerMessage(SendMessage message) {
         if (message != null) {
             try {
                 execute(message);
@@ -43,4 +47,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     public String getBotUsername() {
         return botUsername;
     }
+
+    @Override
+    public String getBotToken() { return botToken; }
 }
