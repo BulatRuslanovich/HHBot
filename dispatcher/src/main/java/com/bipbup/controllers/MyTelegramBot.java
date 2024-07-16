@@ -14,8 +14,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 public class MyTelegramBot extends TelegramLongPollingBot {
     @Value("${bot.username}")
     private String botUsername;
-    @Value("${bot.token}")
-    private String botToken;
     private final UpdateController updateController;
 
     @PostConstruct
@@ -23,7 +21,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         updateController.registerBot(this);
     }
 
-    public MyTelegramBot(UpdateController updateController) {
+    public MyTelegramBot(UpdateController updateController,  @Value("${bot.token}") String botToken) {
+        super(botToken);
         this.updateController = updateController;
     }
 
@@ -47,7 +46,4 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     public String getBotUsername() {
         return botUsername;
     }
-
-    @Override
-    public String getBotToken() { return botToken; }
 }
