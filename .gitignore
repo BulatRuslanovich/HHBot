@@ -29,6 +29,7 @@ replay_pid*
 # Properties file
 dispatcher/src/main/resources/application.properties
 dispatcher/src/main/resources/application.yaml
+node/src/main/resources/application.yaml
 
 
 target/
