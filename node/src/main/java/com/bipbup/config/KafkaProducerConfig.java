@@ -9,7 +9,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,12 +28,12 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public ProducerFactory<String, Update> producerFactory() {
+    public ProducerFactory<String, SendMessage> producerFactory() {
         return new DefaultKafkaProducerFactory<>(kafkaProducerConfig());
     }
 
     @Bean
-    public KafkaTemplate<String, Update> kafkaTemplate() {
+    public KafkaTemplate<String, SendMessage> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }

@@ -1,19 +1,25 @@
 package com.bipbup.controllers;
 
+import com.bipbup.sevice.UpdateProducer;
 import com.bipbup.utils.MessageUtil;
 import lombok.extern.log4j.Log4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Log4j
 @Component
-public class UpdateController {
+public class UpdateProcessor {
+    @Value("${spring.kafka.topics.text-update-topic}")
+    private String textUpdateTopic;
     private MyTelegramBot myTelegramBot;
     private final MessageUtil messageUtil;
+    private final UpdateProducer updateProducer;
 
-    public UpdateController(MessageUtil messageUtil) {
+    public UpdateProcessor(MessageUtil messageUtil, UpdateProducer updateProducer) {
         this.messageUtil = messageUtil;
+        this.updateProducer = updateProducer;
     }
 
     public void registerBot(MyTelegramBot myTelegramBot) {
@@ -38,6 +44,7 @@ public class UpdateController {
 
         if (message.hasText()) {
             log.info(message.getText());
+            updateProducer.produce(textUpdateTopic, update);
         } else {
             setUnsupportedMessageType(update);
         }
@@ -48,7 +55,7 @@ public class UpdateController {
         setView(sendMessage);
     }
 
-    private void setView(SendMessage sendMessage) {
+    public void setView(SendMessage sendMessage) {
         myTelegramBot.sendAnswerMessage(sendMessage);
     }
 }
