@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 @Service
 public class AnswerConsumerImpl implements AnswerConsumer {
     private final UpdateProcessor updateProcessor;
+
     @Override
     @KafkaListener(topics = "${spring.kafka.topics.answer-topic}", groupId = "groupId")
     public void consume(SendMessage sendMessage) {

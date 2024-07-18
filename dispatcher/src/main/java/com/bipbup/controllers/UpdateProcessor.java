@@ -2,6 +2,7 @@ package com.bipbup.controllers;
 
 import com.bipbup.service.UpdateProducer;
 import com.bipbup.utils.MessageUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -9,6 +10,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Log4j
+@RequiredArgsConstructor
 @Component
 public class UpdateProcessor {
     @Value("${spring.kafka.topics.text-update-topic}")
@@ -16,11 +18,6 @@ public class UpdateProcessor {
     private MyTelegramBot myTelegramBot;
     private final MessageUtil messageUtil;
     private final UpdateProducer updateProducer;
-
-    public UpdateProcessor(MessageUtil messageUtil, UpdateProducer updateProducer) {
-        this.messageUtil = messageUtil;
-        this.updateProducer = updateProducer;
-    }
 
     public void registerBot(MyTelegramBot myTelegramBot) {
         this.myTelegramBot = myTelegramBot;

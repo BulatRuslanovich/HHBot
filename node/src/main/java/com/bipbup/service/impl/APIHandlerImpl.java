@@ -55,7 +55,7 @@ public class APIHandlerImpl implements APIHandler {
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
                     LocalDateTime publishedAt = LocalDateTime.parse(timestamp, formatter);
 
-                    boolean currentVacancyIsNotNew = !publishedAt.isAfter(dateOfPublicationOfLastVacancy);
+                    boolean currentVacancyIsNotNew = publishedAt.isBefore(dateOfPublicationOfLastVacancy);
                     if (currentVacancyIsNotNew) {
                         return vacancies;
                     }
@@ -81,8 +81,8 @@ public class APIHandlerImpl implements APIHandler {
 
     private int getNumberOfPages(HttpEntity<HttpHeaders> request) {
         JsonNode firstPageWithVacancies = getPageWithVacancies(request, 0);
-        String numberOfPages = firstPageWithVacancies.get("found").asText();
-        return Integer.parseInt(numberOfPages) / 100;
+        String numberOfVacancies = firstPageWithVacancies.get("found").asText();
+        return Integer.parseInt(numberOfVacancies) / 100;
     }
 
     private JsonNode getPageWithVacancies(HttpEntity<HttpHeaders> request, int pageNumber) {

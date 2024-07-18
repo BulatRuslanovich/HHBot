@@ -21,7 +21,7 @@ public class NotifierServiceImpl implements NotifierService {
 
     @Override
     public void informAboutNewVacancies(Update update) {
-        List<Vacancy> newVacancies = apiHandler.getListWithNewVacancies(LocalDateTime.now().minusHours(24));
+        List<Vacancy> newVacancies = apiHandler.getListWithNewVacancies(LocalDateTime.now().minusHours(3));
         Collections.reverse(newVacancies);
 
         if (!newVacancies.isEmpty()) {
