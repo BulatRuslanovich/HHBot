@@ -1,7 +1,7 @@
-package com.bipbup.sevice.impl;
+package com.bipbup.service.impl;
 
 import com.bipbup.controllers.UpdateProcessor;
-import com.bipbup.sevice.AnswerConsumer;
+import com.bipbup.service.AnswerConsumer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;

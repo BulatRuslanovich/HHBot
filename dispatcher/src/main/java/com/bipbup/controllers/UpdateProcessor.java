@@ -1,6 +1,6 @@
 package com.bipbup.controllers;
 
-import com.bipbup.sevice.UpdateProducer;
+import com.bipbup.service.UpdateProducer;
 import com.bipbup.utils.MessageUtil;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Value;
