@@ -1,7 +1,0 @@
-server.port=
-spring.kafka.bootstrap-servers=
-spring.kafka.topics.answer-topic=
-spring.kafka.topics.text-update-topic=
-headhunter.token=
-headhunter.user-agent=
-headhunter.endpoint.searchForVacancy=

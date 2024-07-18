@@ -1,0 +1,13 @@
+server:
+  port:
+
+bot:
+  username:
+  token:
+
+spring:
+  kafka:
+    bootstrap-servers:
+    topics:
+      answer-topic:
+      text-update-topic:

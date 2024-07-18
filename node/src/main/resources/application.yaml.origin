@@ -1,0 +1,15 @@
+server:
+  port:
+
+spring:
+  kafka:
+    bootstrap-servers:
+    topics:
+      answer-topic:
+      text-update-topic:
+
+headhunter:
+  token:
+  user-agent:
+  endpoint:
+    searchForVacancy:
