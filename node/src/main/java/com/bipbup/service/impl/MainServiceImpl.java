@@ -10,6 +10,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
+import static com.bipbup.enums.AppUserState.BASIC_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
+
 
 @RequiredArgsConstructor
 @Service
@@ -20,24 +23,44 @@ public class MainServiceImpl implements MainService {
     @Override
     public void processMessage(Update update) {
         var appUser = findOrSaveAppUser(update);
-//        var userState = appUser.getState();
+        var userState = appUser.getState();
         var text = update.getMessage().getText();
         var output = "";
 
-        if (text.equals("/start")) {
-            output = startInteraction(appUser);
-        } else if (text.equals("/help")) {
-            output = helpOutput(appUser);
+        if (BASIC_STATE.equals(userState)) {
+            output = processServiceCommand(appUser, text);
+        } else if (WAIT_QUERY_STATE.equals(userState)) {
+            appUser.setQueryText(text); //TODO: make validation
+            appUser.setState(BASIC_STATE);
+            appUserDAO.save(appUser);
+            output = "Запрос успешно изменен";
         }
 
-        sendAnswer(output, appUser.getTelegramId());
+        if (!output.isEmpty()) sendAnswer(output, appUser.getTelegramId());
     }
+
+    private String processServiceCommand(AppUser appUser, String text) {
+        return switch (text) {
+            case "/start" -> startInteraction(appUser);
+            case "/help" -> helpOutput(appUser);
+            case "/choose_query" -> chooseQueryOutput(appUser);
+            default -> "";
+        };
+    }
+
+    private String chooseQueryOutput(AppUser appUser) {
+        appUser.setState(WAIT_QUERY_STATE);
+        appUserDAO.save(appUser);
+        return "Введите запрос";
+    }
+
 
     private String helpOutput(AppUser appUser) {
         return """
                 Вот команды бота, дорогой друг, %s:
                 /start - для того чтобы бот стартанул
                 /help - вызывает данную строку
+                /choose_query - задает нужный вам запрос
                 """.formatted(appUser.getUsername());
     }
 
@@ -62,6 +85,7 @@ public class MainServiceImpl implements MainService {
                     .telegramId(messageSender.getId())
                     .username(messageSender.getUserName())
                     .firstName(messageSender.getFirstName())
+                    .state(BASIC_STATE)
                     .lastName(messageSender.getLastName())
                     .build();
 
