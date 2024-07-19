@@ -10,7 +10,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
-import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
@@ -20,15 +19,30 @@ public class MainServiceImpl implements MainService {
 
     @Override
     public void processMessage(Update update) {
-        AppUser appUser = findOrSaveAppUser(update);
+        var appUser = findOrSaveAppUser(update);
+//        var userState = appUser.getState();
+        var text = update.getMessage().getText();
+        var output = "";
 
-        String text = "Dude, find a job already...";
-        sendAnswer(text, appUser.getTelegramId());
+        if (text.equals("/start")) {
+            output = startInteraction(appUser);
+        } else if (text.equals("/help")) {
+            output = helpOutput(appUser);
+        }
+
+        sendAnswer(output, appUser.getTelegramId());
     }
 
-    private void startInteraction(AppUser appUser) {
-        String text = "Welcome to capitalism, " + appUser.getFirstName() + "!";
-        sendAnswer(text, appUser.getTelegramId());
+    private String helpOutput(AppUser appUser) {
+        return """
+                Вот команды бота, дорогой друг, %s:
+                /start - для того чтобы бот стартанул
+                /help - вызывает данную строку
+                """.formatted(appUser.getUsername());
+    }
+
+    private String startInteraction(AppUser appUser) {
+        return "Добро пожаловать в капитализм %s!".formatted(appUser.getUsername());
     }
 
     private void sendAnswer(String text, Long chatId) {
@@ -46,14 +60,11 @@ public class MainServiceImpl implements MainService {
         if (!isAppUserExist) {
             AppUser appUser = AppUser.builder()
                     .telegramId(messageSender.getId())
-                    .firstLoginDate(LocalDateTime.now())
                     .username(messageSender.getUserName())
                     .firstName(messageSender.getFirstName())
                     .lastName(messageSender.getLastName())
-                    .lastNotificationTime(LocalDateTime.now())
                     .build();
 
-            startInteraction(appUser);
             return appUserDAO.save(appUser);
         }
 

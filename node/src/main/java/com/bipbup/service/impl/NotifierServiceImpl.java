@@ -16,8 +16,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class NotifierServiceImpl implements NotifierService {
-    final private APIHandler apiHandler;
-    final private AnswerProducer answerProducer;
+    private final APIHandler apiHandler;
+    private final AnswerProducer answerProducer;
 
     @Override
     public void informAboutNewVacancies(Update update) {
