@@ -1,5 +1,6 @@
 package com.bipbup.service.impl;
 
+import com.bipbup.service.MainService;
 import com.bipbup.service.NotifierService;
 import com.bipbup.service.UpdateConsumer;
 import lombok.RequiredArgsConstructor;
@@ -12,19 +13,12 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @RequiredArgsConstructor
 @Service
 public class UpdateConsumerImpl implements UpdateConsumer {
-    private final NotifierService notifierService;
+    private final MainService mainService;
 
     @Override
     @KafkaListener(topics = "${spring.kafka.topics.text-update-topic}", groupId = "groupId")
     public void consumeTextUpdate(Update update) {
         log.debug("Update received");
-        notifierService.informAboutNewVacancies(update);
-
-//        var message = update.getMessage();
-//        var sendMessage = new SendMessage();
-//        sendMessage.setChatId(message.getChatId());
-//        sendMessage.setText("Hello from Node!");
-//        answerProducer.produceAnswer(sendMessage);
-
+        mainService.processMessage(update);
     }
 }

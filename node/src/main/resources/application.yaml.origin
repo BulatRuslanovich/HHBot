@@ -7,6 +7,12 @@ spring:
     topics:
       answer-topic:
       text-update-topic:
+  datasource:
+    url:
+    username:
+    password:
+  jpa:
+    generate-ddl:
 
 headhunter:
   token:
