@@ -1,7 +1,6 @@
 package com.bipbup.service.impl;
 
 import com.bipbup.service.MainService;
-import com.bipbup.service.NotifierService;
 import com.bipbup.service.UpdateConsumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -18,7 +17,6 @@ public class UpdateConsumerImpl implements UpdateConsumer {
     @Override
     @KafkaListener(topics = "${spring.kafka.topics.text-update-topic}", groupId = "groupId")
     public void consumeTextUpdate(Update update) {
-        log.debug("Update received");
         mainService.processMessage(update);
     }
 }

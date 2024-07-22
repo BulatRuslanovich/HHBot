@@ -1,5 +1,6 @@
 package com.bipbup.service.impl;
 
+import com.bipbup.entity.AppUser;
 import com.bipbup.model.Vacancy;
 import com.bipbup.service.APIConnection;
 import com.bipbup.service.APIHandler;
@@ -33,32 +34,34 @@ public class APIHandlerImpl implements APIHandler {
 
 
     @Override
-    public List<Vacancy> getListWithNewVacancies(LocalDateTime dateOfPublicationOfLastVacancy) {
+    public List<Vacancy> getListWithNewVacancies(AppUser appUser) {
         var request = apiConnection.createRequestWithHeaders();
         List<Vacancy> vacancies = new ArrayList<>();
-        int numberOfPages = getNumberOfPages(request);
+        var numberOfPages = getNumberOfPages(request, appUser);
 
         for (int i = 0; i <= numberOfPages; i++) {
-            JsonNode jsonNode = getPageWithVacancies(request, i);
-            boolean jsonNodeContainsVacancies = jsonNode != null && !jsonNode.get("items").isEmpty();
+            var jsonNode = getPageWithVacancies(request, i, appUser);
+            var jsonNodeContainsVacancies = jsonNode != null && !jsonNode.get("items").isEmpty();
 
             if (jsonNodeContainsVacancies) {
                 JsonNode vacanciesOnCurrentPage = jsonNode.get("items");
                 for (int j = 0; j < vacanciesOnCurrentPage.size(); j++) {
-                    JsonNode vacancy = vacanciesOnCurrentPage.get(j);
+                    var vacancy = vacanciesOnCurrentPage.get(j);
+                    var timestamp = vacancy.get("published_at").asText();
 
-                    String timestamp = vacancy.get("published_at").asText();
-                    // Remove timezone part
-                    if (timestamp.length() == 24) { // Handles the case where timezone is of the form +0300 or -0300
+                    if (timestamp.length() == 24) {
                         timestamp = timestamp.substring(0, 19);
                     }
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-                    LocalDateTime publishedAt = LocalDateTime.parse(timestamp, formatter);
 
-                    boolean currentVacancyIsNotNew = publishedAt.isBefore(dateOfPublicationOfLastVacancy);
+                    var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+                    var publishedAt = LocalDateTime.parse(timestamp, formatter);
+
+                    var currentVacancyIsNotNew = publishedAt.isBefore(appUser.getLastNotificationTime());
+
                     if (currentVacancyIsNotNew) {
                         return vacancies;
                     }
+
                     vacancies.add(convertIntoVacancy(vacancy, publishedAt));
                 }
             }
@@ -79,14 +82,14 @@ public class APIHandlerImpl implements APIHandler {
                 .build();
     }
 
-    private int getNumberOfPages(HttpEntity<HttpHeaders> request) {
-        JsonNode firstPageWithVacancies = getPageWithVacancies(request, 0);
-        String numberOfVacancies = firstPageWithVacancies.get("found").asText();
+    private int getNumberOfPages(HttpEntity<HttpHeaders> request, AppUser appUser) {
+        var firstPageWithVacancies = getPageWithVacancies(request, 0, appUser);
+        var numberOfVacancies = firstPageWithVacancies.get("found").asText();
         return Integer.parseInt(numberOfVacancies) / 100;
     }
 
-    private JsonNode getPageWithVacancies(HttpEntity<HttpHeaders> request, int pageNumber) {
-        String uri = getUri(pageNumber);
+    private JsonNode getPageWithVacancies(HttpEntity<HttpHeaders> request, int pageNumber, AppUser appUser) {
+        var uri = getUri(pageNumber, appUser);
 
         var response = restTemplate.exchange(uri, HttpMethod.GET, request, String.class).getBody();
         JsonNode jsonNode = null;
@@ -99,13 +102,12 @@ public class APIHandlerImpl implements APIHandler {
         return jsonNode;
     }
 
-    private String getUri(int pageNumber) {
-        String uri = searchForVacancyURI;
+    private String getUri(int pageNumber, AppUser appUser) {
         return UriComponentsBuilder
-                .fromUriString(uri)
+                .fromUriString(searchForVacancyURI)
                 .queryParam("page", String.valueOf(pageNumber))
                 .queryParam("per_page", "100")
-                .queryParam("text", "Java")
+                .queryParam("text", appUser.getQueryText())
                 .queryParam("search_field", "name")
                 .queryParam("area", 88) //id Казани 88
                 .queryParam("period", "1")

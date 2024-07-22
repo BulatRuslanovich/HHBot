@@ -29,7 +29,8 @@ public class AppUser {
     private String username;
     private String firstName;
     private String lastName;
-    private LocalDateTime lastNotificationTime;
+    @Builder.Default
+    private LocalDateTime lastNotificationTime = LocalDateTime.now().minusDays(1);
     @Enumerated(EnumType.STRING)
     private AppUserState state;
     private String queryText;

@@ -5,15 +5,19 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.MainService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
+import java.time.LocalDateTime;
+
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 
 
+@Log4j
 @RequiredArgsConstructor
 @Service
 public class MainServiceImpl implements MainService {
@@ -31,8 +35,10 @@ public class MainServiceImpl implements MainService {
             output = processServiceCommand(appUser, text);
         } else if (WAIT_QUERY_STATE.equals(userState)) {
             appUser.setQueryText(text); //TODO: make validation
+            appUser.setLastNotificationTime(LocalDateTime.now().minusDays(4));
             appUser.setState(BASIC_STATE);
             appUserDAO.save(appUser);
+            log.info("User %s set query \"%s\"".formatted(appUser.getUsername(), text));
             output = "Запрос успешно изменен";
         }
 
