@@ -19,5 +19,6 @@ headhunter:
   user-agent:
   endpoint:
     searchForVacancy:
+
 notifier:
   period:

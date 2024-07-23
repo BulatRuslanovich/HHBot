@@ -62,32 +62,23 @@ public class MainServiceImpl implements MainService {
         appUser.setState(BASIC_STATE);
         appUserDAO.save(appUser);
         log.info("User %s set query \"%s\"".formatted(appUser.getUsername(), text));
-        return  "Запрос успешно изменен";
+        return "Запрос успешно изменен";
     }
 
     private String processExperience(AppUser appUser, String text) {
-        var isNoMatter = false;
-
         switch (text) {
             case "Без опыта" -> appUser.setExperience(ExperienceParam.NO_EXPERIENCE);
             case "1-3 года" -> appUser.setExperience(ExperienceParam.BETWEEN_1_AND_3);
             case "3-6 лет" -> appUser.setExperience(ExperienceParam.BETWEEN_3_AND_6);
             case "Более 6 лет" -> appUser.setExperience(ExperienceParam.MORE_THEN_6);
-            default -> {
-                appUser.setExperience(ExperienceParam.NO_MATTER);
-                isNoMatter = true;
-            }
+            default -> appUser.setExperience(ExperienceParam.NO_MATTER);
         }
 
         appUser.setState(BASIC_STATE);
-
         appUserDAO.save(appUser);
 
-        if (isNoMatter) {
-            return "Опыт работы не будет фильтроваться";
-        }
-
-        return "Опыт работы успешно установлен (%s)".formatted(text);
+        return appUser.getExperience() == ExperienceParam.NO_MATTER ? "Опыт работы не будет фильтроваться"
+                : "Опыт работы успешно установлен (%s)".formatted(text);
     }
 
     private String processServiceCommand(AppUser appUser, String text) {
@@ -131,15 +122,15 @@ public class MainServiceImpl implements MainService {
     private String helpOutput(AppUser appUser) {
         return """
                 Вот команды бота, дорогой друг, %s:
-                /start - для того чтобы бот стартанул
+                /start - для того, чтобы бот стартанул
                 /help - вызывает данную строку
                 /choose_query - задает нужный вам запрос
                 /choose_exp - задает нужный вам диапазон опыта
-                """.formatted(appUser.getUsername());
+                """.formatted(appUser.getFirstName());
     }
 
     private String startInteraction(AppUser appUser) {
-        return "Добро пожаловать в капитализм %s!".formatted(appUser.getUsername());
+        return "Добро пожаловать в капитализм, %s!".formatted(appUser.getFirstName());
     }
 
     private void sendAnswer(String text, Long chatId) {
