@@ -1,6 +1,7 @@
 package com.bipbup.service.impl;
 
 import com.bipbup.entity.AppUser;
+import com.bipbup.enums.ExperienceParam;
 import com.bipbup.model.Vacancy;
 import com.bipbup.service.APIConnection;
 import com.bipbup.service.APIHandler;
@@ -103,15 +104,29 @@ public class APIHandlerImpl implements APIHandler {
     }
 
     private String getUri(int pageNumber, AppUser appUser) {
-        return UriComponentsBuilder
-                .fromUriString(searchForVacancyURI)
-                .queryParam("page", String.valueOf(pageNumber))
-                .queryParam("per_page", "100")
-                .queryParam("text", appUser.getQueryText())
-                .queryParam("search_field", "name")
-                .queryParam("area", 88) //id Казани 88
-                .queryParam("period", "1")
-                .queryParam("order_by", "publication_time")
-                .build().toUriString();
+        if (!appUser.getExperience().equals(ExperienceParam.NO_MATTER)) {
+            return UriComponentsBuilder
+                    .fromUriString(searchForVacancyURI)
+                    .queryParam("page", String.valueOf(pageNumber))
+                    .queryParam("per_page", "100")
+                    .queryParam("text", appUser.getQueryText())
+                    .queryParam("search_field", "name")
+                    .queryParam("experience", appUser.getExperience().toString())
+                    .queryParam("area", 88) //id Казани 88
+                    .queryParam("period", "1") // за последний день (1)
+                    .queryParam("order_by", "publication_time")
+                    .build().toUriString();
+        } else {
+            return UriComponentsBuilder
+                    .fromUriString(searchForVacancyURI)
+                    .queryParam("page", String.valueOf(pageNumber))
+                    .queryParam("per_page", "100")
+                    .queryParam("text", appUser.getQueryText())
+                    .queryParam("search_field", "name")
+                    .queryParam("area", 88) //id Казани 88
+                    .queryParam("period", "1") // за последний день (1)
+                    .queryParam("order_by", "publication_time")
+                    .build().toUriString();
+        } //TODO: полюбому можно сократить, но пока так
     }
 }

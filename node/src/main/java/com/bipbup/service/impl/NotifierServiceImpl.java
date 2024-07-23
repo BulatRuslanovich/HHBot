@@ -40,7 +40,7 @@ public class NotifierServiceImpl implements NotifierService {
 
             if (!newVacancies.isEmpty()) {
                 for (var newVacancy : newVacancies) {
-                    user.setLastNotificationTime(newVacancy.getPublishedAt());
+                    user.setLastNotificationTime(newVacancy.getPublishedAt().plusMinutes(1));
                     appUserDAO.save(user);
                     createMessageWithVacancy(newVacancy, user);
                 }
