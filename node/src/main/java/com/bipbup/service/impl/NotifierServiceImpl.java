@@ -53,6 +53,7 @@ public class NotifierServiceImpl implements NotifierService {
         log.info("Stop vacancies searching...");
     }
 
+    //TODO: make message more beautiful
     private void createMessageWithVacancy(Vacancy newVacancy, AppUser appUser) {
         String message = newVacancy.getNameVacancy() + "\n" +
                          newVacancy.getNameEmployer() + "\n" +

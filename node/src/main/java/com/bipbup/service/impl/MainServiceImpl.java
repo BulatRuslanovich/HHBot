@@ -29,6 +29,7 @@ public class MainServiceImpl implements MainService {
     private final AppUserDAO appUserDAO;
     private final AnswerProducer answerProducer;
 
+    //TODO: refactor logic in method
     @Override
     public void processMessage(Update update) {
         var appUser = findOrSaveAppUser(update);
@@ -55,16 +56,19 @@ public class MainServiceImpl implements MainService {
         }
     }
 
+    //TODO: действия с юзером в отдельную функцию
     private String processQueryText(AppUser appUser, String text) {
         text = text.replace("+", "%2B");
         appUser.setQueryText(text); //TODO: make validation
         appUser.setLastNotificationTime(LocalDateTime.now().minusDays(3)); //TODO: make better logic
         appUser.setState(BASIC_STATE);
         appUserDAO.save(appUser);
+
         log.info("User %s set query \"%s\"".formatted(appUser.getUsername(), text));
         return "Запрос успешно изменен";
     }
 
+    //TODO: Стринги вынести как константы
     private String processExperience(AppUser appUser, String text) {
         switch (text) {
             case "Без опыта" -> appUser.setExperience(ExperienceParam.NO_EXPERIENCE);
@@ -81,6 +85,7 @@ public class MainServiceImpl implements MainService {
                 : "Опыт работы успешно установлен (%s)".formatted(text);
     }
 
+    //TODO: команды вынести в энам
     private String processServiceCommand(AppUser appUser, String text) {
         return switch (text) {
             case "/start" -> startInteraction(appUser);
@@ -97,6 +102,7 @@ public class MainServiceImpl implements MainService {
         return "Выберите опыт работы";
     }
 
+    //TODO: Стринги вынести как константы
     private ReplyKeyboard getExperienceKeyboard() {
         KeyboardRow row1 = new KeyboardRow();
         row1.add("Без опыта");
@@ -113,7 +119,7 @@ public class MainServiceImpl implements MainService {
     }
 
     private String chooseQueryOutput(AppUser appUser) {
-        appUser.setState(WAIT_QUERY_STATE);
+        appUser.setState(WAIT_QUERY_STATE); //TODO: можно сделать функцию на изменение состояния у юзера changeUserState(appUser, state)
         appUserDAO.save(appUser);
         return "Введите запрос";
     }

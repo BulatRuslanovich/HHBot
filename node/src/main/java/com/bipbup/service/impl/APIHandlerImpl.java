@@ -34,6 +34,7 @@ public class APIHandlerImpl implements APIHandler {
     private String searchForVacancyURI;
 
 
+    //TODO: раздить на функции, вложенность глубокая
     @Override
     public List<Vacancy> getListWithNewVacancies(AppUser appUser) {
         var request = apiConnection.createRequestWithHeaders();
@@ -71,7 +72,7 @@ public class APIHandlerImpl implements APIHandler {
         return vacancies;
     }
 
-
+    //TODO: вынести в какую нибудь factory (хз че это)
     private Vacancy convertIntoVacancy(JsonNode vacancy, LocalDateTime publishedAt) {
         return Vacancy.builder()
                 .headHunterId(vacancy.get("id").asText())

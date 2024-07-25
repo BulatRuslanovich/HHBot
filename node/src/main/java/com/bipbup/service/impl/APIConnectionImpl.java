@@ -20,7 +20,7 @@ public class APIConnectionImpl implements APIConnection {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("User-Agent", userAgent);
-        headers.add("Bearer", token);
+        headers.add("Bearer", token); //TODO: вроде можно сделать с authorization bearer
         return new HttpEntity<>(headers);
     }
 }
