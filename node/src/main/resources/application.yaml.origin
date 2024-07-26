@@ -19,5 +19,13 @@ headhunter:
   user-agent:
   endpoint:
     searchForVacancy:
+
 notifier:
   period:
+
+keyboard:
+  noExperience:
+  oneToThreeYears:
+  threeToSixYears:
+  moreThanSixYears:
+  noFilter:

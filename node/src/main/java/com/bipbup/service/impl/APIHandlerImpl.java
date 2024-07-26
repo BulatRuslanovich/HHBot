@@ -1,9 +1,11 @@
 package com.bipbup.service.impl;
 
 import com.bipbup.entity.AppUser;
+import com.bipbup.enums.ExperienceParam;
 import com.bipbup.model.Vacancy;
 import com.bipbup.service.APIConnection;
 import com.bipbup.service.APIHandler;
+import com.bipbup.utils.VacancyFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,73 +28,69 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class APIHandlerImpl implements APIHandler {
+    private static final int COUNT_OF_VACANCIES_IN_PAGE = 100;
+    public static final int COUNT_OF_DAYS = 4;
+
     private final APIConnection apiConnection;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
     @Value("${headhunter.endpoint.searchForVacancy}")
     private String searchForVacancyURI;
 
-
     @Override
-    public List<Vacancy> getListWithNewVacancies(AppUser appUser) {
+    public List<Vacancy> getNewVacancies(AppUser appUser) {
         var request = apiConnection.createRequestWithHeaders();
-        List<Vacancy> vacancies = new ArrayList<>();
-        var numberOfPages = getNumberOfPages(request, appUser);
+        var pageCount = getPageCount(request, appUser);
+        List<Vacancy> vacancyList = new ArrayList<>();
 
-        for (int i = 0; i <= numberOfPages; i++) {
-            var jsonNode = getPageWithVacancies(request, i, appUser);
-            var jsonNodeContainsVacancies = jsonNode != null && !jsonNode.get("items").isEmpty();
-
-            if (jsonNodeContainsVacancies) {
-                JsonNode vacanciesOnCurrentPage = jsonNode.get("items");
-                for (int j = 0; j < vacanciesOnCurrentPage.size(); j++) {
-                    var vacancy = vacanciesOnCurrentPage.get(j);
-                    var timestamp = vacancy.get("published_at").asText();
-
-                    if (timestamp.length() == 24) {
-                        timestamp = timestamp.substring(0, 19);
-                    }
-
-                    var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-                    var publishedAt = LocalDateTime.parse(timestamp, formatter);
-
-                    var currentVacancyIsNotNew = publishedAt.isBefore(appUser.getLastNotificationTime());
-
-                    if (currentVacancyIsNotNew) {
-                        return vacancies;
-                    }
-
-                    vacancies.add(convertIntoVacancy(vacancy, publishedAt));
-                }
-            }
+        for (int i = 0; i <= pageCount; i++) {
+            processVacancyPage(appUser, request, i, vacancyList);
         }
 
-        return vacancies;
+        return vacancyList;
     }
 
+    private void processVacancyPage(AppUser appUser, HttpEntity<HttpHeaders> request, int pageNum, List<Vacancy> vacancyList) {
+        var jsonNode = getVacancyPage(request, pageNum, appUser);
 
-    private Vacancy convertIntoVacancy(JsonNode vacancy, LocalDateTime publishedAt) {
-        return Vacancy.builder()
-                .headHunterId(vacancy.get("id").asText())
-                .nameVacancy(vacancy.get("name").asText())
-                .nameEmployer(vacancy.get("employer").get("name").asText())
-                .nameArea(vacancy.get("area").get("name").asText())
-                .publishedAt(publishedAt)
-                .url(vacancy.get("alternate_url").asText())
-                .build();
+        if (!isEmptyJson(jsonNode)) {
+            var vacanciesOnCurrentPage = jsonNode.get("items");
+            addVacanciesFromPage(appUser, vacancyList, vacanciesOnCurrentPage);
+        }
     }
 
-    private int getNumberOfPages(HttpEntity<HttpHeaders> request, AppUser appUser) {
-        var firstPageWithVacancies = getPageWithVacancies(request, 0, appUser);
-        var numberOfVacancies = firstPageWithVacancies.get("found").asText();
-        return Integer.parseInt(numberOfVacancies) / 100;
+    private static void addVacanciesFromPage(AppUser appUser, List<Vacancy> vacancyList, JsonNode vacanciesOnCurrentPage) {
+        for (int j = 0; j < vacanciesOnCurrentPage.size(); j++) {
+            var vacancy = vacanciesOnCurrentPage.get(j);
+            var publishedAt = getPublishedAtFromJson(vacancy);
+
+            if (publishedAt.isBefore(appUser.getLastNotificationTime())) return;
+
+            vacancyList.add(VacancyFactory.convertJsonToVacancy(vacancy, publishedAt));
+        }
     }
 
-    private JsonNode getPageWithVacancies(HttpEntity<HttpHeaders> request, int pageNumber, AppUser appUser) {
-        var uri = getUri(pageNumber, appUser);
+    private static boolean isEmptyJson(JsonNode jsonNode) {
+        return jsonNode == null || jsonNode.get("items").isEmpty();
+    }
 
-        var response = restTemplate.exchange(uri, HttpMethod.GET, request, String.class).getBody();
+    private static LocalDateTime getPublishedAtFromJson(JsonNode vacancy) {
+        var timestamp = vacancy.get("published_at").asText();
+        if (timestamp.length() == 24) timestamp = timestamp.substring(0, 19);
+        return LocalDateTime.parse(timestamp, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    }
+
+    private int getPageCount(HttpEntity<HttpHeaders> request, AppUser appUser) {
+        var firstPage = getVacancyPage(request, 0, appUser);
+        var count = firstPage.get("found").asText();
+        return Integer.parseInt(count) / COUNT_OF_VACANCIES_IN_PAGE;
+    }
+
+    private JsonNode getVacancyPage(HttpEntity<HttpHeaders> request, int pageNumber, AppUser appUser) {
+        var vacancySearchUri = generateVacancySearchUri(pageNumber, appUser);
+        var response = restTemplate.exchange(vacancySearchUri, HttpMethod.GET, request, String.class).getBody();
         JsonNode jsonNode = null;
+
         try {
             jsonNode = objectMapper.readTree(response);
         } catch (JsonProcessingException e) {
@@ -102,16 +100,20 @@ public class APIHandlerImpl implements APIHandler {
         return jsonNode;
     }
 
-    private String getUri(int pageNumber, AppUser appUser) {
-        return UriComponentsBuilder
+    private String generateVacancySearchUri(int pageNumber, AppUser appUser) {
+        var builder = UriComponentsBuilder
                 .fromUriString(searchForVacancyURI)
                 .queryParam("page", String.valueOf(pageNumber))
-                .queryParam("per_page", "100")
+                .queryParam("per_page", COUNT_OF_VACANCIES_IN_PAGE)
                 .queryParam("text", appUser.getQueryText())
                 .queryParam("search_field", "name")
-                .queryParam("area", 88) //id Казани 88
-                .queryParam("period", "1")
-                .queryParam("order_by", "publication_time")
-                .build().toUriString();
+                .queryParam("area", 88)
+                .queryParam("period", COUNT_OF_DAYS)
+                .queryParam("order_by", "publication_time");
+
+        if (!appUser.getExperience().equals(ExperienceParam.NO_MATTER))
+            builder.queryParam("experience", appUser.getExperience().toString());
+
+        return builder.build().toUriString();
     }
 }

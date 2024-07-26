@@ -1,103 +1,110 @@
 package com.bipbup.service.impl;
 
-import com.bipbup.dao.AppUserDAO;
-import com.bipbup.entity.AppUser;
+import com.bipbup.config.KeyboardProperties;
+import com.bipbup.enums.AppUserState;
+import com.bipbup.handlers.StateHandler;
+import com.bipbup.handlers.impl.BasicStateHandler;
+import com.bipbup.handlers.impl.ExperienceStateHandler;
+import com.bipbup.handlers.impl.QueryStateHandler;
 import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.MainService;
-import lombok.RequiredArgsConstructor;
+import com.bipbup.utils.UserUtil;
 import lombok.extern.log4j.Log4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
-import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 
-
 @Log4j
-@RequiredArgsConstructor
 @Service
 public class MainServiceImpl implements MainService {
-    private final AppUserDAO appUserDAO;
+    private final UserUtil userUtil;
     private final AnswerProducer answerProducer;
+    private final KeyboardProperties keyboardProperties;
+
+    private final Map<AppUserState, StateHandler> stateHandlers;
+
+    @Autowired
+    public MainServiceImpl(UserUtil userUtil, AnswerProducer answerProducer, KeyboardProperties keyboardProperties, BasicStateHandler basicStateHandler, ExperienceStateHandler experienceStateHandler, QueryStateHandler queryStateHandler) {
+        this.userUtil = userUtil;
+        this.answerProducer = answerProducer;
+        this.keyboardProperties = keyboardProperties;
+
+        this.stateHandlers = Map.of(BASIC_STATE, basicStateHandler,
+                WAIT_EXPERIENCE_STATE, experienceStateHandler,
+                WAIT_QUERY_STATE, queryStateHandler);
+    }
 
     @Override
     public void processMessage(Update update) {
-        var appUser = findOrSaveAppUser(update);
+        var appUser = userUtil.findOrSaveAppUser(update);
         var userState = appUser.getState();
         var text = update.getMessage().getText();
         var output = "";
 
-        if (BASIC_STATE.equals(userState)) {
-            output = processServiceCommand(appUser, text);
-        } else if (WAIT_QUERY_STATE.equals(userState)) {
-            appUser.setQueryText(text); //TODO: make validation
-            appUser.setLastNotificationTime(LocalDateTime.now().minusDays(4));
-            appUser.setState(BASIC_STATE);
-            appUserDAO.save(appUser);
-            log.info("User %s set query \"%s\"".formatted(appUser.getUsername(), text));
-            output = "Запрос успешно изменен";
+        StateHandler handler = stateHandlers.get(userState);
+        if (!Objects.isNull(handler)) {
+            output = handler.process(appUser, text);
         }
 
-        if (!output.isEmpty()) sendAnswer(output, appUser.getTelegramId());
+        if (!output.isEmpty()) {
+            ReplyKeyboard replyKeyboard = WAIT_EXPERIENCE_STATE.equals(appUser.getState()) ? getExperienceKeyboard() : null;
+            sendResponse(output, appUser.getTelegramId(), replyKeyboard);
+        }
     }
 
-    private String processServiceCommand(AppUser appUser, String text) {
-        return switch (text) {
-            case "/start" -> startInteraction(appUser);
-            case "/help" -> helpOutput(appUser);
-            case "/choose_query" -> chooseQueryOutput(appUser);
-            default -> "";
-        };
+    private void sendResponse(String output, Long telegramId, ReplyKeyboard replyKeyboard) {
+        if (replyKeyboard != null) {
+            sendAnswerWithKeyboard(output, telegramId, replyKeyboard);
+        } else {
+            sendAnswer(output, telegramId);
+        }
     }
 
-    private String chooseQueryOutput(AppUser appUser) {
-        appUser.setState(WAIT_QUERY_STATE);
-        appUserDAO.save(appUser);
-        return "Введите запрос";
+    private ReplyKeyboard getExperienceKeyboard() {
+        var row1 = new KeyboardRow();
+        var row2 = new KeyboardRow();
+        var row3 = new KeyboardRow();
+
+        row1.add(keyboardProperties.getNoExperience());
+        row1.add(keyboardProperties.getOneToThreeYears());
+        row2.add(keyboardProperties.getThreeToSixYears());
+        row2.add(keyboardProperties.getMoreThanSixYears());
+        row3.add(keyboardProperties.getNoFilter());
+
+        return new ReplyKeyboardMarkup(List.of(row1, row2, row3));
     }
 
-
-    private String helpOutput(AppUser appUser) {
-        return """
-                Вот команды бота, дорогой друг, %s:
-                /start - для того чтобы бот стартанул
-                /help - вызывает данную строку
-                /choose_query - задает нужный вам запрос
-                """.formatted(appUser.getUsername());
-    }
-
-    private String startInteraction(AppUser appUser) {
-        return "Добро пожаловать в капитализм %s!".formatted(appUser.getUsername());
-    }
 
     private void sendAnswer(String text, Long chatId) {
-        var sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
-        sendMessage.setText(text);
+        SendMessage sendMessage = SendMessage.builder()
+                .chatId(chatId)
+                .text(text)
+                .replyMarkup(new ReplyKeyboardRemove(true))
+                .build();
+
         answerProducer.produceAnswer(sendMessage);
     }
 
-    private AppUser findOrSaveAppUser(Update update) {
-        final User messageSender = update.getMessage().getFrom();
-        var appUserOptional = appUserDAO.findByTelegramId(messageSender.getId());
+    private void sendAnswerWithKeyboard(String text, Long chatId, ReplyKeyboard replyKeyboard) {
+        SendMessage sendMessage = SendMessage.builder()
+                .chatId(chatId)
+                .text(text)
+                .replyMarkup(replyKeyboard)
+                .build();
 
-        boolean isAppUserExist = appUserOptional.isPresent();
-        if (!isAppUserExist) {
-            AppUser appUser = AppUser.builder()
-                    .telegramId(messageSender.getId())
-                    .username(messageSender.getUserName())
-                    .firstName(messageSender.getFirstName())
-                    .state(BASIC_STATE)
-                    .lastName(messageSender.getLastName())
-                    .build();
-
-            return appUserDAO.save(appUser);
-        }
-
-        return appUserOptional.get();
+        answerProducer.produceAnswer(sendMessage);
     }
 }

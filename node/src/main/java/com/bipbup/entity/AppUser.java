@@ -1,6 +1,7 @@
 package com.bipbup.entity;
 
 import com.bipbup.enums.AppUserState;
+import com.bipbup.enums.ExperienceParam;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
@@ -26,13 +27,21 @@ public class AppUser {
     @CreationTimestamp
     @Builder.Default
     private LocalDateTime firstLoginDate = LocalDateTime.now();
+
     private String username;
     private String firstName;
     private String lastName;
+
     @Builder.Default
     private LocalDateTime lastNotificationTime = LocalDateTime.now().minusDays(1);
+
     @Enumerated(EnumType.STRING)
     private AppUserState state;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private ExperienceParam experience = ExperienceParam.NO_MATTER;
+
     private String queryText;
 
     @Override

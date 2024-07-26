@@ -1,5 +1,6 @@
 package com.bipbup.service;
 
 public interface NotifierService {
-    void informAboutNewVacancies();
+    @SuppressWarnings("unused")
+    void searchNewVacancies();
 }

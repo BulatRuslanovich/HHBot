@@ -6,5 +6,5 @@ import com.bipbup.model.Vacancy;
 import java.util.List;
 
 public interface APIHandler {
-    List<Vacancy> getListWithNewVacancies(AppUser appUser);
+    List<Vacancy> getNewVacancies(AppUser appUser);
 }
