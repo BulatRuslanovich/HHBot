@@ -32,8 +32,8 @@ public class UpdateProcessor {
 
     private SetMyCommands setMenuCommands() {
         var commands = List.of(
-                new BotCommand("choose_query", "Задать запрос"),
-                new BotCommand("choose_exp", "Выбрать опыт")
+                new BotCommand("set_query", "Задать запрос"),
+                new BotCommand("set_experience", "Выбрать опыт")
         );
 
         return new SetMyCommands(commands, new BotCommandScopeDefault(), null);

@@ -18,23 +18,14 @@ public class BasicStateHandler implements StateHandler {
     public String process(AppUser appUser, String text) {
         return switch (text) {
             case "/start" -> startInteraction(appUser);
-            case "/help" -> helpOutput(appUser);
-            case "/choose_query" -> chooseQueryOutput(appUser);
-            case "/choose_exp" -> chooseExpOutput(appUser);
+            case "/set_query" -> chooseQueryOutput(appUser);
+            case "/set_experience" -> chooseExpOutput(appUser);
             default -> "";
         };
     }
 
     private String startInteraction(AppUser appUser) {
         return "Добро пожаловать в капитализм, %s!".formatted(appUser.getFirstName());
-    }
-
-    private String helpOutput(AppUser appUser) {
-        return """
-                Вот команды бота, дорогой друг, %s:
-                /choose_query - задает нужный вам запрос
-                /choose_exp - задает нужный вам диапазон опыта
-                """.formatted(appUser.getFirstName());
     }
 
     private String chooseQueryOutput(AppUser appUser) {
