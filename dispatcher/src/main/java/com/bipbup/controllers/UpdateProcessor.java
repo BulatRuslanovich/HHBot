@@ -6,8 +6,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.List;
 
 @Log4j
 @RequiredArgsConstructor
@@ -21,7 +27,18 @@ public class UpdateProcessor {
 
     public void registerBot(MyTelegramBot myTelegramBot) {
         this.myTelegramBot = myTelegramBot;
+        setCommandsMenu(setMenuCommands());
     }
+
+    private SetMyCommands setMenuCommands() {
+        var commands = List.of(
+                new BotCommand("choose_query", "задает нужный вам запрос"),
+                new BotCommand("choose_exp", "задает нужный вам диапазон опыта")
+        );
+
+        return new SetMyCommands(commands, new BotCommandScopeDefault(), null);
+    }
+
 
     public void processUpdate(Update update) {
         if (update == null) {
@@ -54,5 +71,13 @@ public class UpdateProcessor {
 
     public void setView(SendMessage sendMessage) {
         myTelegramBot.sendAnswerMessage(sendMessage);
+    }
+
+    private void setCommandsMenu(SetMyCommands commands) {
+        try {
+            myTelegramBot.execute(commands);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
     }
 }
