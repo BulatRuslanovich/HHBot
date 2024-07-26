@@ -12,8 +12,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Log4j
 @RequiredArgsConstructor
@@ -23,47 +25,58 @@ public class NotifierServiceImpl implements NotifierService {
     private final AnswerProducer answerProducer;
     private final AppUserDAO appUserDAO;
 
-    @Scheduled(fixedRateString = "${notifier.period}")
     @Override
-    public void informAboutNewVacancies() {
-        log.info("Start vacancies searching...");
-
+    @Scheduled(fixedRateString = "${notifier.period}")
+    public void searchNewVacancies() {
         var users = appUserDAO.findAll();
 
         for (var user : users) {
-            if (user.getQueryText() == null || user.getQueryText().isEmpty()) {
+            if (Objects.isNull(user.getQueryText()) || user.getQueryText().isEmpty()) {
                 continue;
             }
 
-            List<Vacancy> newVacancies = apiHandler.getListWithNewVacancies(user);
-            Collections.reverse(newVacancies);
-
-            if (!newVacancies.isEmpty()) {
-                for (var newVacancy : newVacancies) {
-                    user.setLastNotificationTime(newVacancy.getPublishedAt().plusMinutes(1));
-                    appUserDAO.save(user);
-                    createMessageWithVacancy(newVacancy, user);
-                }
-            }
-
-            log.info("For user %s find %d vacancies".formatted(user.getFirstName(), newVacancies.size()));
+            processNewVacancies(user);
         }
-
-
-        log.info("Stop vacancies searching...");
     }
 
-    //TODO: make message more beautiful
-    private void createMessageWithVacancy(Vacancy newVacancy, AppUser appUser) {
-        String message = newVacancy.getNameVacancy() + "\n" +
-                         newVacancy.getNameEmployer() + "\n" +
-                         newVacancy.getNameArea() + "\n" +
-                         newVacancy.getPublishedAt().toString() + "\n" +
-                         newVacancy.getUrl() + "\n";
+    private void processNewVacancies(AppUser user) {
+        List<Vacancy> newVacancies = apiHandler.getNewVacancies(user);
 
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setText(message);
-        sendMessage.setChatId(appUser.getTelegramId().toString());
+        if (!newVacancies.isEmpty()) {
+            LocalDateTime lastNotificationTime = newVacancies.get(0).getPublishedAt().plusMinutes(1);
+            Collections.reverse(newVacancies);
+
+            for (var vacancy : newVacancies) {
+                sendVacancyMessage(vacancy, user);
+            }
+
+            user.setLastNotificationTime(lastNotificationTime);
+            appUserDAO.save(user);
+        }
+
+        log.info("For user %s find %d vacancies".formatted(user.getFirstName(), newVacancies.size()));
+    }
+
+    private void sendVacancyMessage(Vacancy newVacancy, AppUser appUser) {
+        String message = String.format("""
+                        *Вакансия:* %s
+                        *Работодатель:* %s
+                        *Город:* %s
+                        *Дата публикации:* %s
+                        *Ссылка:* %s
+                        """,
+                newVacancy.getNameVacancy(),
+                newVacancy.getNameEmployer(),
+                newVacancy.getNameArea(),
+                newVacancy.getPublishedAt().toLocalDate(),
+                newVacancy.getUrl());
+
+
+        SendMessage sendMessage = SendMessage.builder()
+                .text(message)
+                .parseMode("Markdown")
+                .chatId(appUser.getTelegramId())
+                .build();
 
         answerProducer.produceAnswer(sendMessage);
     }

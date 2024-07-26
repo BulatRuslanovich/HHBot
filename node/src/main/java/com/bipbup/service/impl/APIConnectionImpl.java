@@ -12,15 +12,12 @@ import org.springframework.stereotype.Service;
 public class APIConnectionImpl implements APIConnection {
     @Value("${headhunter.user-agent}")
     private String userAgent;
-    @Value("${headhunter.token}")
-    private String token;
 
     @Override
     public HttpEntity<HttpHeaders> createRequestWithHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("User-Agent", userAgent);
-        headers.add("Bearer", token); //TODO: вроде можно сделать с authorization bearer
         return new HttpEntity<>(headers);
     }
 }

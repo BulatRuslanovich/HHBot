@@ -32,8 +32,8 @@ public class UpdateProcessor {
 
     private SetMyCommands setMenuCommands() {
         var commands = List.of(
-                new BotCommand("choose_query", "задает нужный вам запрос"),
-                new BotCommand("choose_exp", "задает нужный вам диапазон опыта")
+                new BotCommand("choose_query", "Задать запрос"),
+                new BotCommand("choose_exp", "Выбрать опыт")
         );
 
         return new SetMyCommands(commands, new BotCommandScopeDefault(), null);
@@ -77,7 +77,7 @@ public class UpdateProcessor {
         try {
             myTelegramBot.execute(commands);
         } catch (TelegramApiException e) {
-            log.error(e.getMessage());
+            log.error("Error with commands execute");
         }
     }
 }

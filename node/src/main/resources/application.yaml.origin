@@ -22,3 +22,10 @@ headhunter:
 
 notifier:
   period:
+
+keyboard:
+  noExperience:
+  oneToThreeYears:
+  threeToSixYears:
+  moreThanSixYears:
+  noFilter:
