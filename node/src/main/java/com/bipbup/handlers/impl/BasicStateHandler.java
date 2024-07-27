@@ -30,11 +30,14 @@ public class BasicStateHandler implements StateHandler {
 
     private String chooseQueryOutput(AppUser appUser) {
         userUtil.updateUserState(appUser, WAIT_QUERY_STATE);
-        return "Введите запрос";
+
+        return appUser.getQueryText() != null ?
+                "Хотите обновить или убрать запрос?" :
+                "Введите ваш запрос:";
     }
 
     private String chooseExpOutput(AppUser appUser) {
         userUtil.updateUserState(appUser, WAIT_EXPERIENCE_STATE);
-        return "Выберите опыт работы";
+        return "Выберите опыт работы:";
     }
 }

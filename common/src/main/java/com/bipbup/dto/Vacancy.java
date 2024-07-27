@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Vacancy {
-   @NonNull
+    @NonNull
     private String headHunterId;
     @NonNull
     private String nameVacancy;

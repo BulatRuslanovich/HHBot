@@ -1,6 +1,7 @@
 package com.bipbup.service.impl;
 
 import com.bipbup.config.KeyboardProperties;
+import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.handlers.impl.BasicStateHandler;
@@ -20,11 +21,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-import static com.bipbup.enums.AppUserState.BASIC_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
+import static com.bipbup.enums.AppUserState.*;
 
 
 @Service
@@ -54,13 +52,23 @@ public class MainServiceImpl implements MainService {
         var output = "";
 
         StateHandler handler = stateHandlers.get(userState);
-        if (!Objects.isNull(handler)) {
+        if (handler != null) {
             output = handler.process(appUser, text);
         }
 
         if (!output.isEmpty()) {
-            ReplyKeyboard replyKeyboard = WAIT_EXPERIENCE_STATE.equals(appUser.getState()) ? getExperienceKeyboard() : null;
+            ReplyKeyboard replyKeyboard = getReplyKeyboardForState(appUser);
             sendResponse(output, appUser.getTelegramId(), replyKeyboard);
+        }
+    }
+
+    private ReplyKeyboard getReplyKeyboardForState(AppUser appUser) {
+        if (WAIT_EXPERIENCE_STATE.equals(appUser.getState())) {
+            return getExperienceKeyboard();
+        } else if (WAIT_QUERY_STATE.equals(appUser.getState()) && appUser.getQueryText() != null) {
+            return getQueryOperationKeyboard();
+        } else {
+            return null;
         }
     }
 
@@ -84,6 +92,16 @@ public class MainServiceImpl implements MainService {
         row3.add(keyboardProperties.getNoFilter());
 
         return new ReplyKeyboardMarkup(List.of(row1, row2, row3));
+    }
+
+    private ReplyKeyboard getQueryOperationKeyboard() {
+        var row1 = new KeyboardRow();
+        var row2 = new KeyboardRow();
+
+        row1.add("Обновить");
+        row2.add("Удалить");
+
+        return new ReplyKeyboardMarkup(List.of(row1, row2));
     }
 
 
