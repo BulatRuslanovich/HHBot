@@ -9,7 +9,6 @@ import com.bipbup.handlers.impl.QueryStateHandler;
 import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.MainService;
 import com.bipbup.utils.UserUtil;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -23,9 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.bipbup.enums.AppUserState.*;
+import static com.bipbup.enums.AppUserState.BASIC_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 
-@Slf4j
+
 @Service
 public class MainServiceImpl implements MainService {
     private final UserUtil userUtil;

@@ -49,6 +49,18 @@ public class UpdateProcessor {
         if (update.hasMessage()) {
             processMessage(update);
         } else {
+            logEmptyMessageUpdate(update);
+        }
+    }
+
+    private static void logEmptyMessageUpdate(Update update) {
+        var status = update.getMyChatMember().getNewChatMember().getStatus();
+        var user = update.getMyChatMember().getFrom();
+        if (status.equals("kicked")) {
+            log.info("User {} block the bot", user.getFirstName());
+        } else if (status.equals("member")) {
+            log.info("User {} joined", user.getFirstName());
+        } else {
             log.error("Message is null");
         }
     }
@@ -57,7 +69,7 @@ public class UpdateProcessor {
         var message = update.getMessage();
 
         if (message.hasText()) {
-            log.info(message.getText());
+            log.info("{} write \"{}\"", message.getFrom().getFirstName(), message.getText());
             updateProducer.produce(textUpdateTopic, update);
         } else {
             setUnsupportedMessageType(update);

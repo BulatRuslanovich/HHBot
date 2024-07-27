@@ -54,7 +54,7 @@ public class NotifierServiceImpl implements NotifierService {
             appUserDAO.save(user);
         }
 
-        log.info("For user %s find %d vacancies".formatted(user.getFirstName(), newVacancies.size()));
+        log.info("For user {} find {} vacancies", user.getFirstName(), newVacancies.size());
     }
 
     private void sendVacancyMessage(Vacancy newVacancy, AppUser appUser) {

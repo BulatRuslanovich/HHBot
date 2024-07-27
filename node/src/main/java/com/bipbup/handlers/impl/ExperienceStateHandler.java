@@ -5,6 +5,7 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.enums.ExperienceParam;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.utils.UserUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -12,7 +13,7 @@ import java.util.Map;
 
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
 
-
+@Slf4j
 @Component
 public class ExperienceStateHandler implements StateHandler {
     private final UserUtil userUtil;
@@ -38,6 +39,8 @@ public class ExperienceStateHandler implements StateHandler {
         ExperienceParam experienceParam = experienceMapping.getOrDefault(text, ExperienceParam.NO_MATTER);
         appUser.setExperience(experienceParam);
         userUtil.updateUserState(appUser, BASIC_STATE);
+
+        log.info("User {} set experience \"{}\"", appUser.getFirstName(), text);
 
         return experienceParam == ExperienceParam.NO_MATTER
                 ? "Опыт работы не будет фильтроваться"

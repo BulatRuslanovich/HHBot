@@ -25,7 +25,7 @@ public class QueryStateHandler implements StateHandler {
 
         userUtil.updateUserQuery(appUser, text);
 
-        log.info("User %s set query \"%s\"".formatted(appUser.getUsername(), text));
+        log.info("User {} set query \"{}\"", appUser.getFirstName(), text);
         return "Запрос успешно изменен.";
     }
 
