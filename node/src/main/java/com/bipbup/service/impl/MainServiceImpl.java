@@ -22,7 +22,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.util.List;
 import java.util.Map;
 
-import static com.bipbup.enums.AppUserState.*;
+import static com.bipbup.enums.AppUserState.BASIC_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 
 
 @Service

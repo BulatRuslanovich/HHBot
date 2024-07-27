@@ -10,7 +10,7 @@ import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
-import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
+import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeChatMember;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
@@ -27,16 +27,20 @@ public class UpdateProcessor {
 
     public void registerBot(MyTelegramBot myTelegramBot) {
         this.myTelegramBot = myTelegramBot;
-        setCommandsMenu(setMenuCommands());
     }
 
-    private SetMyCommands setMenuCommands() {
+    private SetMyCommands generateMenuCommands(Update update) {
         var commands = List.of(
                 new BotCommand("set_query", "Задать запрос"),
-                new BotCommand("set_experience", "Выбрать опыт")
+                new BotCommand("set_experience", "Выбрать опыт"),
+                new BotCommand("set_schedule", "Soon...")
         );
 
-        return new SetMyCommands(commands, new BotCommandScopeDefault(), null);
+        var message = update.getMessage();
+        var chatID = message.getChatId().toString();
+        var user = message.getFrom().getId();
+
+        return new SetMyCommands(commands, new BotCommandScopeChatMember(chatID, user), null);
     }
 
 
@@ -46,7 +50,10 @@ public class UpdateProcessor {
             return;
         }
 
+
+
         if (update.hasMessage()) {
+            setMenuCommands(generateMenuCommands(update));
             processMessage(update);
         } else {
             logEmptyMessageUpdate(update);
@@ -85,7 +92,7 @@ public class UpdateProcessor {
         myTelegramBot.sendAnswerMessage(sendMessage);
     }
 
-    private void setCommandsMenu(SetMyCommands commands) {
+    private void setMenuCommands(SetMyCommands commands) {
         try {
             myTelegramBot.execute(commands);
         } catch (TelegramApiException e) {
