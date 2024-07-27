@@ -4,12 +4,12 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
-@Log4j
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class QueryStateHandler implements StateHandler {

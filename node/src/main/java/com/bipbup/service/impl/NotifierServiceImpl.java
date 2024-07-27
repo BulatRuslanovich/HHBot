@@ -1,13 +1,13 @@
 package com.bipbup.service.impl;
 
 import com.bipbup.dao.AppUserDAO;
+import com.bipbup.dto.Vacancy;
 import com.bipbup.entity.AppUser;
-import com.bipbup.model.Vacancy;
 import com.bipbup.service.APIHandler;
 import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.NotifierService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-@Log4j
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class NotifierServiceImpl implements NotifierService {

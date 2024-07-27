@@ -1,7 +1,7 @@
 package com.bipbup.service;
 
+import com.bipbup.dto.Vacancy;
 import com.bipbup.entity.AppUser;
-import com.bipbup.model.Vacancy;
 
 import java.util.List;
 

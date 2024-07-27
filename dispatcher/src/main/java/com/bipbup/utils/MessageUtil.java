@@ -10,7 +10,6 @@ public class MessageUtil {
         return SendMessage.builder()
                 .chatId(update.getMessage().getChatId())
                 .text(text)
-                .replyMarkup(update.getMessage().getReplyMarkup())
                 .build();
     }
 }

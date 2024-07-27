@@ -7,6 +7,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
+
 @RequiredArgsConstructor
 @Service
 public class AnswerConsumerImpl implements AnswerConsumer {

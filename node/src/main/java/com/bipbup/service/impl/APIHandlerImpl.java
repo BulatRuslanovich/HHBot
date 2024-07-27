@@ -1,8 +1,8 @@
 package com.bipbup.service.impl;
 
+import com.bipbup.dto.Vacancy;
 import com.bipbup.entity.AppUser;
 import com.bipbup.enums.ExperienceParam;
-import com.bipbup.model.Vacancy;
 import com.bipbup.service.APIConnection;
 import com.bipbup.service.APIHandler;
 import com.bipbup.utils.VacancyFactory;
@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -24,7 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-@Log4j
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class APIHandlerImpl implements APIHandler {
@@ -94,7 +94,7 @@ public class APIHandlerImpl implements APIHandler {
         try {
             jsonNode = objectMapper.readTree(response);
         } catch (JsonProcessingException e) {
-            log.error(e);
+            log.error(e.getMessage());
         }
 
         return jsonNode;

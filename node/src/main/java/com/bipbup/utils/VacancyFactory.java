@@ -1,6 +1,6 @@
 package com.bipbup.utils;
 
-import com.bipbup.model.Vacancy;
+import com.bipbup.dto.Vacancy;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.LocalDateTime;
