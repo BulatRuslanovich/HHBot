@@ -37,7 +37,7 @@ public class ExperienceStateHandler implements StateHandler {
     @Override
     public String process(AppUser appUser, String text) {
         ExperienceParam experienceParam = experienceMapping.getOrDefault(text, ExperienceParam.NO_MATTER);
-        appUser.setExperience(experienceParam);
+        appUser.getAppUserConfigs().get(0).setExperience(experienceParam);
         userUtil.updateUserState(appUser, BASIC_STATE);
 
         log.info("User {} set experience \"{}\"", appUser.getFirstName(), text);

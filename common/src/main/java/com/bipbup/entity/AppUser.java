@@ -1,23 +1,13 @@
 package com.bipbup.entity;
 
 import com.bipbup.enums.AppUserState;
-import com.bipbup.enums.ExperienceParam;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -30,7 +20,7 @@ import java.util.Objects;
 public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userId;
 
     private Long telegramId;
 
@@ -42,22 +32,18 @@ public class AppUser {
     private String firstName;
     private String lastName;
 
-    @Builder.Default
-    private LocalDateTime lastNotificationTime = LocalDateTime.now().minusDays(1);
 
     @Enumerated(EnumType.STRING)
     private AppUserState state;
 
-    @Builder.Default
-    @Enumerated(EnumType.STRING)
-    private ExperienceParam experience = ExperienceParam.NO_MATTER;
-
-    private String queryText;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "appUser", fetch = FetchType.EAGER)
+    private List<AppUserConfig> appUserConfigs;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null|| Hibernate.getClass(this) != Hibernate.getClass(o) || o.getClass() != this.getClass()) return false;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o) || o.getClass() != this.getClass())
+            return false;
         AppUser appUser = (AppUser) o;
         return telegramId != null && Objects.equals(telegramId, appUser.telegramId);
     }

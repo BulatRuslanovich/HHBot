@@ -1,7 +1,9 @@
 package com.bipbup.utils;
 
+import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
+import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.AppUserState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,7 @@ import static com.bipbup.service.impl.APIHandlerImpl.COUNT_OF_DAYS;
 @Component
 public class UserUtil {
     private final AppUserDAO appUserDAO;
+    private final AppUserConfigDAO appUserConfigDAO;
 
     public void updateUserState(AppUser appUser, AppUserState state) {
         appUser.setState(state);
@@ -23,8 +26,19 @@ public class UserUtil {
     }
 
     public void updateUserQuery(AppUser appUser, String text) {
-        appUser.setQueryText(text);
-        appUser.setLastNotificationTime(LocalDateTime.now().minusDays(COUNT_OF_DAYS));
+        AppUserConfig appUserConfig;
+        if (appUser.getAppUserConfigs().isEmpty()) {
+            appUserConfig = AppUserConfig.builder()
+                    .appUser(appUser)
+                    .build();
+        } else {
+            appUserConfig = appUser.getAppUserConfigs().get(0);
+        }
+
+        appUserConfig.setQueryText(text);
+        appUserConfig.setLastNotificationTime(LocalDateTime.now().minusDays(COUNT_OF_DAYS));
+        appUserConfigDAO.save(appUserConfig);
+
         appUser.setState(BASIC_STATE);
         appUserDAO.save(appUser);
     }
@@ -42,7 +56,15 @@ public class UserUtil {
                     .lastName(messageSender.getLastName())
                     .build();
 
-            return appUserDAO.save(appUser);
+            appUserDAO.save(appUser);
+
+            var appUserConfig = AppUserConfig.builder()
+                    .appUser(appUser)
+                    .build();
+
+            appUserConfigDAO.save(appUserConfig);
+
+            return appUser;
         }
 
         return appUserOptional.get();

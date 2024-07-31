@@ -1,8 +1,9 @@
 package com.bipbup.service.impl;
 
-import com.bipbup.dao.AppUserDAO;
+import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.dto.Vacancy;
 import com.bipbup.entity.AppUser;
+import com.bipbup.entity.AppUserConfig;
 import com.bipbup.service.APIHandler;
 import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.NotifierService;
@@ -23,38 +24,39 @@ import java.util.Objects;
 public class NotifierServiceImpl implements NotifierService {
     private final APIHandler apiHandler;
     private final AnswerProducer answerProducer;
-    private final AppUserDAO appUserDAO;
+    private final AppUserConfigDAO appUserConfigDAO;
 
     @Override
     @Scheduled(fixedRateString = "${notifier.period}")
     public void searchNewVacancies() {
-        var users = appUserDAO.findAll();
+        var appUserConfigs = appUserConfigDAO.findAll();
 
-        for (var user : users) {
-            if (Objects.isNull(user.getQueryText()) || user.getQueryText().isEmpty()) {
+        for (var appUserConfig : appUserConfigs) {
+            if (Objects.isNull(appUserConfig.getQueryText()) || appUserConfig.getQueryText().isEmpty())
                 continue;
-            }
 
-            processNewVacancies(user);
+            processNewVacancies(appUserConfig);
         }
     }
 
-    private void processNewVacancies(AppUser user) {
-        List<Vacancy> newVacancies = apiHandler.getNewVacancies(user);
+    private void processNewVacancies(AppUserConfig appUserConfig) {
+        List<Vacancy> newVacancies = apiHandler.getNewVacancies(appUserConfig);
+        AppUser appUser = appUserConfig.getAppUser();
 
         if (!newVacancies.isEmpty()) {
             LocalDateTime lastNotificationTime = newVacancies.get(0).getPublishedAt().plusMinutes(1);
             Collections.reverse(newVacancies);
 
             for (var vacancy : newVacancies) {
-                sendVacancyMessage(vacancy, user);
+                sendVacancyMessage(vacancy, appUser);
             }
 
-            user.setLastNotificationTime(lastNotificationTime);
-            appUserDAO.save(user);
+            appUserConfig.setLastNotificationTime(lastNotificationTime);
+            appUserConfigDAO.save(appUserConfig);
         }
 
-        log.info("For user {} find {} vacancies", user.getFirstName(), newVacancies.size());
+        log.info("For user {} find {} vacancies with config {}",
+                appUser.getFirstName(), newVacancies.size(), appUserConfig.getConfigName());
     }
 
     private void sendVacancyMessage(Vacancy newVacancy, AppUser appUser) {

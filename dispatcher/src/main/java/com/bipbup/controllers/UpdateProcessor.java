@@ -37,20 +37,17 @@ public class UpdateProcessor {
         );
 
         var message = update.getMessage();
-        var chatID = message.getChatId().toString();
+        var chatId = message.getChatId().toString();
         var user = message.getFrom().getId();
 
-        return new SetMyCommands(commands, new BotCommandScopeChatMember(chatID, user), null);
+        return new SetMyCommands(commands, new BotCommandScopeChatMember(chatId, user), null);
     }
-
 
     public void processUpdate(Update update) {
         if (update == null) {
             log.error("Update is null");
             return;
         }
-
-
 
         if (update.hasMessage()) {
             setMenuCommands(generateMenuCommands(update));

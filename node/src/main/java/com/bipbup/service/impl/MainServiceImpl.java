@@ -22,9 +22,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.util.List;
 import java.util.Map;
 
-import static com.bipbup.enums.AppUserState.BASIC_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
+import static com.bipbup.enums.AppUserState.*;
 
 
 @Service
@@ -36,7 +34,9 @@ public class MainServiceImpl implements MainService {
     private final Map<AppUserState, StateHandler> stateHandlers;
 
     @Autowired
-    public MainServiceImpl(UserUtil userUtil, AnswerProducer answerProducer, KeyboardProperties keyboardProperties, BasicStateHandler basicStateHandler, ExperienceStateHandler experienceStateHandler, QueryStateHandler queryStateHandler) {
+    public MainServiceImpl(UserUtil userUtil, AnswerProducer answerProducer, KeyboardProperties keyboardProperties,
+                           BasicStateHandler basicStateHandler, ExperienceStateHandler experienceStateHandler,
+                           QueryStateHandler queryStateHandler) {
         this.userUtil = userUtil;
         this.answerProducer = answerProducer;
         this.keyboardProperties = keyboardProperties;
@@ -67,7 +67,8 @@ public class MainServiceImpl implements MainService {
     private ReplyKeyboard getReplyKeyboardForState(AppUser appUser) {
         if (WAIT_EXPERIENCE_STATE.equals(appUser.getState())) {
             return getExperienceKeyboard();
-        } else if (WAIT_QUERY_STATE.equals(appUser.getState()) && appUser.getQueryText() != null) {
+        } else if (WAIT_QUERY_STATE.equals(appUser.getState())
+                && appUser.getAppUserConfigs().get(0).getQueryText() != null) {
             return getQueryOperationKeyboard();
         } else {
             return null;

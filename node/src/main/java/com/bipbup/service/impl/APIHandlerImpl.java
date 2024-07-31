@@ -1,7 +1,7 @@
 package com.bipbup.service.impl;
 
 import com.bipbup.dto.Vacancy;
-import com.bipbup.entity.AppUser;
+import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.ExperienceParam;
 import com.bipbup.service.APIConnection;
 import com.bipbup.service.APIHandler;
@@ -34,37 +34,39 @@ public class APIHandlerImpl implements APIHandler {
     private final APIConnection apiConnection;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
+
     @Value("${headhunter.endpoint.searchForVacancy}")
     private String searchForVacancyURI;
 
     @Override
-    public List<Vacancy> getNewVacancies(AppUser appUser) {
+    public List<Vacancy> getNewVacancies(AppUserConfig appUserConfig) {
         var request = apiConnection.createRequestWithHeaders();
-        var pageCount = getPageCount(request, appUser);
+        var pageCount = getPageCount(request, appUserConfig);
         List<Vacancy> vacancyList = new ArrayList<>();
 
         for (int i = 0; i <= pageCount; i++) {
-            processVacancyPage(appUser, request, i, vacancyList);
+            processVacancyPage(appUserConfig, request, i, vacancyList);
         }
 
         return vacancyList;
     }
 
-    private void processVacancyPage(AppUser appUser, HttpEntity<HttpHeaders> request, int pageNum, List<Vacancy> vacancyList) {
-        var jsonNode = getVacancyPage(request, pageNum, appUser);
+    private void processVacancyPage(AppUserConfig appUserConfig, HttpEntity<HttpHeaders> request, int pageNum, List<Vacancy> vacancyList) {
+        var jsonNode = getVacancyPage(request, pageNum, appUserConfig);
 
         if (!isEmptyJson(jsonNode)) {
             var vacanciesOnCurrentPage = jsonNode.get("items");
-            addVacanciesFromPage(appUser, vacancyList, vacanciesOnCurrentPage);
+            addVacanciesFromPage(appUserConfig, vacancyList, vacanciesOnCurrentPage);
         }
     }
 
-    private static void addVacanciesFromPage(AppUser appUser, List<Vacancy> vacancyList, JsonNode vacanciesOnCurrentPage) {
+    private static void addVacanciesFromPage(AppUserConfig appUserConfig, List<Vacancy> vacancyList, JsonNode vacanciesOnCurrentPage) {
         for (int j = 0; j < vacanciesOnCurrentPage.size(); j++) {
             var vacancy = vacanciesOnCurrentPage.get(j);
             var publishedAt = getPublishedAtFromJson(vacancy);
 
-            if (publishedAt.isBefore(appUser.getLastNotificationTime())) return;
+            if (publishedAt.isBefore(appUserConfig.getLastNotificationTime()))
+                return;
 
             vacancyList.add(VacancyFactory.convertJsonToVacancy(vacancy, publishedAt));
         }
@@ -80,14 +82,14 @@ public class APIHandlerImpl implements APIHandler {
         return LocalDateTime.parse(timestamp, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
     }
 
-    private int getPageCount(HttpEntity<HttpHeaders> request, AppUser appUser) {
-        var firstPage = getVacancyPage(request, 0, appUser);
+    private int getPageCount(HttpEntity<HttpHeaders> request, AppUserConfig appUserConfig) {
+        var firstPage = getVacancyPage(request, 0, appUserConfig);
         var count = firstPage.get("found").asText();
         return Integer.parseInt(count) / COUNT_OF_VACANCIES_IN_PAGE;
     }
 
-    private JsonNode getVacancyPage(HttpEntity<HttpHeaders> request, int pageNumber, AppUser appUser) {
-        var vacancySearchUri = generateVacancySearchUri(pageNumber, appUser);
+    private JsonNode getVacancyPage(HttpEntity<HttpHeaders> request, int pageNumber, AppUserConfig appUserConfig) {
+        var vacancySearchUri = generateVacancySearchUri(pageNumber, appUserConfig);
         var response = restTemplate.exchange(vacancySearchUri, HttpMethod.GET, request, String.class).getBody();
         JsonNode jsonNode = null;
 
@@ -100,20 +102,21 @@ public class APIHandlerImpl implements APIHandler {
         return jsonNode;
     }
 
-    private String generateVacancySearchUri(int pageNumber, AppUser appUser) {
-        var builder = UriComponentsBuilder
-                .fromUriString(searchForVacancyURI)
+    private String generateVacancySearchUri(int pageNumber, AppUserConfig appUserConfig) {
+        var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
                 .queryParam("page", String.valueOf(pageNumber))
                 .queryParam("per_page", COUNT_OF_VACANCIES_IN_PAGE)
-                .queryParam("text", appUser.getQueryText())
+                .queryParam("text", appUserConfig.getQueryText())
                 .queryParam("search_field", "name")
                 .queryParam("area", 88)
                 .queryParam("period", COUNT_OF_DAYS)
                 .queryParam("order_by", "publication_time");
 
-        if (!appUser.getExperience().equals(ExperienceParam.NO_MATTER))
-            builder.queryParam("experience", appUser.getExperience().toString());
+        if (!appUserConfig.getExperience().equals(ExperienceParam.NO_MATTER))
+            builder.queryParam("experience", appUserConfig.getExperience().toString());
 
         return builder.build().toUriString();
+
+        // TODO: add other searching parameters
     }
 }

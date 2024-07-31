@@ -31,7 +31,7 @@ public class BasicStateHandler implements StateHandler {
     private String chooseQueryOutput(AppUser appUser) {
         userUtil.updateUserState(appUser, WAIT_QUERY_STATE);
 
-        return appUser.getQueryText() != null ?
+        return appUser.getAppUserConfigs().get(0).getQueryText() != null ?
                 "Хотите обновить или убрать запрос?" :
                 "Введите ваш запрос:";
     }
