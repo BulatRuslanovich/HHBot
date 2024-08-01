@@ -8,6 +8,7 @@ import com.bipbup.enums.AppUserState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 
 import java.time.LocalDateTime;
 
@@ -36,6 +37,7 @@ public class UserUtil {
         }
 
         appUserConfig.setQueryText(text);
+        appUserConfig.setConfigName(text);
         appUserConfig.setLastNotificationTime(LocalDateTime.now().minusDays(COUNT_OF_DAYS));
         appUserConfigDAO.save(appUserConfig);
 
@@ -44,9 +46,13 @@ public class UserUtil {
     }
 
     public AppUser findOrSaveAppUser(Update update) {
-        var messageSender = update.getMessage().getFrom();
-        var appUserOptional = appUserDAO.findByTelegramId(messageSender.getId());
+        User messageSender;
+        if (update.hasMessage())
+            messageSender = update.getMessage().getFrom();
+        else
+            messageSender = update.getCallbackQuery().getFrom();
 
+        var appUserOptional = appUserDAO.findByTelegramId(messageSender.getId());
         if (appUserOptional.isEmpty()) {
             var appUser = AppUser.builder()
                     .telegramId(messageSender.getId())
@@ -58,15 +64,20 @@ public class UserUtil {
 
             appUserDAO.save(appUser);
 
-            var appUserConfig = AppUserConfig.builder()
-                    .appUser(appUser)
-                    .build();
-
-            appUserConfigDAO.save(appUserConfig);
+//            var appUserConfig = AppUserConfig.builder()
+//                    .appUser(appUser)
+//                    .build();
+//
+//            appUserConfigDAO.save(appUserConfig);
 
             return appUser;
         }
 
         return appUserOptional.get();
+    }
+
+    public AppUserConfig getAppUserConfigById(long id) {
+        var appUserConfigOptional = appUserConfigDAO.findById(id);
+        return appUserConfigOptional.orElse(null);
     }
 }

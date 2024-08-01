@@ -17,4 +17,10 @@ public class UpdateConsumerImpl implements UpdateConsumer {
     public void consumeTextUpdate(Update update) {
         mainService.processMessage(update);
     }
+
+    @Override
+    @KafkaListener(topics = "${spring.kafka.topics.callback-query-update-topic}", groupId = "groupId")
+    public void consumeCallbackQueryUpdate(Update update) {
+        mainService.processCallbackQuery(update);
+    }
 }

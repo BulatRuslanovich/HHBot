@@ -7,6 +7,7 @@ spring:
     topics:
       answer-topic:
       text-update-topic:
+      callback-query-update-topic:
   datasource:
     url:
     username:

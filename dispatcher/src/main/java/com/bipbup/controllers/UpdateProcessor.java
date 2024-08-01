@@ -21,6 +21,8 @@ import java.util.List;
 public class UpdateProcessor {
     @Value("${spring.kafka.topics.text-update-topic}")
     private String textUpdateTopic;
+    @Value("${spring.kafka.topics.callback-query-update-topic}")
+    private String callbackQueryUpdateTopic;
     private MyTelegramBot myTelegramBot;
     private final MessageUtil messageUtil;
     private final UpdateProducer updateProducer;
@@ -31,9 +33,8 @@ public class UpdateProcessor {
 
     private SetMyCommands generateMenuCommands(Update update) {
         var commands = List.of(
-                new BotCommand("set_query", "Задать запрос"),
-                new BotCommand("set_experience", "Выбрать опыт"),
-                new BotCommand("set_schedule", "Soon...")
+                new BotCommand("myqueries", "Мои запросы"),
+                new BotCommand("newquery", "Задать новый запрос")
         );
 
         var message = update.getMessage();
@@ -52,6 +53,8 @@ public class UpdateProcessor {
         if (update.hasMessage()) {
             setMenuCommands(generateMenuCommands(update));
             processMessage(update);
+        } else if (update.hasCallbackQuery()) {
+            processCallbackQuery(update);
         } else {
             logEmptyMessageUpdate(update);
         }
@@ -77,6 +80,20 @@ public class UpdateProcessor {
             updateProducer.produce(textUpdateTopic, update);
         } else {
             setUnsupportedMessageType(update);
+        }
+    }
+
+    private void processCallbackQuery(Update update) {
+        var callbackQuery = update.getCallbackQuery();
+
+        if (callbackQuery != null) {
+            var callbackData = callbackQuery.getData();
+            var userFirstName = callbackQuery.getFrom().getFirstName();
+            log.info("{} sent callback query with data: {}", userFirstName, callbackData);
+
+            updateProducer.produce(callbackQueryUpdateTopic, update);
+        } else {
+            log.error("Update has no callback query");
         }
     }
 

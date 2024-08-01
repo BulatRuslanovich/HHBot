@@ -2,10 +2,12 @@ package com.bipbup.service.impl;
 
 import com.bipbup.config.KeyboardProperties;
 import com.bipbup.entity.AppUser;
+import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.AppUserState;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.handlers.impl.BasicStateHandler;
 import com.bipbup.handlers.impl.ExperienceStateHandler;
+import com.bipbup.handlers.impl.QuerySelectionStateHandler;
 import com.bipbup.handlers.impl.QueryStateHandler;
 import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.MainService;
@@ -14,11 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -36,26 +41,37 @@ public class MainServiceImpl implements MainService {
     @Autowired
     public MainServiceImpl(UserUtil userUtil, AnswerProducer answerProducer, KeyboardProperties keyboardProperties,
                            BasicStateHandler basicStateHandler, ExperienceStateHandler experienceStateHandler,
-                           QueryStateHandler queryStateHandler) {
+                           QueryStateHandler queryStateHandler, QuerySelectionStateHandler querySelectionStateHandler) {
         this.userUtil = userUtil;
         this.answerProducer = answerProducer;
         this.keyboardProperties = keyboardProperties;
 
         this.stateHandlers = Map.of(BASIC_STATE, basicStateHandler,
                 WAIT_EXPERIENCE_STATE, experienceStateHandler,
-                WAIT_QUERY_STATE, queryStateHandler);
+                WAIT_QUERY_STATE, queryStateHandler,
+                WAIT_QUERY_SELECTION_STATE, querySelectionStateHandler);
     }
 
     @Override
     public void processMessage(Update update) {
+        var text = update.getMessage().getText();
+        processUpdate(update, text);
+    }
+
+    @Override
+    public void processCallbackQuery(Update update) {
+        var callbackData = update.getCallbackQuery().getData();
+        processUpdate(update, callbackData);
+    }
+
+    private void processUpdate(Update update, String data) {
         var appUser = userUtil.findOrSaveAppUser(update);
         var userState = appUser.getState();
-        var text = update.getMessage().getText();
         var output = "";
 
         StateHandler handler = stateHandlers.get(userState);
         if (handler != null) {
-            output = handler.process(appUser, text);
+            output = handler.process(appUser, data);
         }
 
         if (!output.isEmpty()) {
@@ -68,8 +84,10 @@ public class MainServiceImpl implements MainService {
         if (WAIT_EXPERIENCE_STATE.equals(appUser.getState())) {
             return getExperienceKeyboard();
         } else if (WAIT_QUERY_STATE.equals(appUser.getState())
-                && appUser.getAppUserConfigs().get(0).getQueryText() != null) {
+                && !appUser.getAppUserConfigs().isEmpty()) {
             return getQueryOperationKeyboard();
+        } else if (WAIT_QUERY_SELECTION_STATE.equals(appUser.getState())) {
+            return getQueryListKeyboard(appUser);
         } else {
             return null;
         }
@@ -105,6 +123,32 @@ public class MainServiceImpl implements MainService {
         row2.add("Удалить");
 
         return new ReplyKeyboardMarkup(List.of(row1, row2));
+    }
+
+    private ReplyKeyboard getQueryListKeyboard(AppUser appUser) {
+        List<AppUserConfig> appUserConfigs = appUser.getAppUserConfigs();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        for (var appUserConfig : appUserConfigs) {
+            List<InlineKeyboardButton> row = new ArrayList<>();
+            row.add(InlineKeyboardButton.builder()
+                    .text(appUserConfig.getConfigName())
+                    .callbackData(String.format("query_%s", appUserConfig.getUserConfigId()))
+                    .build());
+            rows.add(row);
+        }
+
+        List<InlineKeyboardButton> addButton = new ArrayList<>();
+        addButton.add(InlineKeyboardButton.builder()
+                .text("Добавить новый запрос")
+                .callbackData("/newquery")
+                .build());
+        rows.add(addButton);
+
+        var inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        inlineKeyboardMarkup.setKeyboard(rows);
+
+        return inlineKeyboardMarkup;
     }
 
 
