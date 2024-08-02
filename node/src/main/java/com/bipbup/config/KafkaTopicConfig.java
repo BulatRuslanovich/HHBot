@@ -12,6 +12,8 @@ public class KafkaTopicConfig {
     private String answerTopic;
     @Value("${spring.kafka.topics.text-update-topic}")
     private String textUpdateTopic;
+    @Value("${spring.kafka.topics.callback-query-update-topic}")
+    private String callbackQueryUpdateTopic;
 
 
     @Bean
@@ -21,4 +23,7 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic textUpdateTopic() {return TopicBuilder.name(textUpdateTopic).build();}
+
+    @Bean
+    public NewTopic callbackQueryUpdateTopic() {return TopicBuilder.name(callbackQueryUpdateTopic).build();}
 }
