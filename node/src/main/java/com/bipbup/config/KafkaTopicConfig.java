@@ -14,6 +14,8 @@ public class KafkaTopicConfig {
     private String textUpdateTopic;
     @Value("${spring.kafka.topics.callback-query-update-topic}")
     private String callbackQueryUpdateTopic;
+    @Value("${spring.kafka.topics.edit-topic}")
+    private String editTopic;
 
 
     @Bean
@@ -26,4 +28,7 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic callbackQueryUpdateTopic() {return TopicBuilder.name(callbackQueryUpdateTopic).build();}
+
+    @Bean
+    public NewTopic editTopic() {return TopicBuilder.name(editTopic).build();}
 }

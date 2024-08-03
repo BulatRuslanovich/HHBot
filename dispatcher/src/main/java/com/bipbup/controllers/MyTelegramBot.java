@@ -38,7 +38,6 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                 execute(message);
             } catch (TelegramApiException e) {
                 log.error(e.getMessage());
-                Thread.currentThread().interrupt();
             }
         }
     }

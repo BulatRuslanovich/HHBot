@@ -11,7 +11,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
-import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeChatMember;
+import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
@@ -30,19 +30,16 @@ public class UpdateProcessor {
 
     public void registerBot(MyTelegramBot myTelegramBot) {
         this.myTelegramBot = myTelegramBot;
+        setMenuCommands(generateMenuCommands());
     }
 
-    private SetMyCommands generateMenuCommands(Update update) {
+    private SetMyCommands generateMenuCommands() {
         var commands = List.of(
                 new BotCommand("myqueries", "Мои запросы"),
                 new BotCommand("newquery", "Задать новый запрос")
         );
 
-        var message = update.getMessage();
-        var chatId = message.getChatId().toString();
-        var user = message.getFrom().getId();
-
-        return new SetMyCommands(commands, new BotCommandScopeChatMember(chatId, user), null);
+        return new SetMyCommands(commands, new BotCommandScopeDefault(), null);
     }
 
     public void processUpdate(Update update) {
@@ -52,7 +49,6 @@ public class UpdateProcessor {
         }
 
         if (update.hasMessage()) {
-            setMenuCommands(generateMenuCommands(update));
             processMessage(update);
         } else if (update.hasCallbackQuery()) {
             processCallbackQuery(update);
