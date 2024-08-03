@@ -1,32 +1,24 @@
 package com.bipbup.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.Setter;
+import lombok.Value;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@Builder
-@EqualsAndHashCode
-@NoArgsConstructor
-@AllArgsConstructor
+@Value
+@AllArgsConstructor(staticName = "of")
 public class Vacancy {
     @NonNull
-    private String headHunterId;
+    String headHunterId;
     @NonNull
-    private String nameVacancy;
+    String nameVacancy;
     @NonNull
-    private String nameEmployer;
+    String nameEmployer;
     @NonNull
-    private String nameArea;
+    String nameArea;
     @NonNull
-    private LocalDateTime publishedAt;
+    LocalDateTime publishedAt;
     @NonNull
-    private String url;
+    String url;
 }

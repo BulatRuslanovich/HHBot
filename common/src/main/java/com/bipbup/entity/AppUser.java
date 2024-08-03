@@ -2,7 +2,11 @@ package com.bipbup.entity;
 
 import com.bipbup.enums.AppUserState;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -22,27 +26,31 @@ public class AppUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
+    @Column(unique = true, nullable = false)
     private Long telegramId;
 
     @CreationTimestamp
-    @Builder.Default
-    private LocalDateTime firstLoginDate = LocalDateTime.now();
+    private LocalDateTime firstLoginDate;
 
     private String username;
+
     private String firstName;
+
     private String lastName;
 
 
     @Enumerated(EnumType.STRING)
     private AppUserState state;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "appUser", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "appUser", cascade = CascadeType.ALL,  fetch = FetchType.LAZY)
     private List<AppUserConfig> appUserConfigs;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o) || o.getClass() != this.getClass())
+        if (o == null
+                || Hibernate.getClass(this) != Hibernate.getClass(o)
+                || o.getClass() != this.getClass())
             return false;
         AppUser appUser = (AppUser) o;
         return telegramId != null && Objects.equals(telegramId, appUser.telegramId);
