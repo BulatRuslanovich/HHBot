@@ -1,19 +1,13 @@
 package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
-import com.bipbup.entity.AppUserConfig;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.bipbup.enums.AppUserState.*;
+import static com.bipbup.enums.AppUserState.WAIT_QUERY_SELECTION_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 
 @RequiredArgsConstructor
 @Component
@@ -26,7 +20,6 @@ public class BasicStateHandler implements StateHandler {
             case "/start" -> startInteraction(appUser);
             case "/myqueries" -> showQueriesOutput(appUser);
             case "/newquery" -> addQueryOutput(appUser);
-//            case "/set_experience" -> chooseExpOutput(appUser);
             default -> "";
         };
     }
@@ -40,10 +33,6 @@ public class BasicStateHandler implements StateHandler {
         return "Введите ваш запрос для поиска:";
     }
 
-//    private String chooseExpOutput(AppUser appUser) {
-//        userUtil.updateUserState(appUser, WAIT_EXPERIENCE_STATE);
-//        return "Выберите опыт работы:";
-//    }
 
     private String showQueriesOutput(AppUser appUser) {
         var appUserConfigs = appUser.getAppUserConfigs();

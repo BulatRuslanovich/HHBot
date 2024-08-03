@@ -26,6 +26,8 @@ public class QuerySelectionStateHandler implements StateHandler {
             return showQueryOutput(queryId);
         } else if (callbackData.equals("/newquery")) {
             return basicStateHandler.process(appUser, callbackData);
+        } else if (callbackData.equals("back_to_query_list")) {
+            return basicStateHandler.process(appUser, "/myqueries");
         } else {
             return "";
         }
@@ -41,11 +43,13 @@ public class QuerySelectionStateHandler implements StateHandler {
                 ExperienceParam.BETWEEN_3_AND_6, "3-6 лет",
                 ExperienceParam.MORE_THEN_6, "Более 6 лет"
         );
+
         Map<EducationLevelParam, String> educationLevelMap = Map.of(
                 EducationLevelParam.NOT_REQUIRED_OR_NOT_SPECIFIED, "Не требуется или не указано",
                 EducationLevelParam.HIGHER, "Высшее",
                 EducationLevelParam.SECONDARY_VOCATIONAL, "Среднее специальное"
         );
+
         Map<ScheduleTypeParam, String> scheduleTypeMap = Map.of(
                 ScheduleTypeParam.FULL_DAY, "Полный день",
                 ScheduleTypeParam.REMOTE_WORKING, "Удалённая работа",
@@ -53,29 +57,28 @@ public class QuerySelectionStateHandler implements StateHandler {
                 ScheduleTypeParam.SHIFT_SCHEDULE, "Сменный график"
         );
 
-        StringBuilder stringBuilder = new StringBuilder(appUserConfig.getConfigName());
-        stringBuilder.append("\nТекст запроса: ").append(appUserConfig.getQueryText());
-        stringBuilder.append("\nРегион: ").append(appUserConfig.getRegion());
-        stringBuilder.append("\nОпыт работы: ").append(experienceMap.get(appUserConfig.getExperience()));
+        StringBuilder stringBuilder = new StringBuilder()
+                .append(appUserConfig.getConfigName())
+                .append("\nТекст запроса: ")
+                .append(appUserConfig.getQueryText())
+                .append("\nРегион: ")
+                .append(appUserConfig.getRegion())
+                .append("\nОпыт работы: ")
+                .append(experienceMap.get(appUserConfig.getExperience()));
 
-        var educationLevels = appUserConfig.getEducationLevels();
-        if (educationLevels != null && educationLevels.length != 0) {
-            stringBuilder.append("\nУровень образования: ");
-            for (var educationLevel : educationLevels) {
-                stringBuilder.append(educationLevelMap.get(educationLevel)).append(", ");
-            }
-            stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length());
-        }
-
-        var scheduleTypes = appUserConfig.getScheduleTypes();
-        if (scheduleTypes != null && scheduleTypes.length != 0) {
-            stringBuilder.append("\nТип графика: ");
-            for (var scheduleType : scheduleTypes) {
-                stringBuilder.append(scheduleTypeMap.get(scheduleType)).append(", ");
-            }
-            stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length());
-        }
+        appendValues(stringBuilder, educationLevelMap, appUserConfig.getEducationLevels(), "\nУровень образования: ");
+        appendValues(stringBuilder, scheduleTypeMap, appUserConfig.getScheduleTypes(), "\nТип графика: ");
 
         return stringBuilder.toString();
+    }
+
+    private <T> void appendValues(StringBuilder stringBuilder, Map<T, String> map, T[] values, String prefix) {
+        if (values != null && values.length != 0) {
+            stringBuilder.append(prefix);
+            for (T value : values) {
+                stringBuilder.append(map.get(value)).append(", ");
+            }
+            stringBuilder.delete(stringBuilder.length() - ", ".length(), stringBuilder.length());
+        }
     }
 }

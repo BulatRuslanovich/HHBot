@@ -8,7 +8,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.interfaces.Validable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,14 +26,14 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, SendMessage> consumerFactory() {
+    public ConsumerFactory<String, Validable> consumerFactory() {
         return new DefaultKafkaConsumerFactory<>(kafkaConsumerConfig());
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, SendMessage> factory(
-            ConsumerFactory<String, SendMessage> consumerFactory) {
-        var factory = new ConcurrentKafkaListenerContainerFactory<String, SendMessage>();
+    public ConcurrentKafkaListenerContainerFactory<String, Validable> factory(
+            ConsumerFactory<String, Validable> consumerFactory) {
+        var factory = new ConcurrentKafkaListenerContainerFactory<String, Validable>();
         factory.setConsumerFactory(consumerFactory);
         return factory;
     }

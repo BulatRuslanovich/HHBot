@@ -36,21 +36,21 @@ public class AppUserConfig {
 
     @Type(
             value = EnumArrayType.class,
-            parameters = @Parameter(name = AbstractArrayType.SQL_ARRAY_TYPE, value = "education_level")
+            parameters = @Parameter(name = AbstractArrayType.SQL_ARRAY_TYPE, value = "education_param")
     )
     @Column(
-            name = "education_levels",
-            columnDefinition = "education_level[]"
+            name = "education_params",
+            columnDefinition = "education_param[]"
     )
     private EducationLevelParam[] educationLevels;
 
     @Type(
             value = EnumArrayType.class,
-            parameters = @Parameter(name = AbstractArrayType.SQL_ARRAY_TYPE, value = "schedule_type")
+            parameters = @Parameter(name = AbstractArrayType.SQL_ARRAY_TYPE, value = "schedule_param")
     )
     @Column(
-            name = "schedule_types",
-            columnDefinition = "schedule_type[]"
+            name = "schedule_params",
+            columnDefinition = "schedule_param[]"
     )
     private ScheduleTypeParam[] scheduleTypes;
 

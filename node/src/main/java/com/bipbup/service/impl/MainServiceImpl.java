@@ -15,6 +15,7 @@ import com.bipbup.utils.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
@@ -27,7 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.bipbup.enums.AppUserState.*;
+import static com.bipbup.enums.AppUserState.BASIC_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_QUERY_SELECTION_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 
 
 @Service
@@ -61,6 +65,7 @@ public class MainServiceImpl implements MainService {
     @Override
     public void processCallbackQuery(Update update) {
         var callbackData = update.getCallbackQuery().getData();
+        update.getCallbackQuery().getMessage().getMessageId();
         processUpdate(update, callbackData);
     }
 
@@ -69,23 +74,48 @@ public class MainServiceImpl implements MainService {
         var userState = appUser.getState();
         var output = "";
 
-        StateHandler handler = stateHandlers.get(userState);
-        if (handler != null) {
-            output = handler.process(appUser, data);
+        if (update.hasMessage() && update.getMessage().getText().startsWith("/cancel")) {
+            userUtil.updateUserState(appUser, BASIC_STATE);
+            output = "Действие отменено.";
+
+        } else {
+            StateHandler handler = stateHandlers.get(userState);
+            if (handler != null) {
+                output = handler.process(appUser, data);
+            }
         }
 
         if (!output.isEmpty()) {
             ReplyKeyboard replyKeyboard = getReplyKeyboardForState(appUser);
-            sendResponse(output, appUser.getTelegramId(), replyKeyboard);
+
+            //TODO: понимаю что так себе код, это так просто проверить
+            if (update.hasCallbackQuery()) {
+                if (update.getCallbackQuery().getData().startsWith("query_")) {
+                    replyKeyboard = getBackToQueryList();
+                } else {
+                    replyKeyboard = getQueryListKeyboard(appUser);
+                }
+                editResponse(output, appUser.getTelegramId(), update.getCallbackQuery().getMessage().getMessageId(), (InlineKeyboardMarkup) replyKeyboard);
+            } else {
+                sendResponse(output, appUser.getTelegramId(), replyKeyboard);
+            }
         }
+    }
+
+    private void editResponse(String output, Long telegramId, Integer messageId, InlineKeyboardMarkup markup) {
+        EditMessageText messageText = EditMessageText.builder()
+                .text(output)
+                .chatId(telegramId)
+                .messageId(messageId)
+                .replyMarkup(markup) //TODO: временно
+                .build();
+
+        answerProducer.produceEdit(messageText);
     }
 
     private ReplyKeyboard getReplyKeyboardForState(AppUser appUser) {
         if (WAIT_EXPERIENCE_STATE.equals(appUser.getState())) {
             return getExperienceKeyboard();
-        } else if (WAIT_QUERY_STATE.equals(appUser.getState())
-                && !appUser.getAppUserConfigs().isEmpty()) {
-            return getQueryOperationKeyboard();
         } else if (WAIT_QUERY_SELECTION_STATE.equals(appUser.getState())) {
             return getQueryListKeyboard(appUser);
         } else {
@@ -101,6 +131,7 @@ public class MainServiceImpl implements MainService {
         }
     }
 
+
     private ReplyKeyboard getExperienceKeyboard() {
         var row1 = new KeyboardRow();
         var row2 = new KeyboardRow();
@@ -115,15 +146,6 @@ public class MainServiceImpl implements MainService {
         return new ReplyKeyboardMarkup(List.of(row1, row2, row3));
     }
 
-    private ReplyKeyboard getQueryOperationKeyboard() {
-        var row1 = new KeyboardRow();
-        var row2 = new KeyboardRow();
-
-        row1.add("Обновить");
-        row2.add("Удалить");
-
-        return new ReplyKeyboardMarkup(List.of(row1, row2));
-    }
 
     private ReplyKeyboard getQueryListKeyboard(AppUser appUser) {
         List<AppUserConfig> appUserConfigs = appUser.getAppUserConfigs();
@@ -138,18 +160,27 @@ public class MainServiceImpl implements MainService {
             rows.add(row);
         }
 
-        List<InlineKeyboardButton> addButton = new ArrayList<>();
-        addButton.add(InlineKeyboardButton.builder()
-                .text("Добавить новый запрос")
-                .callbackData("/newquery")
-                .build());
-        rows.add(addButton);
+        var inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        inlineKeyboardMarkup.setKeyboard(rows);
+
+        return inlineKeyboardMarkup;
+    }
+
+    private InlineKeyboardMarkup getBackToQueryList() {
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        InlineKeyboardButton inlineKeyboardButton = InlineKeyboardButton.builder()
+                .text("Назад")
+                .callbackData("back_to_query_list")
+                .build();
+
+        rows.add(List.of(inlineKeyboardButton));
 
         var inlineKeyboardMarkup = new InlineKeyboardMarkup();
         inlineKeyboardMarkup.setKeyboard(rows);
 
         return inlineKeyboardMarkup;
     }
+
 
 
     private void sendAnswer(String text, Long chatId) {

@@ -5,8 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.ActionType;
-import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -37,15 +35,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     public void sendAnswerMessage(SendMessage message) {
         if (message != null) {
             try {
-                SendChatAction chatAction = new SendChatAction();
-                chatAction.setChatId(message.getChatId());
-                chatAction.setAction(ActionType.TYPING);
-                execute(chatAction);
-
-                Thread.sleep(1000);
-
                 execute(message);
-            } catch (TelegramApiException | InterruptedException e) {
+            } catch (TelegramApiException e) {
                 log.error(e.getMessage());
                 Thread.currentThread().interrupt();
             }

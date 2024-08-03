@@ -63,13 +63,6 @@ public class UserUtil {
                     .build();
 
             appUserDAO.save(appUser);
-
-//            var appUserConfig = AppUserConfig.builder()
-//                    .appUser(appUser)
-//                    .build();
-//
-//            appUserConfigDAO.save(appUserConfig);
-
             return appUser;
         }
 
