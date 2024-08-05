@@ -2,7 +2,7 @@ package com.bipbup.service.impl;
 
 import com.bipbup.dto.Vacancy;
 import com.bipbup.entity.AppUserConfig;
-import com.bipbup.enums.ExperienceParam;
+import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.service.APIConnection;
 import com.bipbup.service.APIHandler;
 import com.bipbup.utils.VacancyFactory;

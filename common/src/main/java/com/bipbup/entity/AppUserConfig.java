@@ -1,8 +1,8 @@
 package com.bipbup.entity;
 
-import com.bipbup.enums.EducationLevelParam;
-import com.bipbup.enums.ExperienceParam;
-import com.bipbup.enums.ScheduleTypeParam;
+import com.bipbup.enums.impl.EducationLevelParam;
+import com.bipbup.enums.impl.ExperienceParam;
+import com.bipbup.enums.impl.ScheduleTypeParam;
 import io.hypersistence.utils.hibernate.type.array.EnumArrayType;
 import io.hypersistence.utils.hibernate.type.array.internal.AbstractArrayType;
 import jakarta.persistence.Column;

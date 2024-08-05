@@ -1,28 +1,31 @@
 package com.bipbup.handlers.impl;
 
+import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
-import com.bipbup.enums.EducationLevelParam;
-import com.bipbup.enums.ExperienceParam;
-import com.bipbup.enums.ScheduleTypeParam;
+import com.bipbup.enums.EnumParam;
 import com.bipbup.handlers.StateHandler;
-import com.bipbup.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
 public class QuerySelectionStateHandler implements StateHandler {
     private final BasicStateHandler basicStateHandler;
-    private final UserUtil userUtil;
+    private final AppUserConfigDAO appUserConfigDAO;
 
     @Override
     public String process(AppUser appUser, String callbackData) {
         String prefix = "query_";
         if (callbackData.startsWith(prefix)) {
-            long queryId = Long.parseLong(callbackData.substring(prefix.length()));
+            long queryId;
+
+            try {
+                queryId = Long.parseLong(callbackData.substring(prefix.length()));
+            } catch (NumberFormatException e) {
+                return "";
+            }
+
             return showQueryOutput(queryId);
         } else if (callbackData.equals("/newquery")) {
             return basicStateHandler.process(appUser, callbackData);
@@ -33,51 +36,38 @@ public class QuerySelectionStateHandler implements StateHandler {
         }
     }
 
-    private String showQueryOutput(long queryId) {
-        AppUserConfig appUserConfig = userUtil.getAppUserConfigById(queryId);
+    private String showQueryOutput(long configId) {
+        var optionalAppUserConfig = appUserConfigDAO.findById(configId);
 
-        Map<ExperienceParam, String> experienceMap = Map.of(
-                ExperienceParam.NO_MATTER, "Не имеет значения",
-                ExperienceParam.NO_EXPERIENCE, "Нет опыта",
-                ExperienceParam.BETWEEN_1_AND_3, "1-3 года",
-                ExperienceParam.BETWEEN_3_AND_6, "3-6 лет",
-                ExperienceParam.MORE_THEN_6, "Более 6 лет"
-        );
+        if (optionalAppUserConfig.isEmpty()) {
+            return "Конфигурация не найдена";
+        }
 
-        Map<EducationLevelParam, String> educationLevelMap = Map.of(
-                EducationLevelParam.NOT_REQUIRED_OR_NOT_SPECIFIED, "Не требуется или не указано",
-                EducationLevelParam.HIGHER, "Высшее",
-                EducationLevelParam.SECONDARY_VOCATIONAL, "Среднее специальное"
-        );
-
-        Map<ScheduleTypeParam, String> scheduleTypeMap = Map.of(
-                ScheduleTypeParam.FULL_DAY, "Полный день",
-                ScheduleTypeParam.REMOTE_WORKING, "Удалённая работа",
-                ScheduleTypeParam.FLEXIBLE_SCHEDULE, "Гибкий график",
-                ScheduleTypeParam.SHIFT_SCHEDULE, "Сменный график"
-        );
+        AppUserConfig config = optionalAppUserConfig.get();
 
         StringBuilder stringBuilder = new StringBuilder()
-                .append(appUserConfig.getConfigName())
+                .append(config.getConfigName())
                 .append("\nТекст запроса: ")
-                .append(appUserConfig.getQueryText())
+                .append(config.getQueryText())
                 .append("\nРегион: ")
-                .append(appUserConfig.getRegion())
+                .append(config.getRegion())
                 .append("\nОпыт работы: ")
-                .append(experienceMap.get(appUserConfig.getExperience()));
+                .append(config.getExperience().getDescription());
 
-        appendValues(stringBuilder, educationLevelMap, appUserConfig.getEducationLevels(), "\nУровень образования: ");
-        appendValues(stringBuilder, scheduleTypeMap, appUserConfig.getScheduleTypes(), "\nТип графика: ");
+        appendEnumParams(stringBuilder, config.getEducationLevels(), "\nУровень образования: ");
+        appendEnumParams(stringBuilder, config.getScheduleTypes(), "\nТип графика: ");
 
         return stringBuilder.toString();
     }
 
-    private <T> void appendValues(StringBuilder stringBuilder, Map<T, String> map, T[] values, String prefix) {
+    private void appendEnumParams(StringBuilder stringBuilder, EnumParam[] values, String prefix) {
         if (values != null && values.length != 0) {
             stringBuilder.append(prefix);
-            for (T value : values) {
-                stringBuilder.append(map.get(value)).append(", ");
+
+            for (var value : values) {
+                stringBuilder.append(value.getDescription()).append(", ");
             }
+
             stringBuilder.delete(stringBuilder.length() - ", ".length(), stringBuilder.length());
         }
     }

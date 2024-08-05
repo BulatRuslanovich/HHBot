@@ -15,10 +15,10 @@ import static com.bipbup.enums.AppUserState.WAIT_QUERY_SELECTION_STATE;
 @RequiredArgsConstructor
 @Component
 public class BasicStateHandler implements StateHandler {
-    private static final String WELCOME_MESSAGE = "Добро пожаловать в капитализм, %s!";
-    private static final String QUERY_PROMPT_MESSAGE = "Введите название вашей конфигурации, если хотите отменить команду, пожалуйста, введите /cancel:";
-    private static final String USER_QUERIES_MESSAGE = "Ваши запросы:";
-    private static final String NO_SAVED_QUERIES_MESSAGE = """
+    protected static final String WELCOME_MESSAGE = "Добро пожаловать в капитализм, %s!";
+    protected static final String QUERY_PROMPT_MESSAGE = "Введите название вашей конфигурации, если хотите отменить команду, пожалуйста, введите /cancel:";
+    protected static final String USER_QUERIES_MESSAGE = "Ваши запросы:";
+    protected static final String NO_SAVED_QUERIES_MESSAGE = """
                                                 У вас пока нет сохранённых запросов.
                                                 Введите /newquery, чтобы добавить новый запрос.
                                                 """;

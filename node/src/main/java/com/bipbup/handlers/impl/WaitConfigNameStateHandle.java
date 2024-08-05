@@ -15,10 +15,10 @@ import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 @RequiredArgsConstructor
 @Component
 public class WaitConfigNameStateHandle implements StateHandler {
-    private static final String CANCEL_COMMAND = "/cancel";
-    private static final String CANCEL_MESSAGE = "Команда была отменена.";
-    private static final String CONFIG_EXISTS_MESSAGE_TEMPLATE = "Конфигурация с названием \"%s\" уже существует.";
-    private static final String ENTER_QUERY_MESSAGE_TEMPLATE = "Введите запрос для конфигурации \"%s\":";
+    protected static final String CANCEL_COMMAND = "/cancel";
+    protected static final String CANCEL_MESSAGE = "Команда была отменена.";
+    protected static final String CONFIG_EXISTS_MESSAGE_TEMPLATE = "Конфигурация с названием \"%s\" уже существует.";
+    protected static final String ENTER_QUERY_MESSAGE_TEMPLATE = "Введите запрос для конфигурации \"%s\":";
 
     private final UserUtil userUtil;
 

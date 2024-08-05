@@ -18,11 +18,11 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 @RequiredArgsConstructor
 @Component
 public class WaitQueryStateHandler implements StateHandler {
-    private static final int MAX_QUERY_LENGTH = 50;
-    private static final String CANCEL_COMMAND = "/cancel";
-    private static final String COMMAND_CANCELLED_MESSAGE = "Команда была отменена.";
-    private static final String INVALID_QUERY_MESSAGE = "Некорректный запрос. Пожалуйста, проверьте введенные данные.";
-    private static final String QUERY_SET_MESSAGE_TEMPLATE = "Запрос \"%s\" успешно установлен в конфигурации \"%s\".";
+    protected static final int MAX_QUERY_LENGTH = 50;
+    protected static final String CANCEL_COMMAND = "/cancel";
+    protected static final String COMMAND_CANCELLED_MESSAGE = "Команда была отменена.";
+    protected static final String INVALID_QUERY_MESSAGE = "Некорректный запрос. Пожалуйста, проверьте введенные данные.";
+    protected static final String QUERY_SET_MESSAGE_TEMPLATE = "Запрос \"%s\" успешно установлен в конфигурации \"%s\".";
 
     private final UserConfigUtil userConfigUtil;
     private final UserUtil userUtil;
@@ -43,6 +43,10 @@ public class WaitQueryStateHandler implements StateHandler {
 
     private String encodeQuery(String query) {
         return query.replace("+", "%2B");
+    }
+
+    private String decodeQuery(String query) {
+        return query.replace("%2B", "+");
     }
 
     private AppUserConfig getLastConfig(List<AppUserConfig> configs) {
@@ -79,6 +83,6 @@ public class WaitQueryStateHandler implements StateHandler {
         userConfigUtil.updateConfigQuery(lastConfig, query);
         userUtil.updateUserState(appUser, BASIC_STATE);
         log.info("User {} set query \"{}\"", appUser.getFirstName(), query);
-        return String.format(QUERY_SET_MESSAGE_TEMPLATE, query, lastConfig.getConfigName());
+        return String.format(QUERY_SET_MESSAGE_TEMPLATE, decodeQuery(query), lastConfig.getConfigName());
     }
 }

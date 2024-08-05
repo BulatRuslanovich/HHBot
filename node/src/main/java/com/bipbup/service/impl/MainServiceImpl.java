@@ -1,6 +1,5 @@
 package com.bipbup.service.impl;
 
-import com.bipbup.config.KeyboardProperties;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.AppUserState;
@@ -17,10 +16,8 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,14 +30,12 @@ import static com.bipbup.enums.AppUserState.*;
 public class MainServiceImpl implements MainService {
     private final UserUtil userUtil;
     private final AnswerProducer answerProducer;
-    private final KeyboardProperties keyboardProperties;
     private final Map<AppUserState, StateHandler> stateHandlers;
 
 
     public MainServiceImpl(UserUtil userUtil, AnswerProducer answerProducer, BasicStateHandler basicStateHandler, WaitConfigNameStateHandle waitConfigNameStateHandle, WaitQueryStateHandler waitQueryStateHandler) {
         this.userUtil = userUtil;
         this.answerProducer = answerProducer;
-        this.keyboardProperties = new KeyboardProperties();
 
         this.stateHandlers = Map.of(BASIC_STATE, basicStateHandler,
                 WAIT_CONFIG_NAME_STATE, waitConfigNameStateHandle,
@@ -56,7 +51,6 @@ public class MainServiceImpl implements MainService {
     @Override
     public void processCallbackQuery(Update update) {
         var callbackData = update.getCallbackQuery().getData();
-        update.getCallbackQuery().getMessage().getMessageId();
         processUpdate(update, callbackData);
     }
 
@@ -70,66 +64,45 @@ public class MainServiceImpl implements MainService {
             output = handler.process(appUser, data);
         }
 
-
+        //TODO: понимаю что так себе код, это так просто проверить
         if (!output.isEmpty()) {
-            ReplyKeyboard replyKeyboard = getReplyKeyboardForState(appUser);
-
-            //TODO: понимаю что так себе код, это так просто проверить
+            ReplyKeyboard replyKeyboard;
             if (update.hasCallbackQuery()) {
                 if (update.getCallbackQuery().getData().startsWith("query_")) {
                     replyKeyboard = getBackToQueryList();
                 } else {
                     replyKeyboard = getQueryListKeyboard(appUser);
                 }
-                editResponse(output, appUser.getTelegramId(), update.getCallbackQuery().getMessage().getMessageId(), (InlineKeyboardMarkup) replyKeyboard);
+                editAnswer(output, appUser.getTelegramId(), update.getCallbackQuery().getMessage().getMessageId(), (InlineKeyboardMarkup) replyKeyboard);
             } else {
-                sendResponse(output, appUser.getTelegramId(), replyKeyboard);
+                sendAnswer(output, appUser.getTelegramId());
             }
         }
     }
 
-    private void editResponse(String output, Long telegramId, Integer messageId, InlineKeyboardMarkup markup) {
+    private void sendAnswer(String text, Long chatId) {
+        sendAnswer(text, chatId, null);
+    }
+
+    private void sendAnswer(String text, Long chatId, ReplyKeyboard keyboard) {
+        SendMessage sendMessage = SendMessage.builder()
+                .chatId(chatId)
+                .text(text)
+                .replyMarkup(keyboard != null ? keyboard : new ReplyKeyboardRemove(true))
+                .build();
+
+        answerProducer.produceAnswer(sendMessage);
+    }
+
+    private void editAnswer(String output, Long telegramId, Integer messageId, InlineKeyboardMarkup markup) {
         EditMessageText messageText = EditMessageText.builder()
                 .text(output)
                 .chatId(telegramId)
                 .messageId(messageId)
-                .replyMarkup(markup) //TODO: временно
+                .replyMarkup(markup)
                 .build();
 
         answerProducer.produceEdit(messageText);
-    }
-
-    private ReplyKeyboard getReplyKeyboardForState(AppUser appUser) {
-        if (WAIT_EXPERIENCE_STATE.equals(appUser.getState())) {
-            return getExperienceKeyboard();
-        } else if (WAIT_QUERY_SELECTION_STATE.equals(appUser.getState())) {
-            return getQueryListKeyboard(appUser);
-        } else {
-            return null;
-        }
-    }
-
-    private void sendResponse(String output, Long telegramId, ReplyKeyboard replyKeyboard) {
-        if (replyKeyboard != null) {
-            sendAnswerWithKeyboard(output, telegramId, replyKeyboard);
-        } else {
-            sendAnswer(output, telegramId);
-        }
-    }
-
-
-    private ReplyKeyboard getExperienceKeyboard() {
-        var row1 = new KeyboardRow();
-        var row2 = new KeyboardRow();
-        var row3 = new KeyboardRow();
-
-        row1.add(keyboardProperties.getNoExperience());
-        row1.add(keyboardProperties.getOneToThreeYears());
-        row2.add(keyboardProperties.getThreeToSixYears());
-        row2.add(keyboardProperties.getMoreThanSixYears());
-        row3.add(keyboardProperties.getNoFilter());
-
-        return new ReplyKeyboardMarkup(List.of(row1, row2, row3));
     }
 
 
@@ -165,27 +138,6 @@ public class MainServiceImpl implements MainService {
         inlineKeyboardMarkup.setKeyboard(rows);
 
         return inlineKeyboardMarkup;
-    }
-
-
-    private void sendAnswer(String text, Long chatId) {
-        SendMessage sendMessage = SendMessage.builder()
-                .chatId(chatId)
-                .text(text)
-                .replyMarkup(new ReplyKeyboardRemove(true))
-                .build();
-
-        answerProducer.produceAnswer(sendMessage);
-    }
-
-    private void sendAnswerWithKeyboard(String text, Long chatId, ReplyKeyboard replyKeyboard) {
-        SendMessage sendMessage = SendMessage.builder()
-                .chatId(chatId)
-                .text(text)
-                .replyMarkup(replyKeyboard)
-                .build();
-
-        answerProducer.produceAnswer(sendMessage);
     }
 }
 
