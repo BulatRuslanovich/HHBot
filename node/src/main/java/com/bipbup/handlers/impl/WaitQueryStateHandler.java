@@ -1,7 +1,5 @@
 package com.bipbup.handlers.impl;
 
-import com.bipbup.dao.AppUserConfigDAO;
-import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.handlers.StateHandler;
@@ -20,37 +18,67 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 @RequiredArgsConstructor
 @Component
 public class WaitQueryStateHandler implements StateHandler {
+    private static final int MAX_QUERY_LENGTH = 50;
+    private static final String CANCEL_COMMAND = "/cancel";
+    private static final String COMMAND_CANCELLED_MESSAGE = "Команда была отменена.";
+    private static final String INVALID_QUERY_MESSAGE = "Некорректный запрос. Пожалуйста, проверьте введенные данные.";
+    private static final String QUERY_SET_MESSAGE_TEMPLATE = "Запрос \"%s\" успешно установлен в конфигурации \"%s\".";
+
     private final UserConfigUtil userConfigUtil;
     private final UserUtil userUtil;
 
     @Override
-    public String process(AppUser appUser, String text) {
-        text = text.replace("+", "%2B");
+    public String process(AppUser appUser, String query) {
+        String encodedQuery = encodeQuery(query);
         List<AppUserConfig> configs = appUser.getAppUserConfigs();
-        int size = configs.size();
-        AppUserConfig lastConfig = configs.get(size - 1);
+        AppUserConfig lastConfig = getLastConfig(configs);
 
-        if (text.equals("/cancel")) {
-            configs.remove(size - 1);
-            //appUser.setAppUserConfigs(configs);
-            //userUtil.updateUserState(appUser, BASIC_STATE);
-            //appUserDAO.save(appUser);
-            return "Команда была отменена.";
-        }
-
-        if (!isValidQueryText(text)) {
-            userUtil.updateUserState(appUser, BASIC_STATE);
-            userConfigUtil.deleteConfig(lastConfig);
-            return "Некорректный запрос. Пожалуйста, проверьте введенные данные.";
-        }
-
-        userConfigUtil.updateConfigQuery(lastConfig, text);
-        userUtil.updateUserState(appUser, BASIC_STATE);
-        log.info("User {} set query \"{}\"", appUser.getFirstName(), text);
-        return String.format("Запрос \"%s\" успешно установлен в конфигурации \"%s\".", text, lastConfig.getConfigName());
+        if (isCancelCommand(encodedQuery))
+            return handleCancelCommand(lastConfig);
+        if (!isValidQueryText(encodedQuery))
+            return handleInvalidQuery(lastConfig);
+        return handleValidQuery(lastConfig, encodedQuery);
     }
 
-    private boolean isValidQueryText(String text) {
-        return !Objects.isNull(text) && !text.trim().isEmpty() && text.length() <= 50;
+
+    private String encodeQuery(String query) {
+        return query.replace("+", "%2B");
+    }
+
+    private AppUserConfig getLastConfig(List<AppUserConfig> configs) {
+        int size = configs.size();
+        return configs.get(size - 1);
+    }
+
+    private boolean isCancelCommand(String query) {
+        return CANCEL_COMMAND.equals(query);
+    }
+
+    private String handleCancelCommand(AppUserConfig lastConfig) {
+        var appUser = lastConfig.getAppUser();
+        userUtil.updateUserState(appUser, BASIC_STATE);
+        userConfigUtil.removeConfig(lastConfig);
+        return COMMAND_CANCELLED_MESSAGE;
+    }
+
+    private boolean isValidQueryText(String query) {
+        return !Objects.isNull(query)
+                && !query.trim().isEmpty()
+                && query.length() <= MAX_QUERY_LENGTH;
+    }
+
+    private String handleInvalidQuery(AppUserConfig lastConfig) {
+        var appUser = lastConfig.getAppUser();
+        userUtil.updateUserState(appUser, BASIC_STATE);
+        userConfigUtil.removeConfig(lastConfig);
+        return INVALID_QUERY_MESSAGE;
+    }
+
+    private String handleValidQuery(AppUserConfig lastConfig, String query) {
+        var appUser = lastConfig.getAppUser();
+        userConfigUtil.updateConfigQuery(lastConfig, query);
+        userUtil.updateUserState(appUser, BASIC_STATE);
+        log.info("User {} set query \"{}\"", appUser.getFirstName(), query);
+        return String.format(QUERY_SET_MESSAGE_TEMPLATE, query, lastConfig.getConfigName());
     }
 }

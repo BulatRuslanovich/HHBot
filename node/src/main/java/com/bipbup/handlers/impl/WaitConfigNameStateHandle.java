@@ -15,31 +15,56 @@ import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 @RequiredArgsConstructor
 @Component
 public class WaitConfigNameStateHandle implements StateHandler {
+    private static final String CANCEL_COMMAND = "/cancel";
+    private static final String CANCEL_MESSAGE = "Команда была отменена.";
+    private static final String CONFIG_EXISTS_MESSAGE_TEMPLATE = "Конфигурация с названием \"%s\" уже существует.";
+    private static final String ENTER_QUERY_MESSAGE_TEMPLATE = "Введите запрос для конфигурации \"%s\":";
+
     private final UserUtil userUtil;
 
     @Override
     public String process(AppUser appUser, String text) {
-        if (text.equals("/cancel")) {
-            userUtil.updateUserState(appUser, BASIC_STATE);
-            return "Команда была отменена.";
-        }
+        if (isCancelCommand(text))
+            return handleCancel(appUser);
+        if (isConfigExist(appUser, text))
+            return handleExistingConfig(appUser, text);
+        return handleNewConfig(appUser, text);
+    }
 
-        for (var appUserConfig : appUser.getAppUserConfigs()) {
-            if (appUserConfig.getConfigName().equals(text)) {
-                userUtil.updateUserState(appUser, BASIC_STATE);
-                return String.format("Конфигурация с названием \"%s\" уже существует.", text);
-            }
-        }
+    private boolean isCancelCommand(String text) {
+        return CANCEL_COMMAND.equals(text);
+    }
 
-        AppUserConfig config = AppUserConfig.builder()
-                .configName(text)
-                .appUser(appUser)
-                .build();
+    private String handleCancel(AppUser appUser) {
+        userUtil.updateUserState(appUser, BASIC_STATE);
+        return CANCEL_MESSAGE;
+    }
 
-        appUser.getAppUserConfigs().add(config);
+    private boolean isConfigExist(AppUser appUser, String configName) {
+        return appUser.getAppUserConfigs().stream()
+                .anyMatch(c -> c.getConfigName().equals(configName));
+    }
+
+    private String handleExistingConfig(AppUser appUser, String configName) {
+        userUtil.updateUserState(appUser, BASIC_STATE);
+        return String.format(CONFIG_EXISTS_MESSAGE_TEMPLATE, configName);
+    }
+
+    private String handleNewConfig(AppUser appUser, String configName) {
+        AppUserConfig newConfig = createConfigWithOnlyName(appUser, configName);
+        appUser.getAppUserConfigs().add(newConfig);
+
+        //так как метод использует save юзера, то конфиг автоматом сохраняется в бд
         userUtil.updateUserState(appUser, WAIT_QUERY_STATE);
         log.info("User {} changed state to WAIT_QUERY_STATE", appUser.getFirstName());
 
-        return String.format("Введите запрос для конфигурации \"%s\":", text);
+        return String.format(ENTER_QUERY_MESSAGE_TEMPLATE, configName);
+    }
+
+    private AppUserConfig createConfigWithOnlyName(AppUser appUser, String configName) {
+        return AppUserConfig.builder()
+                .configName(configName)
+                .appUser(appUser)
+                .build();
     }
 }
