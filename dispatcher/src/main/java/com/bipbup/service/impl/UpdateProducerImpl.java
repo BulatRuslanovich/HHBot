@@ -12,7 +12,7 @@ public class UpdateProducerImpl implements UpdateProducer {
     private final KafkaTemplate<String, Update> kafkaTemplate;
 
     @Override
-    public void produce(String topic, Update update) {
+    public void produce(final String topic, final Update update) {
         kafkaTemplate.send(topic, update);
     }
 }

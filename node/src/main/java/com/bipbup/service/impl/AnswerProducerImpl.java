@@ -21,12 +21,12 @@ public class AnswerProducerImpl implements AnswerProducer {
     private final KafkaTemplate<String, Validable> kafkaTemplate;
 
     @Override
-    public void produceAnswer(SendMessage sendMessage) {
+    public void produceAnswer(final SendMessage sendMessage) {
         kafkaTemplate.send(answerTopic, sendMessage);
     }
 
     @Override
-    public void produceEdit(EditMessageText editMessage) {
+    public void produceEdit(final EditMessageText editMessage) {
         kafkaTemplate.send(editTopic, editMessage);
     }
 }

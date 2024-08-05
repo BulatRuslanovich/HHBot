@@ -1,7 +1,7 @@
 package com.bipbup.service.impl;
 
 import com.bipbup.dao.AppUserConfigDAO;
-import com.bipbup.dto.Vacancy;
+import com.bipbup.dto.VacancyDTO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.service.APIHandler;
@@ -32,19 +32,23 @@ public class NotifierServiceImpl implements NotifierService {
         var appUserConfigs = appUserConfigDAO.findAll();
 
         for (var appUserConfig : appUserConfigs) {
-            if (Objects.isNull(appUserConfig.getQueryText()) || appUserConfig.getQueryText().isEmpty())
+            if (Objects.isNull(appUserConfig.getQueryText())
+                    || appUserConfig.getQueryText().isEmpty()) {
                 continue;
+            }
 
             processNewVacancies(appUserConfig);
         }
     }
 
-    private void processNewVacancies(AppUserConfig appUserConfig) {
-        List<Vacancy> newVacancies = apiHandler.getNewVacancies(appUserConfig);
+    private void processNewVacancies(final AppUserConfig appUserConfig) {
+        List<VacancyDTO> newVacancies =
+                apiHandler.getNewVacancies(appUserConfig);
         AppUser appUser = appUserConfig.getAppUser();
 
         if (!newVacancies.isEmpty()) {
-            LocalDateTime lastNotificationTime = newVacancies.get(0).getPublishedAt().plusMinutes(1);
+            LocalDateTime lastNotificationTime =
+                    newVacancies.get(0).getPublishedAt().plusMinutes(1);
             Collections.reverse(newVacancies);
 
             for (var vacancy : newVacancies) {
@@ -56,10 +60,13 @@ public class NotifierServiceImpl implements NotifierService {
         }
 
         log.info("For user {} find {} vacancies with config {}",
-                appUser.getFirstName(), newVacancies.size(), appUserConfig.getConfigName());
+                appUser.getFirstName(),
+                newVacancies.size(),
+                appUserConfig.getConfigName());
     }
 
-    private void sendVacancyMessage(Vacancy newVacancy, AppUser appUser) {
+    private void sendVacancyMessage(final VacancyDTO newVacancyDTO,
+                                    final AppUser appUser) {
         String message = String.format("""
                         *Вакансия:* %s
                         *Работодатель:* %s
@@ -67,11 +74,11 @@ public class NotifierServiceImpl implements NotifierService {
                         *Дата публикации:* %s
                         *Ссылка:* %s
                         """,
-                newVacancy.getNameVacancy(),
-                newVacancy.getNameEmployer(),
-                newVacancy.getNameArea(),
-                newVacancy.getPublishedAt().toLocalDate(),
-                newVacancy.getUrl());
+                newVacancyDTO.getNameVacancy(),
+                newVacancyDTO.getNameEmployer(),
+                newVacancyDTO.getNameArea(),
+                newVacancyDTO.getPublishedAt().toLocalDate(),
+                newVacancyDTO.getUrl());
 
 
         SendMessage sendMessage = SendMessage.builder()

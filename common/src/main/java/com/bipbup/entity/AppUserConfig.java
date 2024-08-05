@@ -72,7 +72,8 @@ public class AppUserConfig {
     private ScheduleTypeParam[] scheduleTypes;
 
     @Builder.Default
-    private LocalDateTime lastNotificationTime = LocalDateTime.now().minusDays(1);
+    private LocalDateTime lastNotificationTime = LocalDateTime.now().
+            minusDays(1);
 
     @ManyToOne
     @JoinColumn(name = "app_user_id")

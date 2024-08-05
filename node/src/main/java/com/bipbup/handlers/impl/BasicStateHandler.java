@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_SELECTION_STATE;
 
@@ -15,18 +14,24 @@ import static com.bipbup.enums.AppUserState.WAIT_QUERY_SELECTION_STATE;
 @RequiredArgsConstructor
 @Component
 public class BasicStateHandler implements StateHandler {
-    protected static final String WELCOME_MESSAGE = "Добро пожаловать в капитализм, %s!";
-    protected static final String QUERY_PROMPT_MESSAGE = "Введите название вашей конфигурации, если хотите отменить команду, пожалуйста, введите /cancel:";
-    protected static final String USER_QUERIES_MESSAGE = "Ваши запросы:";
-    protected static final String NO_SAVED_QUERIES_MESSAGE = """
-                                                У вас пока нет сохранённых запросов.
-                                                Введите /newquery, чтобы добавить новый запрос.
-                                                """;
+    protected static final String WELCOME_MESSAGE =
+            "Добро пожаловать в капитализм, %s!";
+    protected static final String QUERY_PROMPT_MESSAGE =
+            "Введите название вашей конфигурации, "
+                    + "если хотите отменить команду,"
+                    + " пожалуйста, введите /cancel:";
+    protected static final String USER_QUERIES_MESSAGE =
+            "Ваши запросы:";
+    protected static final String NO_SAVED_QUERIES_MESSAGE =
+                    """
+                    У вас пока нет сохранённых запросов.
+                    Введите /newquery, чтобы добавить новый запрос.
+                    """;
 
     private final UserUtil userUtil;
 
     @Override
-    public String process(AppUser appUser, String text) {
+    public String process(final AppUser appUser, final String text) {
         return switch (text) {
             case "/start" -> startInteraction(appUser);
             case "/newquery" -> addQueryOutput(appUser);
@@ -35,26 +40,28 @@ public class BasicStateHandler implements StateHandler {
         };
     }
 
-    private String startInteraction(AppUser appUser) {
+    private String startInteraction(final AppUser appUser) {
         var firstName = appUser.getFirstName();
         return String.format(WELCOME_MESSAGE, firstName);
     }
 
-    private String addQueryOutput(AppUser appUser) {
+    private String addQueryOutput(final AppUser appUser) {
         userUtil.updateUserState(appUser, WAIT_CONFIG_NAME_STATE);
-        log.info("User {} changed state to WAIT_CONFIG_NAME_STATE", appUser.getFirstName());
+        log.info("User {} changed state to WAIT_CONFIG_NAME_STATE",
+                appUser.getFirstName());
         return QUERY_PROMPT_MESSAGE;
     }
 
 
-    private String showQueriesOutput(AppUser appUser) {
+    private String showQueriesOutput(final AppUser appUser) {
         var appUserConfigs = appUser.getAppUserConfigs();
         if (appUserConfigs == null || appUserConfigs.isEmpty()) {
             return NO_SAVED_QUERIES_MESSAGE;
         }
 
         userUtil.updateUserState(appUser, WAIT_QUERY_SELECTION_STATE);
-        log.info("User {} changed state to WAIT_QUERY_SELECTION_STATE", appUser.getFirstName());
+        log.info("User {} changed state to WAIT_QUERY_SELECTION_STATE",
+                appUser.getFirstName());
         return USER_QUERIES_MESSAGE;
     }
 }

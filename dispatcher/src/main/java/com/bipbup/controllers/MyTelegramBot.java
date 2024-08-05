@@ -21,18 +21,19 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         updateProcessor.registerBot(this);
     }
 
-    public MyTelegramBot(UpdateProcessor updateProcessor, @Value("${bot.token}") String botToken) {
+    public MyTelegramBot(final UpdateProcessor updateProcessor,
+                         final @Value("${bot.token}") String botToken) {
         super(botToken);
         this.updateProcessor = updateProcessor;
     }
 
 
     @Override
-    public void onUpdateReceived(Update update) {
+    public void onUpdateReceived(final Update update) {
         updateProcessor.processUpdate(update);
     }
 
-    public void sendAnswerMessage(SendMessage message) {
+    public void sendAnswerMessage(final SendMessage message) {
         if (message != null) {
             try {
                 execute(message);

@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.bipbup.enums.AppUserState.*;
+import static com.bipbup.enums.AppUserState.BASIC_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 
 
 @Service
@@ -32,8 +34,11 @@ public class MainServiceImpl implements MainService {
     private final AnswerProducer answerProducer;
     private final Map<AppUserState, StateHandler> stateHandlers;
 
-
-    public MainServiceImpl(UserUtil userUtil, AnswerProducer answerProducer, BasicStateHandler basicStateHandler, WaitConfigNameStateHandle waitConfigNameStateHandle, WaitQueryStateHandler waitQueryStateHandler) {
+    public MainServiceImpl(final UserUtil userUtil,
+                           final AnswerProducer answerProducer,
+                           final BasicStateHandler basicStateHandler,
+                           final WaitConfigNameStateHandle waitConfigNameStateHandle,
+                           final WaitQueryStateHandler waitQueryStateHandler) {
         this.userUtil = userUtil;
         this.answerProducer = answerProducer;
 
@@ -43,18 +48,19 @@ public class MainServiceImpl implements MainService {
     }
 
     @Override
-    public void processMessage(Update update) {
+    public void processMessage(final Update update) {
         var text = update.getMessage().getText();
         processUpdate(update, text);
     }
 
     @Override
-    public void processCallbackQuery(Update update) {
+    public void processCallbackQuery(final Update update) {
         var callbackData = update.getCallbackQuery().getData();
         processUpdate(update, callbackData);
     }
 
-    private void processUpdate(Update update, String data) {
+    private void processUpdate(final Update update,
+                               final String data) {
         var appUser = userUtil.findOrSaveAppUser(update);
         var userState = appUser.getState();
         var output = "";
@@ -73,28 +79,38 @@ public class MainServiceImpl implements MainService {
                 } else {
                     replyKeyboard = getQueryListKeyboard(appUser);
                 }
-                editAnswer(output, appUser.getTelegramId(), update.getCallbackQuery().getMessage().getMessageId(), (InlineKeyboardMarkup) replyKeyboard);
+                editAnswer(output, appUser.getTelegramId(),
+                        update.getCallbackQuery().getMessage().getMessageId(),
+                        (InlineKeyboardMarkup) replyKeyboard);
             } else {
                 sendAnswer(output, appUser.getTelegramId());
             }
         }
     }
 
-    private void sendAnswer(String text, Long chatId) {
+    private void sendAnswer(final String text,
+                            final Long chatId) {
         sendAnswer(text, chatId, null);
     }
 
-    private void sendAnswer(String text, Long chatId, ReplyKeyboard keyboard) {
+    private void sendAnswer(final String text,
+                            final Long chatId,
+                            final ReplyKeyboard keyboard) {
         SendMessage sendMessage = SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
-                .replyMarkup(keyboard != null ? keyboard : new ReplyKeyboardRemove(true))
+                .replyMarkup(keyboard != null
+                        ? keyboard
+                        : new ReplyKeyboardRemove(true))
                 .build();
 
         answerProducer.produceAnswer(sendMessage);
     }
 
-    private void editAnswer(String output, Long telegramId, Integer messageId, InlineKeyboardMarkup markup) {
+    private void editAnswer(final String output,
+                            final Long telegramId,
+                            final Integer messageId,
+                            final InlineKeyboardMarkup markup) {
         EditMessageText messageText = EditMessageText.builder()
                 .text(output)
                 .chatId(telegramId)
@@ -106,7 +122,7 @@ public class MainServiceImpl implements MainService {
     }
 
 
-    private ReplyKeyboard getQueryListKeyboard(AppUser appUser) {
+    private ReplyKeyboard getQueryListKeyboard(final AppUser appUser) {
         List<AppUserConfig> appUserConfigs = appUser.getAppUserConfigs();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
 
@@ -114,7 +130,8 @@ public class MainServiceImpl implements MainService {
             List<InlineKeyboardButton> row = new ArrayList<>();
             row.add(InlineKeyboardButton.builder()
                     .text(appUserConfig.getConfigName())
-                    .callbackData(String.format("query_%s", appUserConfig.getUserConfigId()))
+                    .callbackData(String.format("query_%s",
+                            appUserConfig.getUserConfigId()))
                     .build());
             rows.add(row);
         }
@@ -127,7 +144,8 @@ public class MainServiceImpl implements MainService {
 
     private InlineKeyboardMarkup getBackToQueryList() {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        InlineKeyboardButton inlineKeyboardButton = InlineKeyboardButton.builder()
+        InlineKeyboardButton inlineKeyboardButton =
+                InlineKeyboardButton.builder()
                 .text("Назад")
                 .callbackData("back_to_query_list")
                 .build();

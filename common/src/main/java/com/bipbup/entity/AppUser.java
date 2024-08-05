@@ -48,22 +48,27 @@ public class AppUser {
 
     private String lastName;
 
-
     @Enumerated(EnumType.STRING)
     private AppUserState state;
 
-    @OneToMany(mappedBy = "appUser", cascade = CascadeType.ALL,  fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "appUser",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.EAGER)
     private List<AppUserConfig> appUserConfigs;
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
         if (o == null
                 || Hibernate.getClass(this) != Hibernate.getClass(o)
-                || o.getClass() != this.getClass())
+                || o.getClass() != this.getClass()) {
             return false;
+        }
         AppUser appUser = (AppUser) o;
-        return telegramId != null && Objects.equals(telegramId, appUser.telegramId);
+        return telegramId != null
+                && Objects.equals(telegramId, appUser.telegramId);
     }
 
     @Override

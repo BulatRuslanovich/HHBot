@@ -28,7 +28,7 @@ public class UpdateProcessor {
     private final MessageUtil messageUtil;
     private final UpdateProducer updateProducer;
 
-    public void registerBot(MyTelegramBot myTelegramBot) {
+    public void registerBot(final MyTelegramBot myTelegramBot) {
         this.myTelegramBot = myTelegramBot;
         setMenuCommands(generateMenuCommands());
     }
@@ -42,7 +42,7 @@ public class UpdateProcessor {
         return new SetMyCommands(commands, new BotCommandScopeDefault(), null);
     }
 
-    public void processUpdate(Update update) {
+    public void processUpdate(final Update update) {
         if (update == null) {
             log.error("Update is null");
             return;
@@ -57,7 +57,7 @@ public class UpdateProcessor {
         }
     }
 
-    private static void logEmptyMessageUpdate(Update update) {
+    private static void logEmptyMessageUpdate(final Update update) {
         var status = update.getMyChatMember().getNewChatMember().getStatus();
         var user = update.getMyChatMember().getFrom();
         if (status.equals("kicked")) {
@@ -73,20 +73,23 @@ public class UpdateProcessor {
         var message = update.getMessage();
 
         if (message.hasText()) {
-            log.info("{} write \"{}\"", message.getFrom().getFirstName(), message.getText());
+            log.info("{} write \"{}\"",
+                    message.getFrom().getFirstName(),
+                    message.getText());
+
             updateProducer.produce(textUpdateTopic, update);
         } else {
             setUnsupportedMessageType(update);
         }
     }
 
-    private void processCallbackQuery(Update update) {
+    private void processCallbackQuery(final Update update) {
         var callbackQuery = update.getCallbackQuery();
 
         if (callbackQuery != null) {
-            var callbackData = callbackQuery.getData();
-            var userFirstName = callbackQuery.getFrom().getFirstName();
-            log.info("{} sent callback query with data: {}", userFirstName, callbackData);
+            log.info("{} sent callback query with data: {}",
+                    callbackQuery.getFrom().getFirstName(),
+                    callbackQuery.getData());
 
             updateProducer.produce(callbackQueryUpdateTopic, update);
         } else {
@@ -94,16 +97,17 @@ public class UpdateProcessor {
         }
     }
 
-    private void setUnsupportedMessageType(Update update) {
-        var sendMessage = messageUtil.generateSendMessage(update, "Неподдерживаемый тип данных!");
+    private void setUnsupportedMessageType(final Update update) {
+        var sendMessage = messageUtil.generateSendMessage(update,
+                "Неподдерживаемый тип данных!");
         setView(sendMessage);
     }
 
-    public void setView(SendMessage sendMessage) {
+    public void setView(final SendMessage sendMessage) {
         myTelegramBot.sendAnswerMessage(sendMessage);
     }
 
-    private void setMenuCommands(SetMyCommands commands) {
+    private void setMenuCommands(final SetMyCommands commands) {
         try {
             myTelegramBot.execute(commands);
         } catch (TelegramApiException e) {
@@ -111,7 +115,7 @@ public class UpdateProcessor {
         }
     }
 
-    public void setEdit(EditMessageText editMessage) {
+    public void setEdit(final EditMessageText editMessage) {
         try {
             myTelegramBot.execute(editMessage);
         } catch (TelegramApiException e) {

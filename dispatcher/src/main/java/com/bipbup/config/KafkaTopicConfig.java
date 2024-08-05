@@ -17,16 +17,23 @@ public class KafkaTopicConfig {
     @Value("${spring.kafka.topics.edit-topic}")
     private String editTopic;
 
+    @Bean
+    public NewTopic answerTopic() {
+        return TopicBuilder.name(answerTopic).build();
+    }
 
     @Bean
-    public NewTopic answerTopic() { return TopicBuilder.name(answerTopic).build();}
+    public NewTopic textUpdateTopic() {
+        return TopicBuilder.name(textUpdateTopic).build();
+    }
 
     @Bean
-    public NewTopic textUpdateTopic() {return TopicBuilder.name(textUpdateTopic).build();}
+    public NewTopic callbackQueryUpdateTopic() {
+        return TopicBuilder.name(callbackQueryUpdateTopic).build();
+    }
 
     @Bean
-    public NewTopic callbackQueryUpdateTopic() {return TopicBuilder.name(callbackQueryUpdateTopic).build();}
-
-    @Bean
-    public NewTopic editTopic() {return TopicBuilder.name(editTopic).build();}
+    public NewTopic editTopic() {
+        return TopicBuilder.name(editTopic).build();
+    }
 }

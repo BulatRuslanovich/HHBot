@@ -14,7 +14,11 @@ public class AppConfig {
         return new StringJsonMessageConverter();
     }
     @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) { return builder.build();}
+    public RestTemplate restTemplate(final RestTemplateBuilder builder) {
+        return builder.build();
+    }
     @Bean
-    public ObjectMapper objectMapper() { return new ObjectMapper();}
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
 }

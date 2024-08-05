@@ -15,18 +15,22 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 public class UserUtil {
     private final AppUserDAO appUserDAO;
 
-    public void updateUserState(AppUser appUser, AppUserState state) {
+    public void updateUserState(final AppUser appUser,
+                                final AppUserState state) {
         appUser.setState(state);
         appUserDAO.save(appUser);
     }
 
-    public AppUser findOrSaveAppUser(Update update) {
-        var messageSender = update.hasMessage() ? update.getMessage().getFrom() : update.getCallbackQuery().getFrom();
-        var appUserOptional = appUserDAO.findByTelegramId(messageSender.getId());
+    public AppUser findOrSaveAppUser(final Update update) {
+        var messageSender = update.hasMessage()
+                ? update.getMessage().getFrom()
+                : update.getCallbackQuery().getFrom();
+        var appUserOptional =
+                appUserDAO.findByTelegramId(messageSender.getId());
         return appUserOptional.orElseGet(() -> saveAppUser(messageSender));
     }
 
-    private AppUser saveAppUser(User messageSender) {
+    private AppUser saveAppUser(final User messageSender) {
         var appUser = AppUser.builder()
                 .telegramId(messageSender.getId())
                 .username(messageSender.getUserName())

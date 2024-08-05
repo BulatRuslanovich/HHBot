@@ -17,22 +17,29 @@ public class UserConfigUtil {
     private final AppUserConfigDAO appUserConfigDAO;
     private final AppUserDAO appUserDAO;
 
-    public void updateConfigQuery(AppUserConfig config, String query) {
+    public void updateConfigQuery(final AppUserConfig config,
+                                  final String query) {
         config.setQueryText(query);
         appUserConfigDAO.save(config);
-        log.info("Updated query for config {}: {}", config.getConfigName(), query);
+        log.info("Updated query for config {}: {}",
+                config.getConfigName(),
+                query);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void removeConfig(AppUserConfig config) {
+    public void removeConfig(final AppUserConfig config) {
         try {
             AppUser appUser = config.getAppUser();
             appUser.getAppUserConfigs().remove(config);
             appUserDAO.save(appUser);
             appUserConfigDAO.delete(config);
-            log.info("Removed config {} from user {}", config.getConfigName(), appUser.getFirstName());
+            log.info("Removed config {} from user {}",
+                    config.getConfigName(),
+                    appUser.getFirstName());
         } catch (Exception e) {
-            log.error("Error removing config {}: {}", config.getConfigName(), e.getMessage(), e);
+            log.error("Error removing config {}: {}",
+                    config.getConfigName(),
+                    e.getMessage(), e);
             throw e;
         }
     }

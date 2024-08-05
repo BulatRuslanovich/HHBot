@@ -1,6 +1,6 @@
 package com.bipbup.service.impl;
 
-import com.bipbup.dto.Vacancy;
+import com.bipbup.dto.VacancyDTO;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.service.APIConnection;
@@ -30,6 +30,9 @@ import java.util.List;
 public class APIHandlerImpl implements APIHandler {
     private static final int COUNT_OF_VACANCIES_IN_PAGE = 100;
     public static final int COUNT_OF_DAYS = 4;
+    private static final int TIMESTAMP_FULL_LENGTH = 24;
+    private static final int TIMESTAMP_TRIMMED_LENGTH = 19;
+    private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
 
     private final APIConnection apiConnection;
     private final ObjectMapper objectMapper;
@@ -39,58 +42,78 @@ public class APIHandlerImpl implements APIHandler {
     private String searchForVacancyURI;
 
     @Override
-    public List<Vacancy> getNewVacancies(AppUserConfig appUserConfig) {
+    public List<VacancyDTO> getNewVacancies(final AppUserConfig appUserConfig) {
         var request = apiConnection.createRequestWithHeaders();
         var pageCount = getPageCount(request, appUserConfig);
-        List<Vacancy> vacancyList = new ArrayList<>();
+        List<VacancyDTO> vacancyDTOList = new ArrayList<>();
 
         for (int i = 0; i <= pageCount; i++) {
-            processVacancyPage(appUserConfig, request, i, vacancyList);
+            processVacancyPage(appUserConfig, request, i, vacancyDTOList);
         }
 
-        return vacancyList;
+        return vacancyDTOList;
     }
 
-    private void processVacancyPage(AppUserConfig appUserConfig, HttpEntity<HttpHeaders> request, int pageNum, List<Vacancy> vacancyList) {
+    private void processVacancyPage(final AppUserConfig appUserConfig,
+                                    final HttpEntity<HttpHeaders> request,
+                                    final int pageNum,
+                                    final List<VacancyDTO> vacancyDTOList) {
         var jsonNode = getVacancyPage(request, pageNum, appUserConfig);
 
         if (!isEmptyJson(jsonNode)) {
             var vacanciesOnCurrentPage = jsonNode.get("items");
-            addVacanciesFromPage(appUserConfig, vacancyList, vacanciesOnCurrentPage);
+            addVacanciesFromPage(appUserConfig,
+                    vacancyDTOList,
+                    vacanciesOnCurrentPage);
         }
     }
 
-    private static void addVacanciesFromPage(AppUserConfig appUserConfig, List<Vacancy> vacancyList, JsonNode vacanciesOnCurrentPage) {
+    private static void addVacanciesFromPage(final AppUserConfig appUserConfig,
+                                             final List<VacancyDTO> vacancyDTOList,
+                                             final JsonNode vacanciesOnCurrentPage) {
         for (int j = 0; j < vacanciesOnCurrentPage.size(); j++) {
             var vacancy = vacanciesOnCurrentPage.get(j);
             var publishedAt = getPublishedAtFromJson(vacancy);
 
-            if (publishedAt.isBefore(appUserConfig.getLastNotificationTime()))
+            if (publishedAt.isBefore(appUserConfig.getLastNotificationTime())) {
                 return;
+            }
 
-            vacancyList.add(VacancyFactory.convertJsonToVacancy(vacancy, publishedAt));
+            vacancyDTOList.add(VacancyFactory.createVacancyDTO(vacancy, publishedAt));
         }
     }
 
-    private static boolean isEmptyJson(JsonNode jsonNode) {
+    private static boolean isEmptyJson(final JsonNode jsonNode) {
         return jsonNode == null || jsonNode.get("items").isEmpty();
     }
 
-    private static LocalDateTime getPublishedAtFromJson(JsonNode vacancy) {
+    private static LocalDateTime getPublishedAtFromJson(final JsonNode vacancy) {
         var timestamp = vacancy.get("published_at").asText();
-        if (timestamp.length() == 24) timestamp = timestamp.substring(0, 19);
-        return LocalDateTime.parse(timestamp, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+
+        if (timestamp.length() == TIMESTAMP_FULL_LENGTH) {
+            timestamp = timestamp.substring(0, TIMESTAMP_TRIMMED_LENGTH);
+        }
+
+        return LocalDateTime.parse(timestamp,
+                DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN));
     }
 
-    private int getPageCount(HttpEntity<HttpHeaders> request, AppUserConfig appUserConfig) {
+    private int getPageCount(final HttpEntity<HttpHeaders> request,
+                             final AppUserConfig appUserConfig) {
         var firstPage = getVacancyPage(request, 0, appUserConfig);
         var count = firstPage.get("found").asText();
         return Integer.parseInt(count) / COUNT_OF_VACANCIES_IN_PAGE;
     }
 
-    private JsonNode getVacancyPage(HttpEntity<HttpHeaders> request, int pageNumber, AppUserConfig appUserConfig) {
-        var vacancySearchUri = generateVacancySearchUri(pageNumber, appUserConfig);
-        var response = restTemplate.exchange(vacancySearchUri, HttpMethod.GET, request, String.class).getBody();
+    private JsonNode getVacancyPage(final HttpEntity<HttpHeaders> request,
+                                    final int pageNumber,
+                                    final AppUserConfig appUserConfig) {
+        var vacancySearchUri =
+                generateVacancySearchUri(pageNumber, appUserConfig);
+        var response = restTemplate.exchange(vacancySearchUri,
+                HttpMethod.GET,
+                request,
+                String.class).getBody();
         JsonNode jsonNode = null;
 
         try {
@@ -102,18 +125,21 @@ public class APIHandlerImpl implements APIHandler {
         return jsonNode;
     }
 
-    private String generateVacancySearchUri(int pageNumber, AppUserConfig appUserConfig) {
+    private String generateVacancySearchUri(final int pageNumber,
+                                            final AppUserConfig appUserConfig) {
         var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
                 .queryParam("page", String.valueOf(pageNumber))
                 .queryParam("per_page", COUNT_OF_VACANCIES_IN_PAGE)
                 .queryParam("text", appUserConfig.getQueryText())
                 .queryParam("search_field", "name")
-                .queryParam("area", 88)
+                .queryParam("area", 88) // magic number (id of Kazan)
                 .queryParam("period", COUNT_OF_DAYS)
                 .queryParam("order_by", "publication_time");
 
-        if (!appUserConfig.getExperience().equals(ExperienceParam.NO_MATTER))
-            builder.queryParam("experience", appUserConfig.getExperience().toString());
+        if (!appUserConfig.getExperience().equals(ExperienceParam.NO_MATTER)) {
+            builder.queryParam("experience",
+                    appUserConfig.getExperience().toString());
+        }
 
         return builder.build().toUriString();
 

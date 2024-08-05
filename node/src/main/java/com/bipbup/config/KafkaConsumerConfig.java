@@ -19,11 +19,14 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    public Map<String,Object> kafkaConsumerConfig() {
+    public Map<String, Object> kafkaConsumerConfig() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                bootstrapServers);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                JsonDeserializer.class);
         return props;
     }
 
@@ -34,8 +37,9 @@ public class KafkaConsumerConfig {
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, Update> factory(
-            ConsumerFactory<String, Update> consumerFactory) {
-        var factory = new ConcurrentKafkaListenerContainerFactory<String, Update>();
+            final ConsumerFactory<String, Update> consumerFactory) {
+        var factory =
+                new ConcurrentKafkaListenerContainerFactory<String, Update>();
         factory.setConsumerFactory(consumerFactory);
         return factory;
     }

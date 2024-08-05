@@ -15,13 +15,14 @@ public class QuerySelectionStateHandler implements StateHandler {
     private final AppUserConfigDAO appUserConfigDAO;
 
     @Override
-    public String process(AppUser appUser, String callbackData) {
+    public String process(final AppUser appUser, final String callbackData) {
         String prefix = "query_";
         if (callbackData.startsWith(prefix)) {
             long queryId;
 
             try {
-                queryId = Long.parseLong(callbackData.substring(prefix.length()));
+                queryId = Long.parseLong(callbackData
+                        .substring(prefix.length()));
             } catch (NumberFormatException e) {
                 return "";
             }
@@ -36,7 +37,7 @@ public class QuerySelectionStateHandler implements StateHandler {
         }
     }
 
-    private String showQueryOutput(long configId) {
+    private String showQueryOutput(final long configId) {
         var optionalAppUserConfig = appUserConfigDAO.findById(configId);
 
         if (optionalAppUserConfig.isEmpty()) {
@@ -54,13 +55,19 @@ public class QuerySelectionStateHandler implements StateHandler {
                 .append("\nОпыт работы: ")
                 .append(config.getExperience().getDescription());
 
-        appendEnumParams(stringBuilder, config.getEducationLevels(), "\nУровень образования: ");
-        appendEnumParams(stringBuilder, config.getScheduleTypes(), "\nТип графика: ");
+        appendEnumParams(stringBuilder,
+                config.getEducationLevels(),
+                "\nУровень образования: ");
+        appendEnumParams(stringBuilder,
+                config.getScheduleTypes(),
+                "\nТип графика: ");
 
         return stringBuilder.toString();
     }
 
-    private void appendEnumParams(StringBuilder stringBuilder, EnumParam[] values, String prefix) {
+    private void appendEnumParams(final StringBuilder stringBuilder,
+                                  final EnumParam[] values,
+                                  final String prefix) {
         if (values != null && values.length != 0) {
             stringBuilder.append(prefix);
 
@@ -68,7 +75,8 @@ public class QuerySelectionStateHandler implements StateHandler {
                 stringBuilder.append(value.getDescription()).append(", ");
             }
 
-            stringBuilder.delete(stringBuilder.length() - ", ".length(), stringBuilder.length());
+            stringBuilder.delete(stringBuilder.length() - ", ".length(),
+                    stringBuilder.length());
         }
     }
 }

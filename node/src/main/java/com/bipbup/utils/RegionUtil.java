@@ -11,19 +11,27 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+
 @Slf4j
 @Component
 public class RegionUtil {
-    public static String getAreaIdByName(String areaName) throws IOException, InterruptedException {
-        final String URL = "https://api.hh.ru/areas";
+    private RegionUtil() {
+    }
+
+    private static final String URL = "https://api.hh.ru/areas";
+    private static final int HTTP_STATUS_OK = 200;
+
+    public static String getAreaIdByName(final String areaName)
+            throws IOException, InterruptedException {
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(URL))
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = client.send(request,
+                HttpResponse.BodyHandlers.ofString());
 
-        if (response.statusCode() == 200) {
+        if (response.statusCode() == HTTP_STATUS_OK) {
             JSONArray areas = new JSONArray(response.body());
             return findAreaId(areas, areaName);
         } else {
@@ -36,7 +44,8 @@ public class RegionUtil {
         }
     }
 
-    private static String findAreaId(JSONArray areas, String name) {
+    private static String findAreaId(final JSONArray areas,
+                                     final String name) {
         for (int i = 0; i < areas.length(); i++) {
             JSONObject area = areas.getJSONObject(i);
 
@@ -45,7 +54,8 @@ public class RegionUtil {
             }
 
             if (area.has("areas")) {
-                String foundAreaId = findAreaId(area.getJSONArray("areas"), name);
+                String foundAreaId =
+                        findAreaId(area.getJSONArray("areas"), name);
                 if (foundAreaId != null) {
                     return foundAreaId;
                 }
