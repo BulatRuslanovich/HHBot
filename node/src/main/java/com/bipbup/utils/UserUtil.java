@@ -26,6 +26,7 @@ public class UserUtil {
         appUserDAO.save(appUser);
     }
 
+    //TODO: move to userConfigUtil
     public void updateUserQuery(AppUser appUser, String text) {
         AppUserConfig appUserConfig;
         if (appUser.getAppUserConfigs().isEmpty()) {
@@ -46,29 +47,25 @@ public class UserUtil {
     }
 
     public AppUser findOrSaveAppUser(Update update) {
-        User messageSender;
-        if (update.hasMessage())
-            messageSender = update.getMessage().getFrom();
-        else
-            messageSender = update.getCallbackQuery().getFrom();
-
+        var messageSender = update.hasMessage() ? update.getMessage().getFrom() : update.getCallbackQuery().getFrom();
         var appUserOptional = appUserDAO.findByTelegramId(messageSender.getId());
-        if (appUserOptional.isEmpty()) {
-            var appUser = AppUser.builder()
-                    .telegramId(messageSender.getId())
-                    .username(messageSender.getUserName())
-                    .firstName(messageSender.getFirstName())
-                    .state(BASIC_STATE)
-                    .lastName(messageSender.getLastName())
-                    .build();
-
-            appUserDAO.save(appUser);
-            return appUser;
-        }
-
-        return appUserOptional.get();
+        return appUserOptional.orElseGet(() -> saveAppUser(messageSender));
     }
 
+    private AppUser saveAppUser(User messageSender) {
+        var appUser = AppUser.builder()
+                .telegramId(messageSender.getId())
+                .username(messageSender.getUserName())
+                .firstName(messageSender.getFirstName())
+                .lastName(messageSender.getLastName())
+                .state(BASIC_STATE)
+                .build();
+
+        appUserDAO.save(appUser);
+        return appUser;
+    }
+
+    //TODO: redo this
     public AppUserConfig getAppUserConfigById(long id) {
         var appUserConfigOptional = appUserConfigDAO.findById(id);
         return appUserConfigOptional.orElse(null);

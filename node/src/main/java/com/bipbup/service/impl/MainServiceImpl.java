@@ -6,13 +6,11 @@ import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.AppUserState;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.handlers.impl.BasicStateHandler;
-import com.bipbup.handlers.impl.ExperienceStateHandler;
-import com.bipbup.handlers.impl.QuerySelectionStateHandler;
-import com.bipbup.handlers.impl.QueryStateHandler;
+import com.bipbup.handlers.impl.WaitConfigNameStateHandle;
+import com.bipbup.handlers.impl.WaitQueryStateHandler;
 import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.MainService;
 import com.bipbup.utils.UserUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -28,10 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.bipbup.enums.AppUserState.BASIC_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_QUERY_SELECTION_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
+import static com.bipbup.enums.AppUserState.*;
 
 
 @Service
@@ -39,21 +34,17 @@ public class MainServiceImpl implements MainService {
     private final UserUtil userUtil;
     private final AnswerProducer answerProducer;
     private final KeyboardProperties keyboardProperties;
-
     private final Map<AppUserState, StateHandler> stateHandlers;
 
-    @Autowired
-    public MainServiceImpl(UserUtil userUtil, AnswerProducer answerProducer, KeyboardProperties keyboardProperties,
-                           BasicStateHandler basicStateHandler, ExperienceStateHandler experienceStateHandler,
-                           QueryStateHandler queryStateHandler, QuerySelectionStateHandler querySelectionStateHandler) {
+
+    public MainServiceImpl(UserUtil userUtil, AnswerProducer answerProducer, BasicStateHandler basicStateHandler, WaitConfigNameStateHandle waitConfigNameStateHandle, WaitQueryStateHandler waitQueryStateHandler) {
         this.userUtil = userUtil;
         this.answerProducer = answerProducer;
-        this.keyboardProperties = keyboardProperties;
+        this.keyboardProperties = new KeyboardProperties();
 
         this.stateHandlers = Map.of(BASIC_STATE, basicStateHandler,
-                WAIT_EXPERIENCE_STATE, experienceStateHandler,
-                WAIT_QUERY_STATE, queryStateHandler,
-                WAIT_QUERY_SELECTION_STATE, querySelectionStateHandler);
+                WAIT_CONFIG_NAME_STATE, waitConfigNameStateHandle,
+                WAIT_QUERY_STATE, waitQueryStateHandler);
     }
 
     @Override
@@ -74,16 +65,11 @@ public class MainServiceImpl implements MainService {
         var userState = appUser.getState();
         var output = "";
 
-        if (update.hasMessage() && update.getMessage().getText().startsWith("/cancel")) {
-            userUtil.updateUserState(appUser, BASIC_STATE);
-            output = "Действие отменено.";
-
-        } else {
-            StateHandler handler = stateHandlers.get(userState);
-            if (handler != null) {
-                output = handler.process(appUser, data);
-            }
+        StateHandler handler = stateHandlers.get(userState);
+        if (handler != null) {
+            output = handler.process(appUser, data);
         }
+
 
         if (!output.isEmpty()) {
             ReplyKeyboard replyKeyboard = getReplyKeyboardForState(appUser);
@@ -182,7 +168,6 @@ public class MainServiceImpl implements MainService {
     }
 
 
-
     private void sendAnswer(String text, Long chatId) {
         SendMessage sendMessage = SendMessage.builder()
                 .chatId(chatId)
@@ -203,3 +188,4 @@ public class MainServiceImpl implements MainService {
         answerProducer.produceAnswer(sendMessage);
     }
 }
+
