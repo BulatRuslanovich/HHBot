@@ -130,7 +130,7 @@ public class APIHandlerImpl implements APIHandler {
         var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
                 .queryParam("page", String.valueOf(pageNumber))
                 .queryParam("per_page", COUNT_OF_VACANCIES_IN_PAGE)
-                .queryParam("text", appUserConfig.getQueryText())
+                .queryParam("text", appUserConfig.getQueryText().replace("+", "%2B"))
                 .queryParam("search_field", "name")
                 .queryParam("area", 88) // magic number (id of Kazan)
                 .queryParam("period", COUNT_OF_DAYS)

@@ -1,44 +1,77 @@
 package com.bipbup.handlers.impl;
 
-import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.EnumParam;
 import com.bipbup.handlers.StateHandler;
+import com.bipbup.utils.UserConfigUtil;
+import com.bipbup.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import static com.bipbup.enums.AppUserState.BASIC_STATE;
+import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
+
 @RequiredArgsConstructor
 @Component
-public class QuerySelectionStateHandler implements StateHandler {
+public class QueryListStateHandler implements StateHandler {
+    private static final String QUERY_OUTPUT_FORMAT = """
+            Конфигурация "%s" с запросом "%s"
+            Что хотите сделать с ней?""";
+
+    private final UserUtil userUtil;
+    private final UserConfigUtil userConfigUtil;
     private final BasicStateHandler basicStateHandler;
-    private final AppUserConfigDAO appUserConfigDAO;
 
     @Override
-    public String process(final AppUser appUser, final String callbackData) {
+    public String process(AppUser appUser, String text) {
+        if (text.equals("/cancel")) {
+            userUtil.updateUserState(appUser, BASIC_STATE);
+            return "Команда отменена!";
+        }
+
         String prefix = "query_";
-        if (callbackData.startsWith(prefix)) {
+
+        if (text.startsWith(prefix)) {
             long queryId;
 
             try {
-                queryId = Long.parseLong(callbackData
-                        .substring(prefix.length()));
+                queryId = Long.parseLong(text.substring(prefix.length()));
             } catch (NumberFormatException e) {
                 return "";
             }
 
-            return showQueryOutput(queryId);
-        } else if (callbackData.equals("/newquery")) {
-            return basicStateHandler.process(appUser, callbackData);
-        } else if (callbackData.equals("back_to_query_list")) {
-            return basicStateHandler.process(appUser, "/myqueries");
-        } else {
-            return "";
+            userUtil.updateUserState(appUser, QUERY_MENU_STATE);
+            return newShowQueryOutput(queryId);
         }
+
+        if (text.equals("/myqueries")) {
+            return basicStateHandler.process(appUser, "/myqueries");
+        }
+
+        if (text.equals("/newquery")) {
+            return basicStateHandler.process(appUser, "/newquery");
+        }
+
+        return "";
+    }
+
+    private String newShowQueryOutput(final long configId) {
+        var optionalAppUserConfig = userConfigUtil.getConfigById(configId);
+
+        if (optionalAppUserConfig.isEmpty()) {
+            return "Конфигурация не найдена";
+        }
+
+        AppUserConfig config = optionalAppUserConfig.get();
+
+        return String.format(QUERY_OUTPUT_FORMAT,
+                config.getConfigName(),
+                config.getQueryText());
     }
 
     private String showQueryOutput(final long configId) {
-        var optionalAppUserConfig = appUserConfigDAO.findById(configId);
+        var optionalAppUserConfig = userConfigUtil.getConfigById(configId);
 
         if (optionalAppUserConfig.isEmpty()) {
             return "Конфигурация не найдена";

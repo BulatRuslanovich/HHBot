@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -26,16 +28,21 @@ public class UserConfigUtil {
                 query);
     }
 
+    public Optional<AppUserConfig> getConfigById(final long configId) {
+        return appUserConfigDAO.findById(configId);
+    }
+
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void removeConfig(final AppUserConfig config) {
         try {
-            AppUser appUser = config.getAppUser();
-            appUser.getAppUserConfigs().remove(config);
-            appUserDAO.save(appUser);
+            AppUser user = config.getAppUser();
+            user.getAppUserConfigs().remove(config);
+            appUserDAO.save(user);
             appUserConfigDAO.delete(config);
             log.info("Removed config {} from user {}",
                     config.getConfigName(),
-                    appUser.getFirstName());
+                    user.getFirstName());
         } catch (Exception e) {
             log.error("Error removing config {}: {}",
                     config.getConfigName(),

@@ -32,26 +32,16 @@ public class WaitQueryStateHandler implements StateHandler {
 
     @Override
     public String process(final AppUser appUser, final String query) {
-        String encodedQuery = encodeQuery(query);
         List<AppUserConfig> configs = appUser.getAppUserConfigs();
         AppUserConfig lastConfig = getLastConfig(configs);
 
-        if (isCancelCommand(encodedQuery)) {
+        if (isCancelCommand(query)) {
             return handleCancelCommand(lastConfig);
-        } else if (!isValidQueryText(encodedQuery)) {
+        } else if (!isValidQueryText(query)) {
             return handleInvalidQuery(lastConfig);
         } else {
-            return handleValidQuery(lastConfig, encodedQuery);
+            return handleValidQuery(lastConfig, query);
         }
-    }
-
-
-    private String encodeQuery(final String query) {
-        return query.replace("+", "%2B");
-    }
-
-    private String decodeQuery(final String query) {
-        return query.replace("%2B", "+");
     }
 
     private AppUserConfig getLastConfig(final List<AppUserConfig> configs) {
@@ -90,7 +80,7 @@ public class WaitQueryStateHandler implements StateHandler {
         userUtil.updateUserState(appUser, BASIC_STATE);
         log.info("User {} set query \"{}\"", appUser.getFirstName(), query);
         return String.format(QUERY_SET_MESSAGE_TEMPLATE,
-                decodeQuery(query),
+                query,
                 lastConfig.getConfigName());
     }
 }

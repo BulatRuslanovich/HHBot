@@ -64,7 +64,7 @@ class BasicStateHandlerTest {
 
         String result = basicStateHandler.process(appUser, "/myqueries");
 
-        verify(userUtil).updateUserState(appUser, WAIT_QUERY_SELECTION_STATE);
+        verify(userUtil).updateUserState(appUser, QUERY_LIST_STATE);
         assertEquals(BasicStateHandler.USER_QUERIES_MESSAGE, result);
     }
 

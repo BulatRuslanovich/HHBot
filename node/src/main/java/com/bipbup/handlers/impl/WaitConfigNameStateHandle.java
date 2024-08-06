@@ -1,8 +1,10 @@
 package com.bipbup.handlers.impl;
 
+import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.handlers.StateHandler;
+import com.bipbup.utils.UserConfigUtil;
 import com.bipbup.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,8 @@ public class WaitConfigNameStateHandle implements StateHandler {
             "Введите запрос для конфигурации \"%s\":";
 
     private final UserUtil userUtil;
+    private final UserConfigUtil userConfigUtil;
+    private final AppUserConfigDAO appUserConfigDAO;
 
     @Override
     public String process(final AppUser appUser, final String text) {
@@ -59,10 +63,7 @@ public class WaitConfigNameStateHandle implements StateHandler {
     private String handleNewConfig(final AppUser appUser,
                                    final String configName) {
         AppUserConfig newConfig = createConfigWithOnlyName(appUser, configName);
-        appUser.getAppUserConfigs().add(newConfig);
-
-        //так как метод использует save юзера,
-        // то конфиг автоматом сохраняется в бд
+        appUserConfigDAO.save(newConfig);
         userUtil.updateUserState(appUser, WAIT_QUERY_STATE);
         log.info("User {} changed state to WAIT_QUERY_STATE",
                 appUser.getFirstName());

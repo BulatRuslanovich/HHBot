@@ -16,7 +16,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,7 +31,7 @@ public class NotifierServiceImpl implements NotifierService {
         var appUserConfigs = appUserConfigDAO.findAll();
 
         for (var appUserConfig : appUserConfigs) {
-            if (Objects.isNull(appUserConfig.getQueryText())
+            if (appUserConfig.getQueryText() == null
                     || appUserConfig.getQueryText().isEmpty()) {
                 continue;
             }
