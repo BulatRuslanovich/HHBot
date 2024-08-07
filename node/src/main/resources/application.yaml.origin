@@ -5,34 +5,24 @@ spring:
   kafka:
     bootstrap-servers:
     topics:
-      answer-topic:
-      text-update-topic:
-      callback-query-update-topic:
-      edit-topic:
+      answer-topic: ANSWER_TOPIC
+      edit-topic: EDIT_TOPIC
+      text-update-topic: TEXT_UPDATE_TOPIC
+      callback-query-update-topic: CALLBACK_QUERY_UPDATE_TOPIC
   datasource:
     url:
     username:
     password:
   jpa:
-    generate-ddl: true
+    hibernate:
+      ddl-auto: none
+    generate-ddl: false
     open-in-view: false
-    properties:
-      hibernate:
-        schema_update:
-          unique_constraint_strategy: RECREATE_QUIETLY
-    open-in-view:
+  liquibase:
+    enabled: true
 headhunter:
-  token:
   user-agent:
   endpoint:
-    searchForVacancy:
-
+    searchForVacancy: https://api.hh.ru/vacancies
 notifier:
-  period:
-
-keyboard:
-  noExperience:
-  oneToThreeYears:
-  threeToSixYears:
-  moreThanSixYears:
-  noFilter:
+  period: 600000
