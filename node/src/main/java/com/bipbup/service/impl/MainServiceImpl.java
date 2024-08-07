@@ -1,5 +1,6 @@
 package com.bipbup.service.impl;
 
+import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.AppUserState;
@@ -28,10 +29,12 @@ import static com.bipbup.enums.AppUserState.*;
 @Service
 public class MainServiceImpl implements MainService {
     private final UserUtil userUtil;
+    private final AppUserConfigDAO appUserConfigDAO;
     private final AnswerProducer answerProducer;
     private final Map<AppUserState, StateHandler> stateHandlers;
 
     public MainServiceImpl(final UserUtil userUtil,
+                           final AppUserConfigDAO appUserConfigDAO,
                            final AnswerProducer answerProducer,
                            final BasicStateHandler basicStateHandler,
                            final WaitConfigNameStateHandle waitConfigNameStateHandle,
@@ -40,6 +43,7 @@ public class MainServiceImpl implements MainService {
                            final QueryMenuStateHandler queryMenuStateHandler,
                            final QueryDeleteStateHandler queryDeleteStateHandler) {
         this.userUtil = userUtil;
+        this.appUserConfigDAO = appUserConfigDAO;
         this.answerProducer = answerProducer;
 
         this.stateHandlers = Map.of(BASIC_STATE, basicStateHandler,
@@ -123,7 +127,7 @@ public class MainServiceImpl implements MainService {
 
 
     private InlineKeyboardMarkup getQueryListKeyboard(final AppUser appUser) {
-        List<AppUserConfig> appUserConfigs = appUser.getAppUserConfigs();
+        List<AppUserConfig> appUserConfigs = appUserConfigDAO.findByAppUser(appUser);
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
 
         List<InlineKeyboardButton> currentRow = new ArrayList<>();

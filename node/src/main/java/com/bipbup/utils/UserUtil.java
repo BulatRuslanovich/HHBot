@@ -5,6 +5,7 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
@@ -15,10 +16,11 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 public class UserUtil {
     private final AppUserDAO appUserDAO;
 
+    @Transactional
     public void updateUserState(final AppUser appUser,
                                 final AppUserState state) {
         appUser.setState(state);
-        appUserDAO.save(appUser);
+        appUserDAO.saveAndFlush(appUser);
     }
 
     public AppUser findOrSaveAppUser(final Update update) {

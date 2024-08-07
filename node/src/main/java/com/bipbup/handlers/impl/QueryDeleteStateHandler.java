@@ -27,8 +27,8 @@ public class QueryDeleteStateHandler implements StateHandler {
             var optional = userConfigUtil.getConfigById(configId);
 
             if (optional.isPresent()) {
-                appUser.getAppUserConfigs().remove(optional.get());
-                userUtil.updateUserState(appUser, BASIC_STATE);
+                appUser.setState(BASIC_STATE);
+                userConfigUtil.removeConfig(optional.get());
                 return "Конфигурация была удалена.";
             }
         }

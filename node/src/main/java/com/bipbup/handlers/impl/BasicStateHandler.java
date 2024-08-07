@@ -1,5 +1,6 @@
 package com.bipbup.handlers.impl;
 
+import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.utils.UserUtil;
@@ -29,6 +30,7 @@ public class BasicStateHandler implements StateHandler {
                     """;
 
     private final UserUtil userUtil;
+    private final AppUserConfigDAO appUserConfigDAO;
 
     @Override
     public String process(final AppUser appUser, final String text) {
@@ -53,7 +55,7 @@ public class BasicStateHandler implements StateHandler {
     }
 
     protected String showQueriesOutput(final AppUser appUser) {
-        var appUserConfigs = appUser.getAppUserConfigs();
+        var appUserConfigs = appUserConfigDAO.findByAppUser(appUser);
         if (appUserConfigs == null || appUserConfigs.isEmpty()) {
             return NO_SAVED_QUERIES_MESSAGE;
         }
