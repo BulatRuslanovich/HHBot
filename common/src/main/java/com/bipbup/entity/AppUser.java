@@ -41,9 +41,8 @@ public class AppUser {
     @Enumerated(EnumType.STRING)
     private AppUserState state;
 
-    @OneToMany(mappedBy = "appUser",
-            cascade = CascadeType.ALL,
-            fetch = FetchType.EAGER)
+    @OneToMany
+    @JoinColumn(name = "app_user_id", referencedColumnName = "userId")
     private List<AppUserConfig> appUserConfigs;
 
     @Override

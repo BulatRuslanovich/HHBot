@@ -76,6 +76,6 @@ public class AppUserConfig {
             minusDays(1);
 
     @ManyToOne
-    @JoinColumn(name = "app_user_id")
+    @JoinColumn(name = "app_user_id", referencedColumnName = "userId")
     private AppUser appUser;
 }

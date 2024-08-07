@@ -1,12 +1,17 @@
 package com.bipbup.handlers.impl;
 
 import com.bipbup.dao.AppUserConfigDAO;
+import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.StateHandler;
-import com.bipbup.utils.UserUtil;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
@@ -15,31 +20,29 @@ import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 @RequiredArgsConstructor
 @Component
 public class BasicStateHandler implements StateHandler {
-    protected static final String WELCOME_MESSAGE =
-            "Добро пожаловать в капитализм, %s!";
-    protected static final String QUERY_PROMPT_MESSAGE =
-            "Введите название вашей конфигурации, "
-                    + "если хотите отменить команду,"
-                    + " пожалуйста, введите /cancel:";
-    protected static final String USER_QUERIES_MESSAGE =
-            "Ваши запросы:";
-    protected static final String NO_SAVED_QUERIES_MESSAGE =
-                    """
+    private static final String WELCOME_MESSAGE = "Добро пожаловать в капитализм, %s!";
+    private static final String QUERY_PROMPT_MESSAGE = "Введите название вашей конфигурации, если хотите отменить команду, пожалуйста, введите /cancel:";
+    private static final String USER_QUERIES_MESSAGE = "Ваши запросы:";
+    private static final String NO_SAVED_QUERIES_MESSAGE = """
                     У вас пока нет сохранённых запросов.
                     Введите /newquery, чтобы добавить новый запрос.
                     """;
 
-    private final UserUtil userUtil;
+    private final AppUserDAO appUserDAO;
     private final AppUserConfigDAO appUserConfigDAO;
+    private Map<String, Function<AppUser, String>> commandHandlers;
+
+    @PostConstruct
+    public void init() {
+        commandHandlers = new HashMap<>();
+        commandHandlers.put("/start", this::startInteraction);
+        commandHandlers.put("/newquery", this::addQueryOutput);
+        commandHandlers.put("/myqueries", this::showQueriesOutput);
+    }
 
     @Override
     public String process(final AppUser appUser, final String text) {
-        return switch (text) {
-            case "/start" -> startInteraction(appUser);
-            case "/newquery" -> addQueryOutput(appUser);
-            case "/myqueries" -> showQueriesOutput(appUser);
-            default -> "";
-        };
+        return commandHandlers.getOrDefault(text, user -> "").apply(appUser);
     }
 
     private String startInteraction(final AppUser appUser) {
@@ -48,9 +51,11 @@ public class BasicStateHandler implements StateHandler {
     }
 
     private String addQueryOutput(final AppUser appUser) {
-        userUtil.updateUserState(appUser, WAIT_CONFIG_NAME_STATE);
-        log.info("User {} changed state to WAIT_CONFIG_NAME_STATE",
-                appUser.getFirstName());
+        if (!WAIT_CONFIG_NAME_STATE.equals(appUser.getState())) {
+            appUser.setState(WAIT_CONFIG_NAME_STATE);
+            appUserDAO.saveAndFlush(appUser);
+            log.debug("User {} changed state to WAIT_CONFIG_NAME_STATE", appUser.getFirstName());
+        }
         return QUERY_PROMPT_MESSAGE;
     }
 
@@ -60,9 +65,11 @@ public class BasicStateHandler implements StateHandler {
             return NO_SAVED_QUERIES_MESSAGE;
         }
 
-        userUtil.updateUserState(appUser, QUERY_LIST_STATE);
-        log.info("User {} changed state to QUERY_LIST_STATE",
-                appUser.getFirstName());
+        if (!QUERY_LIST_STATE.equals(appUser.getState())) {
+            appUser.setState(QUERY_LIST_STATE);
+            appUserDAO.saveAndFlush(appUser);
+            log.debug("User {} changed state to QUERY_LIST_STATE", appUser.getFirstName());
+        }
         return USER_QUERIES_MESSAGE;
     }
 }

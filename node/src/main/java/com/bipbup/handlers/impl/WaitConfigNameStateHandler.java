@@ -1,11 +1,10 @@
 package com.bipbup.handlers.impl;
 
 import com.bipbup.dao.AppUserConfigDAO;
+import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.handlers.StateHandler;
-import com.bipbup.utils.UserConfigUtil;
-import com.bipbup.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,7 +15,7 @@ import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class WaitConfigNameStateHandle implements StateHandler {
+public class WaitConfigNameStateHandler implements StateHandler {
     protected static final String CANCEL_COMMAND = "/cancel";
     protected static final String CANCEL_MESSAGE = "Команда была отменена.";
     protected static final String CONFIG_EXISTS_MESSAGE_TEMPLATE =
@@ -24,8 +23,7 @@ public class WaitConfigNameStateHandle implements StateHandler {
     protected static final String ENTER_QUERY_MESSAGE_TEMPLATE =
             "Введите запрос для конфигурации \"%s\":";
 
-    private final UserUtil userUtil;
-    private final UserConfigUtil userConfigUtil;
+    private final AppUserDAO appUserDAO;
     private final AppUserConfigDAO appUserConfigDAO;
 
     @Override
@@ -44,35 +42,34 @@ public class WaitConfigNameStateHandle implements StateHandler {
     }
 
     private String handleCancel(final AppUser appUser) {
-        userUtil.updateUserState(appUser, BASIC_STATE);
+        appUser.setState(BASIC_STATE);
+        appUserDAO.saveAndFlush(appUser);
+        log.debug("User {} cancelled the command and state set to BASIC_STATE", appUser.getFirstName());
         return CANCEL_MESSAGE;
     }
 
-    private boolean isConfigExist(final AppUser appUser,
-                                  final String configName) {
-        return appUser.getAppUserConfigs().stream()
-                .anyMatch(c -> c.getConfigName().equals(configName));
+    private boolean isConfigExist(final AppUser appUser, final String configName) {
+        var configs = appUserConfigDAO.findByAppUser(appUser);
+        return configs.stream().anyMatch(config -> config.getConfigName().equals(configName));
     }
 
-    private String handleExistingConfig(final AppUser appUser,
-                                        final String configName) {
-        userUtil.updateUserState(appUser, BASIC_STATE);
+    private String handleExistingConfig(final AppUser appUser, final String configName) {
+        appUser.setState(BASIC_STATE);
+        appUserDAO.saveAndFlush(appUser);
+        log.debug("User {} attempted to create an existing config '{}'", appUser.getFirstName(), configName);
         return String.format(CONFIG_EXISTS_MESSAGE_TEMPLATE, configName);
     }
 
-    private String handleNewConfig(final AppUser appUser,
-                                   final String configName) {
+    private String handleNewConfig(final AppUser appUser, final String configName) {
         AppUserConfig newConfig = createConfigWithOnlyName(appUser, configName);
         appUserConfigDAO.save(newConfig);
-        userUtil.updateUserState(appUser, WAIT_QUERY_STATE);
-        log.info("User {} changed state to WAIT_QUERY_STATE",
-                appUser.getFirstName());
-
+        appUser.setState(WAIT_QUERY_STATE);
+        appUserDAO.saveAndFlush(appUser);
+        log.debug("User {} changed state to WAIT_QUERY_STATE", appUser.getFirstName());
         return String.format(ENTER_QUERY_MESSAGE_TEMPLATE, configName);
     }
 
-    private AppUserConfig createConfigWithOnlyName(final AppUser appUser,
-                                                   final String configName) {
+    private AppUserConfig createConfigWithOnlyName(final AppUser appUser, final String configName) {
         return AppUserConfig.builder()
                 .configName(configName)
                 .appUser(appUser)

@@ -2,7 +2,6 @@ package com.bipbup.utils;
 
 import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
-import com.bipbup.enums.AppUserState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,15 +12,9 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 
 @RequiredArgsConstructor
 @Component
+@Transactional
 public class UserUtil {
     private final AppUserDAO appUserDAO;
-
-    @Transactional
-    public void updateUserState(final AppUser appUser,
-                                final AppUserState state) {
-        appUser.setState(state);
-        appUserDAO.saveAndFlush(appUser);
-    }
 
     public AppUser findOrSaveAppUser(final Update update) {
         var messageSender = update.hasMessage()

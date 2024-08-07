@@ -37,7 +37,7 @@ public class MainServiceImpl implements MainService {
                            final AppUserConfigDAO appUserConfigDAO,
                            final AnswerProducer answerProducer,
                            final BasicStateHandler basicStateHandler,
-                           final WaitConfigNameStateHandle waitConfigNameStateHandle,
+                           final WaitConfigNameStateHandler waitConfigNameStateHandle,
                            final WaitQueryStateHandler waitQueryStateHandler,
                            final QueryListStateHandler queryListStateHandler,
                            final QueryMenuStateHandler queryMenuStateHandler,
