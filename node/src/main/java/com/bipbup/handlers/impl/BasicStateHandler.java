@@ -1,5 +1,6 @@
 package com.bipbup.handlers.impl;
 
+import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.utils.UserUtil;
@@ -7,8 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_QUERY_SELECTION_STATE;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,6 +30,7 @@ public class BasicStateHandler implements StateHandler {
                     """;
 
     private final UserUtil userUtil;
+    private final AppUserConfigDAO appUserConfigDAO;
 
     @Override
     public String process(final AppUser appUser, final String text) {
@@ -52,15 +54,14 @@ public class BasicStateHandler implements StateHandler {
         return QUERY_PROMPT_MESSAGE;
     }
 
-
-    private String showQueriesOutput(final AppUser appUser) {
-        var appUserConfigs = appUser.getAppUserConfigs();
+    protected String showQueriesOutput(final AppUser appUser) {
+        var appUserConfigs = appUserConfigDAO.findByAppUser(appUser);
         if (appUserConfigs == null || appUserConfigs.isEmpty()) {
             return NO_SAVED_QUERIES_MESSAGE;
         }
 
-        userUtil.updateUserState(appUser, WAIT_QUERY_SELECTION_STATE);
-        log.info("User {} changed state to WAIT_QUERY_SELECTION_STATE",
+        userUtil.updateUserState(appUser, QUERY_LIST_STATE);
+        log.info("User {} changed state to QUERY_LIST_STATE",
                 appUser.getFirstName());
         return USER_QUERIES_MESSAGE;
     }
