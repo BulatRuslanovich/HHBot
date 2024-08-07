@@ -12,3 +12,4 @@ spring:
       answer-topic:
       text-update-topic:
       callback-query-update-topic:
+      edit-topic:

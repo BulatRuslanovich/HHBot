@@ -8,12 +8,18 @@ spring:
       answer-topic:
       text-update-topic:
       callback-query-update-topic:
+      edit-topic:
   datasource:
     url:
     username:
     password:
   jpa:
-    generate-ddl:
+    generate-ddl: true
+    open-in-view: false
+    properties:
+      hibernate:
+        schema_update:
+          unique_constraint_strategy: RECREATE_QUIETLY
 
 headhunter:
   token:
