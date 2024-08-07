@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changeset/create-enums.yaml
+  - include:
+      file: db/changelog/changeset/create-app-user-table.yaml
+  - include:
+      file: db/changelog/changeset/create-app-user-config-table.yaml

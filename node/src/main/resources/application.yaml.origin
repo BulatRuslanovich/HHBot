@@ -20,7 +20,7 @@ spring:
       hibernate:
         schema_update:
           unique_constraint_strategy: RECREATE_QUIETLY
-
+    open-in-view:
 headhunter:
   token:
   user-agent:
