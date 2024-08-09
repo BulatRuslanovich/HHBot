@@ -6,6 +6,7 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.StateHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hashids.Hashids;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
@@ -14,19 +15,19 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 @RequiredArgsConstructor
 @Component
 public class QueryDeleteStateHandler implements StateHandler {
-    private static final String COMMAND_CANCEL = "/cancel";
-    private static final String PREFIX_DELETE_YES = "delete_yes_";
-    private static final String COMMAND_DELETE_NO = "delete_no";
-
-    private static final String MESSAGE_COMMAND_CANCELLED = "Команда отменена!";
-    private static final String MESSAGE_CONFIGURATION_DELETED = "Конфигурация была удалена.";
-    private static final String MESSAGE_CONFIGURATION_NOT_DELETED = "Конфигурация не была удалена.";
-    private static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена.";
-    private static final String MESSAGE_ERROR_PROCESSING_COMMAND = "Ошибка при обработке команды. Попробуйте еще раз.";
-    private static final String MESSAGE_UNEXPECTED_ERROR = "Произошла ошибка. Попробуйте еще раз.";
+    protected static final String COMMAND_CANCEL = "/cancel";
+    protected static final String PREFIX_DELETE_YES = "delete_yes_";
+    protected static final String COMMAND_DELETE_NO = "delete_no";
+    protected static final String MESSAGE_COMMAND_CANCELLED = "Команда отменена!";
+    protected static final String MESSAGE_CONFIGURATION_DELETED = "Конфигурация была удалена.";
+    protected static final String MESSAGE_CONFIGURATION_NOT_DELETED = "Конфигурация не была удалена.";
+    protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена.";
+    protected static final String MESSAGE_ERROR_PROCESSING_COMMAND = "Ошибка при обработке команды. Попробуйте еще раз.";
+    protected static final String MESSAGE_UNEXPECTED_ERROR = "Произошла ошибка. Попробуйте еще раз.";
 
     private final AppUserDAO appUserDAO;
     private final AppUserConfigDAO appUserConfigDAO;
+    private final Hashids hashids;
 
     @Override
     public String process(AppUser appUser, String text) {
@@ -56,7 +57,8 @@ public class QueryDeleteStateHandler implements StateHandler {
     }
 
     private String handleDeleteYesCommand(AppUser appUser, String text) {
-        long configId = Long.parseLong(text.substring(PREFIX_DELETE_YES.length()));
+        var hash = text.substring(PREFIX_DELETE_YES.length());
+        var configId = hashids.decode(hash)[0];
         var optional = appUserConfigDAO.findById(configId);
 
         if (optional.isPresent()) {

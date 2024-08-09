@@ -18,16 +18,15 @@ import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
 @RequiredArgsConstructor
 @Component
 public class QueryMenuStateHandler implements StateHandler {
-    private static final String COMMAND_CANCEL = "/cancel";
-    private static final String COMMAND_BACK_TO_QUERY_LIST = "back_to_query_list";
-    private static final String COMMAND_MY_QUERIES = "/myqueries";
-    private static final String COMMAND_NEW_QUERY = "/newquery";
-    private static final String PREFIX_DELETE = "delete_";
-    private static final String PREFIX_UPDATE = "update_";
-
-    private static final String MESSAGE_COMMAND_CANCELLED = "Команда отменена!";
-    private static final String MESSAGE_DELETE_CONFIRMATION = "Вы уверены, что хотите удалить этот запрос?";
-    private static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена.";
+    protected static final String COMMAND_CANCEL = "/cancel";
+    protected static final String COMMAND_BACK_TO_QUERY_LIST = "back_to_query_list";
+    protected static final String COMMAND_MY_QUERIES = "/myqueries";
+    protected static final String COMMAND_NEW_QUERY = "/newquery";
+    protected static final String PREFIX_DELETE = "delete_";
+    protected static final String PREFIX_UPDATE = "update_";
+    protected static final String MESSAGE_COMMAND_CANCELLED = "Команда отменена!";
+    protected static final String MESSAGE_DELETE_CONFIRMATION = "Вы уверены, что хотите удалить этот запрос?";
+    protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена.";
 
     private final BasicStateHandler basicStateHandler;
     private final AppUserDAO appUserDAO;

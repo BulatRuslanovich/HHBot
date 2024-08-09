@@ -7,6 +7,7 @@ import com.bipbup.enums.AppUserState;
 import com.bipbup.handlers.StateHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hashids.Hashids;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.*;
@@ -15,27 +16,27 @@ import static com.bipbup.enums.AppUserState.*;
 @RequiredArgsConstructor
 @Component
 public class QueryUpdateStateHandler implements StateHandler {
-    private static final String COMMAND_CANCEL = "/cancel";
-    private static final String PREFIX_EDIT_CONFIG_NAME = "edit_config_name_";
-    private static final String PREFIX_EDIT_QUERY = "edit_query_";
-    private static final String PREFIX_EDIT_AREA = "edit_area_";
-    private static final String PREFIX_EDIT_EXPERIENCE = "edit_experience_";
-    private static final String PREFIX_EDIT_EDUCATION = "edit_education_";
-    private static final String PREFIX_EDIT_SCHEDULE = "edit_schedule_";
-
-    private static final String MESSAGE_COMMAND_CANCELLED = "Команда отменена!";
-    private static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена";
-    private static final String MESSAGE_ERROR_PROCESSING_COMMAND = "Ошибка при обработке команды. Попробуйте еще раз.";
-    private static final String MESSAGE_UNEXPECTED_ERROR = "Произошла ошибка. Попробуйте еще раз.";
-    private static final String ENTER_CONFIG_NAME_MESSAGE = "Введите новое название конфигурации:";
-    private static final String ENTER_QUERY_MESSAGE = "Введите новый запрос:";
-    private static final String ENTER_AREA_MESSAGE = "Введите название региона:";
-    private static final String SELECT_EXPERIENCE_MESSAGE = "Выберите опыт работы:";
-    private static final String SELECT_EDUCATION_MESSAGE = "Выберите уровень образования:";
-    private static final String SELECT_SCHEDULE_MESSAGE = "Выберите график работы:";
+    protected static final String COMMAND_CANCEL = "/cancel";
+    protected static final String PREFIX_EDIT_CONFIG_NAME = "edit_config_name_";
+    protected static final String PREFIX_EDIT_QUERY = "edit_query_";
+    protected static final String PREFIX_EDIT_AREA = "edit_area_";
+    protected static final String PREFIX_EDIT_EXPERIENCE = "edit_experience_";
+    protected static final String PREFIX_EDIT_EDUCATION = "edit_education_";
+    protected static final String PREFIX_EDIT_SCHEDULE = "edit_schedule_";
+    protected static final String MESSAGE_COMMAND_CANCELLED = "Команда отменена!";
+    protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена";
+    protected static final String MESSAGE_ERROR_PROCESSING_COMMAND = "Ошибка при обработке команды. Попробуйте еще раз.";
+    protected static final String MESSAGE_UNEXPECTED_ERROR = "Произошла ошибка. Попробуйте еще раз.";
+    protected static final String ENTER_CONFIG_NAME_MESSAGE = "Введите новое название конфигурации:";
+    protected static final String ENTER_QUERY_MESSAGE = "Введите новый запрос:";
+    protected static final String ENTER_AREA_MESSAGE = "Введите название региона:";
+    protected static final String SELECT_EXPERIENCE_MESSAGE = "Выберите опыт работы:";
+    protected static final String SELECT_EDUCATION_MESSAGE = "Выберите уровень образования:";
+    protected static final String SELECT_SCHEDULE_MESSAGE = "Выберите график работы:";
 
     private final AppUserDAO appUserDAO;
     private final AppUserConfigDAO appUserConfigDAO;
+    private final Hashids hashids;
 
     @Override
     public String process(AppUser appUser, String text) {
@@ -71,7 +72,8 @@ public class QueryUpdateStateHandler implements StateHandler {
                                            int prefixLength,
                                            AppUserState state,
                                            String message) {
-        long configId = Long.parseLong(text.substring(prefixLength));
+        var hash = text.substring(prefixLength);
+        var configId = hashids.decode(hash)[0];
         var optional = appUserConfigDAO.findById(configId);
 
         if (optional.isPresent()) {

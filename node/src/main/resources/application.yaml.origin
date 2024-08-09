@@ -26,3 +26,4 @@ headhunter:
     searchForVacancy: https://api.hh.ru/vacancies
 notifier:
   period: 600000
+salt:
