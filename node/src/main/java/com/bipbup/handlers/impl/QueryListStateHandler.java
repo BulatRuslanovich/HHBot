@@ -78,34 +78,4 @@ public class QueryListStateHandler implements StateHandler {
         AppUserConfig config = optionalAppUserConfig.get();
         return String.format(QUERY_OUTPUT_FORMAT, config.getConfigName(), config.getQueryText());
     }
-
-    private String showDetailedQueryOutput(final long configId) {
-        Optional<AppUserConfig> optionalAppUserConfig = appUserConfigDAO.findById(configId);
-
-        if (optionalAppUserConfig.isEmpty()) {
-            return MESSAGE_CONFIGURATION_NOT_FOUND;
-        }
-
-        AppUserConfig config = optionalAppUserConfig.get();
-        StringBuilder output = new StringBuilder()
-                .append(config.getConfigName())
-                .append("\nТекст запроса: ").append(config.getQueryText())
-                .append("\nРегион: ").append(config.getRegion())
-                .append("\nОпыт работы: ").append(config.getExperience().getDescription());
-
-        appendEnumParams(output, config.getEducationLevels(), "\nУровень образования: ");
-        appendEnumParams(output, config.getScheduleTypes(), "\nТип графика: ");
-
-        return output.toString();
-    }
-
-    private void appendEnumParams(StringBuilder output, EnumParam[] values, String prefix) {
-        if (values != null && values.length > 0) {
-            output.append(prefix);
-            for (EnumParam value : values) {
-                output.append(value.getDescription()).append(", ");
-            }
-            output.setLength(output.length() - 2); // Удалить последнее ", "
-        }
-    }
 }

@@ -26,6 +26,12 @@ public class KeyboardMarkupFactory {
     private static final String BUTTON_TEXT_BACK = "Назад";
     private static final String BUTTON_TEXT_DELETE_YES = "Да, удалить";
     private static final String BUTTON_TEXT_DELETE_NO = "Нет, не удалять";
+    private static final String BUTTON_TEXT_EDIT_CONFIG_NAME = "Изменить название";
+    private static final String BUTTON_TEXT_EDIT_QUERY = "Изменить запрос";
+    private static final String BUTTON_TEXT_EDIT_AREA = "Изменить регион";
+    private static final String BUTTON_TEXT_EDIT_EXPERIENCE = "Изменить опыт работы";
+    private static final String BUTTON_TEXT_EDIT_EDUCATION = "Изменить уровень образования";
+    private static final String BUTTON_TEXT_EDIT_SCHEDULE = "Изменить график работы";
 
     private final AppUserConfigDAO appUserConfigDAO;
 
@@ -58,6 +64,21 @@ public class KeyboardMarkupFactory {
         List<InlineKeyboardButton> buttons = List.of(
                 createButton(BUTTON_TEXT_DELETE_YES, "delete_yes_" + configId),
                 createButton(BUTTON_TEXT_DELETE_NO, "delete_no")
+        );
+
+        return createMarkup(buttons, BUTTONS_PER_ROW);
+    }
+
+    public InlineKeyboardMarkup createUpdateConfigKeyboard(CallbackQuery callbackQuery) {
+        String configId = extractId(callbackQuery.getData(), UPDATE_PREFIX);
+
+        List<InlineKeyboardButton> buttons = List.of(
+                createButton(BUTTON_TEXT_EDIT_CONFIG_NAME, "edit_config_name_" + configId),
+                createButton(BUTTON_TEXT_EDIT_QUERY, "edit_query_" + configId),
+                createButton(BUTTON_TEXT_EDIT_AREA, "edit_area_" + configId),
+                createButton(BUTTON_TEXT_EDIT_EXPERIENCE, "edit_experience_" + configId),
+                createButton(BUTTON_TEXT_EDIT_EDUCATION, "edit_education_" + configId),
+                createButton(BUTTON_TEXT_EDIT_SCHEDULE, "edit_schedule_" + configId)
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);

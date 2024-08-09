@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,8 +19,10 @@ public class WaitConfigNameStateHandler implements StateHandler {
     protected static final String CANCEL_MESSAGE = "Команда была отменена.";
     protected static final String CONFIG_EXISTS_MESSAGE_TEMPLATE =
             "Конфигурация с названием \"%s\" уже существует.";
-    protected static final String ENTER_QUERY_MESSAGE_TEMPLATE =
-            "Введите запрос для конфигурации \"%s\":";
+//    protected static final String ENTER_QUERY_MESSAGE_TEMPLATE =
+//            "Введите запрос для конфигурации \"%s\":";
+    protected static final String CONFIG_CREATED_MESSAGE_TEMPLATE =
+            "Конфигурация с названием \"%s\" создана.";
 
     private final AppUserDAO appUserDAO;
     private final AppUserConfigDAO appUserConfigDAO;
@@ -63,10 +64,15 @@ public class WaitConfigNameStateHandler implements StateHandler {
     private String handleNewConfig(final AppUser appUser, final String configName) {
         AppUserConfig newConfig = createConfigWithOnlyName(appUser, configName);
         appUserConfigDAO.save(newConfig);
-        appUser.setState(WAIT_QUERY_STATE);
+        appUser.setState(BASIC_STATE);
         appUserDAO.saveAndFlush(appUser);
-        log.debug("User {} changed state to WAIT_QUERY_STATE", appUser.getFirstName());
-        return String.format(ENTER_QUERY_MESSAGE_TEMPLATE, configName);
+        log.debug("User {} created config \"{}\" and state set to BASIC_STATE", appUser, configName);
+        return String.format(CONFIG_CREATED_MESSAGE_TEMPLATE, configName);
+
+//        appUser.setState(WAIT_QUERY_STATE);
+//        appUserDAO.saveAndFlush(appUser);
+//        log.debug("User {} changed state to WAIT_QUERY_STATE", appUser.getFirstName());
+//        return String.format(ENTER_QUERY_MESSAGE_TEMPLATE, configName);
     }
 
     private AppUserConfig createConfigWithOnlyName(final AppUser appUser, final String configName) {
@@ -75,4 +81,6 @@ public class WaitConfigNameStateHandler implements StateHandler {
                 .appUser(appUser)
                 .build();
     }
+
+    // TODO: leave here only name setting, move config creation to another handler
 }

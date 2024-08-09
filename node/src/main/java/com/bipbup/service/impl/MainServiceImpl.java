@@ -7,6 +7,7 @@ import com.bipbup.handlers.impl.BasicStateHandler;
 import com.bipbup.handlers.impl.QueryDeleteStateHandler;
 import com.bipbup.handlers.impl.QueryListStateHandler;
 import com.bipbup.handlers.impl.QueryMenuStateHandler;
+import com.bipbup.handlers.impl.QueryUpdateStateHandler;
 import com.bipbup.handlers.impl.WaitConfigNameStateHandler;
 import com.bipbup.handlers.impl.WaitQueryStateHandler;
 import com.bipbup.service.AnswerProducer;
@@ -28,6 +29,7 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_DELETE_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
+import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 
@@ -47,7 +49,8 @@ public class MainServiceImpl implements MainService {
                            final WaitQueryStateHandler waitQueryStateHandler,
                            final QueryListStateHandler queryListStateHandler,
                            final QueryMenuStateHandler queryMenuStateHandler,
-                           final QueryDeleteStateHandler queryDeleteStateHandler) {
+                           final QueryDeleteStateHandler queryDeleteStateHandler,
+                           final QueryUpdateStateHandler queryUpdateStateHandler) {
         this.userUtil = userUtil;
         this.markupFactory = markupFactory;
         this.answerProducer = answerProducer;
@@ -57,7 +60,8 @@ public class MainServiceImpl implements MainService {
                 WAIT_QUERY_STATE, waitQueryStateHandler,
                 QUERY_LIST_STATE, queryListStateHandler,
                 QUERY_MENU_STATE, queryMenuStateHandler,
-                QUERY_DELETE_STATE, queryDeleteStateHandler);
+                QUERY_DELETE_STATE, queryDeleteStateHandler,
+                QUERY_UPDATE_STATE, queryUpdateStateHandler);
     }
 
     @Override
@@ -136,6 +140,8 @@ public class MainServiceImpl implements MainService {
             return markupFactory.createConfigManagementKeyboard(callbackQuery);
         } else if (userState.equals(QUERY_DELETE_STATE)) {
             return markupFactory.createDeleteConfirmationKeyboard(callbackQuery);
+        } else if (userState.equals(QUERY_UPDATE_STATE)) {
+            return markupFactory.createUpdateConfigKeyboard(callbackQuery);
         } else {
             return null;
         }
