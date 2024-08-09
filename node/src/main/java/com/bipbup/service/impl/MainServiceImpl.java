@@ -80,12 +80,10 @@ public class MainServiceImpl implements MainService {
         if (!output.isEmpty()) {
             if (appUser.getState().equals(QUERY_LIST_STATE) && !update.hasCallbackQuery()) {
                 sendAnswer(output, appUser.getTelegramId(), getQueryListKeyboard(appUser));
-            } else if (appUser.getState().equals(QUERY_LIST_STATE) && update.hasCallbackQuery()) {
-                editAnswer(output, appUser.getTelegramId(), update.getCallbackQuery().getMessage().getMessageId(), getQueryListKeyboard(appUser));
-            } else if (appUser.getState().equals(QUERY_MENU_STATE) && update.hasCallbackQuery()) {
-                editAnswer(output, appUser.getTelegramId(), update.getCallbackQuery().getMessage().getMessageId(), getQueryMenuKeyboard(update.getCallbackQuery()));
-            } else if (appUser.getState().equals(QUERY_DELETE_STATE) && update.hasCallbackQuery()) {
-                editAnswer(output, appUser.getTelegramId(), update.getCallbackQuery().getMessage().getMessageId(), getQueryDeleteKeyboard(update.getCallbackQuery()));
+            } else if (update.hasCallbackQuery()) {
+                var callbackQuery = update.getCallbackQuery();
+                editAnswer(output, appUser.getTelegramId(), callbackQuery.getMessage().getMessageId(),
+                        getKeyboard(appUser, callbackQuery));
             } else {
                 sendAnswer(output, appUser.getTelegramId());
             }
@@ -112,12 +110,12 @@ public class MainServiceImpl implements MainService {
     }
 
     private void editAnswer(final String output,
-                            final Long telegramId,
+                            final Long chatId,
                             final Integer messageId,
                             final InlineKeyboardMarkup markup) {
         EditMessageText messageText = EditMessageText.builder()
                 .text(output)
-                .chatId(telegramId)
+                .chatId(chatId)
                 .messageId(messageId)
                 .replyMarkup(markup)
                 .build();
@@ -125,6 +123,19 @@ public class MainServiceImpl implements MainService {
         answerProducer.produceEdit(messageText);
     }
 
+    private InlineKeyboardMarkup getKeyboard(final AppUser appUser,
+                                             final CallbackQuery callbackQuery) {
+        var userState = appUser.getState();
+        if (userState.equals(QUERY_LIST_STATE)) {
+            return getQueryListKeyboard(appUser);
+        } else if (userState.equals(QUERY_MENU_STATE)) {
+            return getQueryMenuKeyboard(callbackQuery);
+        } else if (userState.equals(QUERY_DELETE_STATE)) {
+            return getQueryDeleteKeyboard(callbackQuery);
+        } else {
+            return null;
+        }
+    }
 
     private InlineKeyboardMarkup getQueryListKeyboard(final AppUser appUser) {
         List<AppUserConfig> appUserConfigs = appUserConfigDAO.findByAppUser(appUser);
