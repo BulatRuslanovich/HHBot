@@ -1,5 +1,6 @@
 package com.bipbup.service.impl;
 
+import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.handlers.impl.BasicStateHandler;
@@ -15,6 +16,7 @@ import com.bipbup.utils.factory.KeyboardMarkupFactory;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
@@ -22,7 +24,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 
 import java.util.Map;
 
-import static com.bipbup.enums.AppUserState.*;
+import static com.bipbup.enums.AppUserState.BASIC_STATE;
+import static com.bipbup.enums.AppUserState.QUERY_DELETE_STATE;
+import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
+import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 
 
 @Service
@@ -78,7 +85,7 @@ public class MainServiceImpl implements MainService {
 
         if (!output.isEmpty()) {
             if (appUser.getState().equals(QUERY_LIST_STATE) && !update.hasCallbackQuery()) {
-                sendAnswer(output, appUser.getTelegramId(), getQueryListKeyboard(appUser));
+                sendAnswer(output, appUser.getTelegramId(), markupFactory.createUserConfigListKeyboard(appUser));
             } else if (update.hasCallbackQuery()) {
                 var callbackQuery = update.getCallbackQuery();
                 editAnswer(output, appUser.getTelegramId(), callbackQuery.getMessage().getMessageId(),
@@ -124,108 +131,14 @@ public class MainServiceImpl implements MainService {
                                              final CallbackQuery callbackQuery) {
         var userState = appUser.getState();
         if (userState.equals(QUERY_LIST_STATE)) {
-            return getQueryListKeyboard(appUser);
+            return markupFactory.createUserConfigListKeyboard(appUser);
         } else if (userState.equals(QUERY_MENU_STATE)) {
-            return getQueryMenuKeyboard(callbackQuery);
+            return markupFactory.createConfigManagementKeyboard(callbackQuery);
         } else if (userState.equals(QUERY_DELETE_STATE)) {
-            return getQueryDeleteKeyboard(callbackQuery);
+            return markupFactory.createDeleteConfirmationKeyboard(callbackQuery);
         } else {
             return null;
         }
-    }
-
-    private InlineKeyboardMarkup getQueryListKeyboard(final AppUser appUser) {
-        List<AppUserConfig> appUserConfigs = appUserConfigDAO.findByAppUser(appUser);
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-
-        List<InlineKeyboardButton> currentRow = new ArrayList<>();
-        for (var appUserConfig : appUserConfigs) {
-            InlineKeyboardButton button = InlineKeyboardButton.builder()
-                    .text(appUserConfig.getConfigName())
-                    .callbackData(String.format("query_%s", appUserConfig.getUserConfigId()))
-                    .build();
-
-            currentRow.add(button);
-
-            if (currentRow.size() == 2) {
-                rows.add(currentRow);
-                currentRow = new ArrayList<>();
-            }
-        }
-
-        if (!currentRow.isEmpty()) {
-            rows.add(currentRow);
-        }
-
-        var inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        inlineKeyboardMarkup.setKeyboard(rows);
-
-        return inlineKeyboardMarkup;
-    }
-
-    private InlineKeyboardMarkup getQueryMenuKeyboard(CallbackQuery callbackQuery) {
-        String data = callbackQuery.getData();
-        String configId = data.substring("query_".length());
-
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-
-        // Create buttons
-        InlineKeyboardButton refreshButton = InlineKeyboardButton.builder()
-                .text("Обновить")
-                .callbackData("update_" + configId)
-                .build();
-
-        InlineKeyboardButton deleteButton = InlineKeyboardButton.builder()
-                .text("Удалить")
-                .callbackData("delete_" + configId)
-                .build();
-
-        InlineKeyboardButton backButton = InlineKeyboardButton.builder()
-                .text("Назад")
-                .callbackData("back_to_query_list")
-                .build();
-
-        List<InlineKeyboardButton> firstRow = new ArrayList<>();
-        firstRow.add(refreshButton);
-        firstRow.add(deleteButton);
-
-        List<InlineKeyboardButton> secondRow = new ArrayList<>();
-        secondRow.add(backButton);
-
-        rows.add(firstRow);
-        rows.add(secondRow);
-
-        var inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        inlineKeyboardMarkup.setKeyboard(rows);
-
-        return inlineKeyboardMarkup;
-    }
-
-    private InlineKeyboardMarkup getQueryDeleteKeyboard(CallbackQuery callbackQuery) {
-        String data = callbackQuery.getData();
-        String configId = data.substring("delete_".length());
-
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-
-        InlineKeyboardButton deleteButton = InlineKeyboardButton.builder()
-                .text("Да, удалить")
-                .callbackData("delete_yes_" + configId)
-                .build();
-
-        InlineKeyboardButton cancelButton = InlineKeyboardButton.builder()
-                .text("Нет, не удалять")
-                .callbackData("delete_no")
-                .build();
-
-        List<InlineKeyboardButton> row = new ArrayList<>();
-        row.add(deleteButton);
-        row.add(cancelButton);
-
-        rows.add(row);
-        var inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        inlineKeyboardMarkup.setKeyboard(rows);
-
-        return inlineKeyboardMarkup;
     }
 }
 
