@@ -12,7 +12,7 @@
 
     <!-- Файловый аппендер для логов категории "node" -->
     <appender name="NODE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>../log/node.log</file>
+        <file>./log/node.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>./log/node-%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
@@ -22,8 +22,8 @@
         </encoder>
     </appender>
 
-    <!-- Логирование сообщений для пакета com.example.node в отдельный файл -->
-    <logger name="com.bipbup" level="info" additivity="false">
+    <!-- Логирование сообщений для пакета com.bipbup на уровнях DEBUG, INFO и ERROR -->
+    <logger name="com.bipbup" level="debug" additivity="false">
         <appender-ref ref="NODE_FILE"/>
     </logger>
 

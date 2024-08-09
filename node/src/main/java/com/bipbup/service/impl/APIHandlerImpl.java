@@ -5,7 +5,7 @@ import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.service.APIConnection;
 import com.bipbup.service.APIHandler;
-import com.bipbup.utils.VacancyFactory;
+import com.bipbup.utils.factory.VacancyFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

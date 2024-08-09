@@ -6,15 +6,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
-import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,16 +25,6 @@ public class UpdateProcessor {
 
     public void registerBot(final MyTelegramBot myTelegramBot) {
         this.myTelegramBot = myTelegramBot;
-        setMenuCommands(generateMenuCommands());
-    }
-
-    private SetMyCommands generateMenuCommands() {
-        var commands = List.of(
-                new BotCommand("myqueries", "Мои запросы"),
-                new BotCommand("newquery", "Задать новый запрос")
-        );
-
-        return new SetMyCommands(commands, new BotCommandScopeDefault(), null);
     }
 
     public void processUpdate(final Update update) {
@@ -87,7 +72,7 @@ public class UpdateProcessor {
         var callbackQuery = update.getCallbackQuery();
 
         if (callbackQuery != null) {
-            log.info("{} sent callback query with data: {}",
+            log.debug("{} sent callback query with data: {}",
                     callbackQuery.getFrom().getFirstName(),
                     callbackQuery.getData());
 
@@ -105,14 +90,6 @@ public class UpdateProcessor {
 
     public void setView(final SendMessage sendMessage) {
         myTelegramBot.sendAnswerMessage(sendMessage);
-    }
-
-    private void setMenuCommands(final SetMyCommands commands) {
-        try {
-            myTelegramBot.execute(commands);
-        } catch (TelegramApiException e) {
-            log.error("Error with commands execute");
-        }
     }
 
     public void setEdit(final EditMessageText editMessage) {
