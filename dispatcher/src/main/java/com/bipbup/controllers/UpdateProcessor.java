@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
@@ -115,11 +116,19 @@ public class UpdateProcessor {
         }
     }
 
-    public void setEdit(final EditMessageText editMessage) {
+    public void editView(final EditMessageText editMessage) {
         try {
             myTelegramBot.execute(editMessage);
         } catch (TelegramApiException e) {
             log.error("Error with edit message execute");
+        }
+    }
+
+    public void deleteView(final DeleteMessage deleteMessage) {
+        try {
+            myTelegramBot.execute(deleteMessage);
+        } catch (TelegramApiException e) {
+            log.error("Error with delete message execute");
         }
     }
 }

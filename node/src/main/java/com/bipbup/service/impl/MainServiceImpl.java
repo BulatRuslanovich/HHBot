@@ -11,6 +11,7 @@ import com.bipbup.service.MainService;
 import com.bipbup.utils.UserUtil;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -77,6 +78,10 @@ public class MainServiceImpl implements MainService {
             output = handler.process(appUser, data);
         }
 
+        if (appUser.getState().equals(BASIC_STATE) && update.hasCallbackQuery()) {
+            deleteAnswer(appUser.getTelegramId(), update.getCallbackQuery().getMessage().getMessageId());
+        }
+
         if (!output.isEmpty()) {
             if (appUser.getState().equals(QUERY_LIST_STATE) && !update.hasCallbackQuery()) {
                 sendAnswer(output, appUser.getTelegramId(), getQueryListKeyboard(appUser));
@@ -112,17 +117,27 @@ public class MainServiceImpl implements MainService {
     }
 
     private void editAnswer(final String output,
-                            final Long telegramId,
+                            final Long chatId,
                             final Integer messageId,
                             final InlineKeyboardMarkup markup) {
-        EditMessageText messageText = EditMessageText.builder()
+        var editMessage = EditMessageText.builder()
                 .text(output)
-                .chatId(telegramId)
+                .chatId(chatId)
                 .messageId(messageId)
                 .replyMarkup(markup)
                 .build();
 
-        answerProducer.produceEdit(messageText);
+        answerProducer.produceEdit(editMessage);
+    }
+
+    private void deleteAnswer(final long chatId,
+                              final int messageId) {
+        var deleteMessage = DeleteMessage.builder()
+                .chatId(chatId)
+                .messageId(messageId)
+                .build();
+
+        answerProducer.produceDelete(deleteMessage);
     }
 
 

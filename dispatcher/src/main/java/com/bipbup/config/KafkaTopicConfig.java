@@ -16,6 +16,8 @@ public class KafkaTopicConfig {
     private String callbackQueryUpdateTopic;
     @Value("${spring.kafka.topics.edit-topic}")
     private String editTopic;
+    @Value("${spring.kafka.topics.delete-topic}")
+    private String deleteTopic;
 
     @Bean
     public NewTopic answerTopic() {

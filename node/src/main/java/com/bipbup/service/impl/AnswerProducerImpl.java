@@ -7,6 +7,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.interfaces.Validable;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 
 @RequiredArgsConstructor
@@ -18,6 +19,9 @@ public class AnswerProducerImpl implements AnswerProducer {
     @Value("${spring.kafka.topics.edit-topic}")
     private String editTopic;
 
+    @Value("${spring.kafka.topics.delete-topic}")
+    private String deleteTopic;
+
     private final KafkaTemplate<String, Validable> kafkaTemplate;
 
     @Override
@@ -28,5 +32,10 @@ public class AnswerProducerImpl implements AnswerProducer {
     @Override
     public void produceEdit(final EditMessageText editMessage) {
         kafkaTemplate.send(editTopic, editMessage);
+    }
+
+    @Override
+    public void produceDelete(final DeleteMessage deleteMessage) {
+        kafkaTemplate.send(deleteTopic, deleteMessage);
     }
 }
