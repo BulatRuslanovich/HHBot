@@ -25,6 +25,9 @@
         <jaxb-api.version>2.3.0</jaxb-api.version>
         <telegrambots.version>6.9.7.1</telegrambots.version>
         <log4j-slf4j2-impl.version>2.23.1</log4j-slf4j2-impl.version>
+        <hashids.version>1.0.1</hashids.version>
+        <liquibase.version>4.24.0</liquibase.version>
+
     </properties>
 
     <dependencies>
@@ -84,7 +87,13 @@
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
-            <version>4.24.0</version>
+            <version>${liquibase.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hashids</groupId>
+            <artifactId>hashids</artifactId>
+            <version>${hashids.version}</version>
         </dependency>
     </dependencies>
 

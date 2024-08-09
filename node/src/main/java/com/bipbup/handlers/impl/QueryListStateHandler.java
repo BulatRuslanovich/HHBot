@@ -8,6 +8,7 @@ import com.bipbup.enums.EnumParam;
 import com.bipbup.handlers.StateHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hashids.Hashids;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
@@ -31,8 +32,12 @@ public class QueryListStateHandler implements StateHandler {
             Что хотите сделать с ней?""";
 
     private final AppUserDAO appUserDAO;
+
     private final AppUserConfigDAO appUserConfigDAO;
+
     private final BasicStateHandler basicStateHandler;
+
+    private final Hashids hashids;
 
     @Override
     public String process(AppUser appUser, String text) {
@@ -56,7 +61,8 @@ public class QueryListStateHandler implements StateHandler {
     private String handleQueryCommand(AppUser appUser, String text) {
         long queryId;
         try {
-            queryId = Long.parseLong(text.substring(PREFIX_QUERY.length()));
+            var hash = text.substring(PREFIX_QUERY.length());
+            queryId = hashids.decode(hash)[0];
         } catch (NumberFormatException e) {
             log.error("Failed to parse queryId from text: {}", text, e);
             return "";

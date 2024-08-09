@@ -6,6 +6,7 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.StateHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hashids.Hashids;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
@@ -26,6 +27,7 @@ public class QueryDeleteStateHandler implements StateHandler {
 
     private final AppUserDAO appUserDAO;
     private final AppUserConfigDAO appUserConfigDAO;
+    private final Hashids hashids;
 
     @Override
     public String process(AppUser appUser, String text) {
@@ -55,7 +57,8 @@ public class QueryDeleteStateHandler implements StateHandler {
     }
 
     private String handleDeleteYesCommand(AppUser appUser, String text) {
-        long configId = Long.parseLong(text.substring(PREFIX_DELETE_YES.length()));
+        var hash = text.substring(PREFIX_DELETE_YES.length());
+        var configId = hashids.decode(hash)[0];
         var optional = appUserConfigDAO.findById(configId);
 
         if (optional.isPresent()) {

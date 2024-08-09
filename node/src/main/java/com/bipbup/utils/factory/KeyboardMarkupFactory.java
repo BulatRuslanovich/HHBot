@@ -4,6 +4,7 @@ import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import lombok.RequiredArgsConstructor;
+import org.hashids.Hashids;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -29,12 +30,14 @@ public class KeyboardMarkupFactory {
 
     private final AppUserConfigDAO appUserConfigDAO;
 
+    private final Hashids hashids;
+
     public InlineKeyboardMarkup createUserConfigListKeyboard(AppUser appUser) {
         List<AppUserConfig> appUserConfigs = appUserConfigDAO.findByAppUser(appUser);
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         appUserConfigs.forEach(config ->
-                buttons.add(createButton(config.getConfigName(), QUERY_PREFIX + config.getUserConfigId()))
+                buttons.add(createButton(config.getConfigName(), QUERY_PREFIX + hashids.encode(config.getUserConfigId())))
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
