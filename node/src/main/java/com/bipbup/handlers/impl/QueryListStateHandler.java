@@ -8,6 +8,7 @@ import com.bipbup.enums.EnumParam;
 import com.bipbup.handlers.StateHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -19,14 +20,13 @@ import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
 @RequiredArgsConstructor
 @Component
 public class QueryListStateHandler implements StateHandler {
-    private static final String COMMAND_CANCEL = "/cancel";
-    private static final String COMMAND_MY_QUERIES = "/myqueries";
-    private static final String COMMAND_NEW_QUERY = "/newquery";
-    private static final String PREFIX_QUERY = "query_";
-
-    private static final String MESSAGE_COMMAND_CANCELLED = "Команда отменена!";
-    private static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена";
-    private static final String QUERY_OUTPUT_FORMAT = """
+    protected static final String COMMAND_CANCEL = "/cancel";
+    protected static final String COMMAND_MY_QUERIES = "/myqueries";
+    protected static final String COMMAND_NEW_QUERY = "/newquery";
+    protected static final String PREFIX_QUERY = "query_";
+    protected static final String MESSAGE_COMMAND_CANCELLED = "Команда отменена!";
+    protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена";
+    protected static final String QUERY_OUTPUT_FORMAT = """
             Конфигурация "%s" с запросом "%s"
             Что хотите сделать с ней?""";
 
@@ -62,21 +62,27 @@ public class QueryListStateHandler implements StateHandler {
             return "";
         }
 
-        appUser.setState(QUERY_MENU_STATE);
-        appUserDAO.saveAndFlush(appUser);
+        var answer = generateQueryOutput(queryId);
+
+        if (Boolean.TRUE.equals(answer.getSecond())) {
+            appUser.setState(QUERY_MENU_STATE);
+            appUserDAO.saveAndFlush(appUser);
+        }
+
         log.debug("User {} queried configuration with id {} and state set to QUERY_MENU_STATE", appUser.getFirstName(), queryId);
-        return generateQueryOutput(queryId);
+        return answer.getFirst();
     }
 
-    private String generateQueryOutput(final long configId) {
+    private Pair<String, Boolean> generateQueryOutput(final long configId) {
         Optional<AppUserConfig> optionalAppUserConfig = appUserConfigDAO.findById(configId);
 
         if (optionalAppUserConfig.isEmpty()) {
-            return MESSAGE_CONFIGURATION_NOT_FOUND;
+            return Pair.of(MESSAGE_CONFIGURATION_NOT_FOUND, false);
         }
 
         AppUserConfig config = optionalAppUserConfig.get();
-        return String.format(QUERY_OUTPUT_FORMAT, config.getConfigName(), config.getQueryText());
+        var answer = String.format(QUERY_OUTPUT_FORMAT, config.getConfigName(), config.getQueryText());
+        return Pair.of(answer, true);
     }
 
     private String showDetailedQueryOutput(final long configId) {

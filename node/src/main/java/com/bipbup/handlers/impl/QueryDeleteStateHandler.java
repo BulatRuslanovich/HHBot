@@ -14,16 +14,15 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 @RequiredArgsConstructor
 @Component
 public class QueryDeleteStateHandler implements StateHandler {
-    private static final String COMMAND_CANCEL = "/cancel";
-    private static final String PREFIX_DELETE_YES = "delete_yes_";
-    private static final String COMMAND_DELETE_NO = "delete_no";
-
-    private static final String MESSAGE_COMMAND_CANCELLED = "Команда отменена!";
-    private static final String MESSAGE_CONFIGURATION_DELETED = "Конфигурация была удалена.";
-    private static final String MESSAGE_CONFIGURATION_NOT_DELETED = "Конфигурация не была удалена.";
-    private static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена.";
-    private static final String MESSAGE_ERROR_PROCESSING_COMMAND = "Ошибка при обработке команды. Попробуйте еще раз.";
-    private static final String MESSAGE_UNEXPECTED_ERROR = "Произошла ошибка. Попробуйте еще раз.";
+    protected static final String COMMAND_CANCEL = "/cancel";
+    protected static final String PREFIX_DELETE_YES = "delete_yes_";
+    protected static final String COMMAND_DELETE_NO = "delete_no";
+    protected static final String MESSAGE_COMMAND_CANCELLED = "Команда отменена!";
+    protected static final String MESSAGE_CONFIGURATION_DELETED = "Конфигурация была удалена.";
+    protected static final String MESSAGE_CONFIGURATION_NOT_DELETED = "Конфигурация не была удалена.";
+    protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена.";
+    protected static final String MESSAGE_ERROR_PROCESSING_COMMAND = "Ошибка при обработке команды. Попробуйте еще раз.";
+    protected static final String MESSAGE_UNEXPECTED_ERROR = "Произошла ошибка. Попробуйте еще раз.";
 
     private final AppUserDAO appUserDAO;
     private final AppUserConfigDAO appUserConfigDAO;

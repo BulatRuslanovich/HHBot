@@ -5,7 +5,6 @@ import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.handlers.StateHandler;
-import com.bipbup.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,11 +17,11 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 @RequiredArgsConstructor
 @Component
 public class WaitQueryStateHandler implements StateHandler {
-    private static final int MAX_QUERY_LENGTH = 50;
-    private static final String CANCEL_COMMAND = "/cancel";
-    private static final String COMMAND_CANCELLED_MESSAGE = "Команда была отменена.";
-    private static final String INVALID_QUERY_MESSAGE = "Некорректный запрос. Пожалуйста, проверьте введенные данные.";
-    private static final String QUERY_SET_MESSAGE_TEMPLATE = "Запрос \"%s\" успешно установлен в конфигурации \"%s\".";
+    protected static final int MAX_QUERY_LENGTH = 50;
+    protected static final String CANCEL_COMMAND = "/cancel";
+    protected static final String COMMAND_CANCELLED_MESSAGE = "Команда была отменена.";
+    protected static final String INVALID_QUERY_MESSAGE = "Некорректный запрос. Пожалуйста, проверьте введенные данные.";
+    protected static final String QUERY_SET_MESSAGE_TEMPLATE = "Запрос \"%s\" успешно установлен в конфигурации \"%s\".";
 
     private final AppUserConfigDAO appUserConfigDAO;
     private final AppUserDAO appUserDAO;
