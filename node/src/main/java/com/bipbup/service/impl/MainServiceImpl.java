@@ -78,30 +78,11 @@ public class MainServiceImpl implements MainService {
 
         if (!output.isEmpty()) {
             if (appUser.getState().equals(QUERY_LIST_STATE) && !update.hasCallbackQuery()) {
-                sendAnswer(output,
-                        appUser.getTelegramId(),
-                        markupFactory.createUserConfigListKeyboard(appUser));
-            } else if (appUser.getState().equals(QUERY_LIST_STATE) && update.hasCallbackQuery()) {
-                editAnswer(output,
-                        appUser.getTelegramId(),
-                        update.getCallbackQuery()
-                                .getMessage()
-                                .getMessageId(),
-                        markupFactory.createUserConfigListKeyboard(appUser));
-            } else if (appUser.getState().equals(QUERY_MENU_STATE) && update.hasCallbackQuery()) {
-                editAnswer(output,
-                        appUser.getTelegramId(),
-                        update.getCallbackQuery().
-                                getMessage().
-                                getMessageId(),
-                        markupFactory.createConfigManagementKeyboard(update.getCallbackQuery()));
-            } else if (appUser.getState().equals(QUERY_DELETE_STATE) && update.hasCallbackQuery()) {
-                editAnswer(output,
-                        appUser.getTelegramId(),
-                        update.getCallbackQuery()
-                                .getMessage()
-                                .getMessageId(),
-                        markupFactory.createDeleteConfirmationKeyboard(update.getCallbackQuery()));
+                sendAnswer(output, appUser.getTelegramId(), getQueryListKeyboard(appUser));
+            } else if (update.hasCallbackQuery()) {
+                var callbackQuery = update.getCallbackQuery();
+                editAnswer(output, appUser.getTelegramId(), callbackQuery.getMessage().getMessageId(),
+                        getKeyboard(appUser, callbackQuery));
             } else {
                 sendAnswer(output, appUser.getTelegramId());
             }
@@ -126,17 +107,125 @@ public class MainServiceImpl implements MainService {
     }
 
     private void editAnswer(final String output,
-                            final Long telegramId,
+                            final Long chatId,
                             final Integer messageId,
                             final InlineKeyboardMarkup markup) {
         EditMessageText messageText = EditMessageText.builder()
                 .text(output)
-                .chatId(telegramId)
+                .chatId(chatId)
                 .messageId(messageId)
                 .replyMarkup(markup)
                 .build();
 
         answerProducer.produceEdit(messageText);
+    }
+
+    private InlineKeyboardMarkup getKeyboard(final AppUser appUser,
+                                             final CallbackQuery callbackQuery) {
+        var userState = appUser.getState();
+        if (userState.equals(QUERY_LIST_STATE)) {
+            return getQueryListKeyboard(appUser);
+        } else if (userState.equals(QUERY_MENU_STATE)) {
+            return getQueryMenuKeyboard(callbackQuery);
+        } else if (userState.equals(QUERY_DELETE_STATE)) {
+            return getQueryDeleteKeyboard(callbackQuery);
+        } else {
+            return null;
+        }
+    }
+
+    private InlineKeyboardMarkup getQueryListKeyboard(final AppUser appUser) {
+        List<AppUserConfig> appUserConfigs = appUserConfigDAO.findByAppUser(appUser);
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> currentRow = new ArrayList<>();
+        for (var appUserConfig : appUserConfigs) {
+            InlineKeyboardButton button = InlineKeyboardButton.builder()
+                    .text(appUserConfig.getConfigName())
+                    .callbackData(String.format("query_%s", appUserConfig.getUserConfigId()))
+                    .build();
+
+            currentRow.add(button);
+
+            if (currentRow.size() == 2) {
+                rows.add(currentRow);
+                currentRow = new ArrayList<>();
+            }
+        }
+
+        if (!currentRow.isEmpty()) {
+            rows.add(currentRow);
+        }
+
+        var inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        inlineKeyboardMarkup.setKeyboard(rows);
+
+        return inlineKeyboardMarkup;
+    }
+
+    private InlineKeyboardMarkup getQueryMenuKeyboard(CallbackQuery callbackQuery) {
+        String data = callbackQuery.getData();
+        String configId = data.substring("query_".length());
+
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        // Create buttons
+        InlineKeyboardButton refreshButton = InlineKeyboardButton.builder()
+                .text("Обновить")
+                .callbackData("update_" + configId)
+                .build();
+
+        InlineKeyboardButton deleteButton = InlineKeyboardButton.builder()
+                .text("Удалить")
+                .callbackData("delete_" + configId)
+                .build();
+
+        InlineKeyboardButton backButton = InlineKeyboardButton.builder()
+                .text("Назад")
+                .callbackData("back_to_query_list")
+                .build();
+
+        List<InlineKeyboardButton> firstRow = new ArrayList<>();
+        firstRow.add(refreshButton);
+        firstRow.add(deleteButton);
+
+        List<InlineKeyboardButton> secondRow = new ArrayList<>();
+        secondRow.add(backButton);
+
+        rows.add(firstRow);
+        rows.add(secondRow);
+
+        var inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        inlineKeyboardMarkup.setKeyboard(rows);
+
+        return inlineKeyboardMarkup;
+    }
+
+    private InlineKeyboardMarkup getQueryDeleteKeyboard(CallbackQuery callbackQuery) {
+        String data = callbackQuery.getData();
+        String configId = data.substring("delete_".length());
+
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        InlineKeyboardButton deleteButton = InlineKeyboardButton.builder()
+                .text("Да, удалить")
+                .callbackData("delete_yes_" + configId)
+                .build();
+
+        InlineKeyboardButton cancelButton = InlineKeyboardButton.builder()
+                .text("Нет, не удалять")
+                .callbackData("delete_no")
+                .build();
+
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        row.add(deleteButton);
+        row.add(cancelButton);
+
+        rows.add(row);
+        var inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        inlineKeyboardMarkup.setKeyboard(rows);
+
+        return inlineKeyboardMarkup;
     }
 }
 
