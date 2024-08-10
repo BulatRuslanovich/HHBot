@@ -27,7 +27,6 @@
         <log4j-slf4j2-impl.version>2.23.1</log4j-slf4j2-impl.version>
         <hashids.version>1.0.1</hashids.version>
         <liquibase.version>4.24.0</liquibase.version>
-
     </properties>
 
     <dependencies>
@@ -94,6 +93,11 @@
             <groupId>org.hashids</groupId>
             <artifactId>hashids</artifactId>
             <version>${hashids.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
     </dependencies>
 

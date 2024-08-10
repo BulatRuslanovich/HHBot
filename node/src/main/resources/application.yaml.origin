@@ -2,6 +2,12 @@ server:
   port:
 
 spring:
+  cache:
+    type: redis
+    host:
+    port:
+    redis:
+      time-to-live: -1 # data will stay in the cache indefinitely
   kafka:
     bootstrap-servers:
     topics:
