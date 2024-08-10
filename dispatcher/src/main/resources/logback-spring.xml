@@ -28,7 +28,7 @@
     </logger>
 
     <!-- Указание общего уровня логирования для всего приложения -->
-    <root level="info">
+    <root level="error">
         <appender-ref ref="CONSOLE"/>
     </root>
 </configuration>

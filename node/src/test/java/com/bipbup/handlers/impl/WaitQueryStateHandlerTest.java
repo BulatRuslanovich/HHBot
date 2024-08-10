@@ -48,7 +48,7 @@ class WaitQueryStateHandlerTest {
 
         String result = waitQueryStateHandler.process(appUser, WaitQueryStateHandler.CANCEL_COMMAND);
 
-        assertEquals(WaitQueryStateHandler.COMMAND_CANCELLED_MESSAGE, result);
+        assertEquals(WaitQueryStateHandler.CANCEL_MESSAGE, result);
         assertEquals(BASIC_STATE, appUser.getState());
         verify(appUserDAO, times(1)).saveAndFlush(appUser);
         verify(appUserConfigDAO, times(1)).delete(lastConfig);

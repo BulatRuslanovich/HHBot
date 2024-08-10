@@ -88,15 +88,29 @@ public class MainServiceImpl implements MainService {
         }
 
         if (!output.isEmpty()) {
-            if (appUser.getState().equals(QUERY_LIST_STATE) && !update.hasCallbackQuery()) {
-                sendAnswer(output, appUser.getTelegramId(), markupFactory.createUserConfigListKeyboard(appUser));
-            } else if (update.hasCallbackQuery()) {
-                var callbackQuery = update.getCallbackQuery();
-                editAnswer(output, appUser.getTelegramId(), callbackQuery.getMessage().getMessageId(),
-                        getKeyboard(appUser, callbackQuery));
-            } else {
-                sendAnswer(output, appUser.getTelegramId());
-            }
+            handleOutput(appUser, update, output);
+        }
+    }
+
+    private void handleOutput(AppUser appUser, Update update, String output) {
+        if (appUser.getState().equals(QUERY_LIST_STATE) && !update.hasCallbackQuery()) {
+            sendAnswer(output, appUser.getTelegramId(), markupFactory.createUserConfigListKeyboard(appUser));
+        } else if (update.hasCallbackQuery()) {
+            handleCallbackQuery(appUser, update, output);
+        } else {
+            sendAnswer(output, appUser.getTelegramId());
+        }
+    }
+
+    private void handleCallbackQuery(AppUser appUser, Update update, String output) {
+        var callbackQuery = update.getCallbackQuery();
+
+        var isWaitState = appUser.getState().toString().startsWith("WAIT_");
+        if (isWaitState) {
+            sendAnswer(output, appUser.getTelegramId());
+        } else {
+            editAnswer(output, appUser.getTelegramId(), callbackQuery.getMessage().getMessageId(),
+                    getKeyboard(appUser, callbackQuery));
         }
     }
 
