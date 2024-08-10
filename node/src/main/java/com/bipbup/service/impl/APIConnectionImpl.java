@@ -15,7 +15,7 @@ public class APIConnectionImpl implements APIConnection {
 
     @Override
     public HttpEntity<HttpHeaders> createRequestWithHeaders() {
-        HttpHeaders headers = new HttpHeaders();
+        var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("User-Agent", userAgent);
         return new HttpEntity<>(headers);

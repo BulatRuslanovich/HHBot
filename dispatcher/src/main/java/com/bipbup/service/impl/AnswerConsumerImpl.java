@@ -15,15 +15,13 @@ public class AnswerConsumerImpl implements AnswerConsumer {
     private final UpdateProcessor updateProcessor;
 
     @Override
-    @KafkaListener(topics = "${spring.kafka.topics.answer-topic}",
-            groupId = "groupId")
+    @KafkaListener(topics = "${spring.kafka.topics.answer-topic}", groupId = "groupId")
     public void consumeSendMessage(final SendMessage sendMessage) {
         updateProcessor.setView(sendMessage);
     }
 
     @Override
-    @KafkaListener(topics = "${spring.kafka.topics.edit-topic}",
-            groupId = "groupId")
+    @KafkaListener(topics = "${spring.kafka.topics.edit-topic}", groupId = "groupId")
     public void consumeEditMessage(final EditMessageText editMessage) {
         updateProcessor.setEdit(editMessage);
     }
