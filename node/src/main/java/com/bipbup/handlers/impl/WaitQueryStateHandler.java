@@ -24,12 +24,13 @@ public class WaitQueryStateHandler implements StateHandler {
     protected static final String QUERY_SET_MESSAGE_TEMPLATE = "Запрос \"%s\" успешно установлен в конфигурации \"%s\".";
 
     private final AppUserConfigDAO appUserConfigDAO;
+
     private final AppUserDAO appUserDAO;
 
     @Override
     public String process(final AppUser appUser, final String query) {
-        List<AppUserConfig> configs = appUserConfigDAO.findByAppUser(appUser);
-        AppUserConfig lastConfig = getLastConfig(configs);
+        var configs = appUserConfigDAO.findByAppUser(appUser);
+        var lastConfig = getLastConfig(configs);
 
         if (isCancelCommand(query)) {
             return handleCancelCommand(appUser, lastConfig);

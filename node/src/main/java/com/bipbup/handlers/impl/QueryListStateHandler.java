@@ -3,16 +3,12 @@ package com.bipbup.handlers.impl;
 import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
-import com.bipbup.entity.AppUserConfig;
-import com.bipbup.enums.EnumParam;
 import com.bipbup.handlers.StateHandler;
+import com.bipbup.utils.Decoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hashids.Hashids;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
@@ -37,7 +33,7 @@ public class QueryListStateHandler implements StateHandler {
 
     private final BasicStateHandler basicStateHandler;
 
-    private final Hashids hashids;
+    private final Decoder decoder;
 
     @Override
     public String process(AppUser appUser, String text) {
@@ -59,34 +55,27 @@ public class QueryListStateHandler implements StateHandler {
     }
 
     private String handleQueryCommand(AppUser appUser, String text) {
-        long queryId;
-        try {
-            var hash = text.substring(PREFIX_QUERY.length());
-            queryId = hashids.decode(hash)[0];
-        } catch (NumberFormatException e) {
-            log.error("Failed to parse queryId from text: {}", text, e);
-            return "";
-        }
-
-        var answer = generateQueryOutput(queryId);
+        var hash = text.substring(PREFIX_QUERY.length());
+        var configId = decoder.decode(hash);
+        var answer = generateQueryOutput(configId);
 
         if (Boolean.TRUE.equals(answer.getSecond())) {
             appUser.setState(QUERY_MENU_STATE);
             appUserDAO.saveAndFlush(appUser);
         }
 
-        log.debug("User {} queried configuration with id {} and state set to QUERY_MENU_STATE", appUser.getFirstName(), queryId);
+        log.debug("User {} queried configuration with id {} and state set to QUERY_MENU_STATE", appUser.getFirstName(), configId);
         return answer.getFirst();
     }
 
     private Pair<String, Boolean> generateQueryOutput(final long configId) {
-        Optional<AppUserConfig> optionalAppUserConfig = appUserConfigDAO.findById(configId);
+        var optionalAppUserConfig = appUserConfigDAO.findById(configId);
 
         if (optionalAppUserConfig.isEmpty()) {
             return Pair.of(MESSAGE_CONFIGURATION_NOT_FOUND, false);
         }
 
-        AppUserConfig config = optionalAppUserConfig.get();
+        var config = optionalAppUserConfig.get();
         var answer = String.format(QUERY_OUTPUT_FORMAT, config.getConfigName(), config.getQueryText());
         return Pair.of(answer, true);
     }

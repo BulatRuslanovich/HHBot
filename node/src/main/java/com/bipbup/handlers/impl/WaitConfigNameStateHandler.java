@@ -25,6 +25,7 @@ public class WaitConfigNameStateHandler implements StateHandler {
             "Конфигурация с названием \"%s\" создана.";
 
     private final AppUserDAO appUserDAO;
+
     private final AppUserConfigDAO appUserConfigDAO;
 
     @Override
