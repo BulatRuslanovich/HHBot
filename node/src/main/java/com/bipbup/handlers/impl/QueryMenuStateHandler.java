@@ -6,9 +6,9 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.EnumParam;
 import com.bipbup.handlers.StateHandler;
+import com.bipbup.utils.Decoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hashids.Hashids;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
@@ -30,9 +30,12 @@ public class QueryMenuStateHandler implements StateHandler {
     protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена.";
 
     private final BasicStateHandler basicStateHandler;
+
     private final AppUserDAO appUserDAO;
+
     private final AppUserConfigDAO appUserConfigDAO;
-    private final Hashids hashids;
+
+    private final Decoder decoder;
 
     @Override
     public String process(AppUser appUser, String text) {
@@ -75,7 +78,7 @@ public class QueryMenuStateHandler implements StateHandler {
 
     private String handleUpdateCommand(AppUser appUser, String text) {
         var hash = text.substring(PREFIX_UPDATE.length());
-        var configId = hashids.decode(hash)[0];
+        var configId = decoder.decode(hash);
         var optionalAppUserConfig = appUserConfigDAO.findById(configId);
 
         if (optionalAppUserConfig.isPresent()) {

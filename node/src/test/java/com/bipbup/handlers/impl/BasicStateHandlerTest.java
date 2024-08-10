@@ -18,7 +18,11 @@ import static com.bipbup.handlers.impl.BasicStateHandler.QUERY_PROMPT_MESSAGE;
 import static com.bipbup.handlers.impl.BasicStateHandler.USER_QUERIES_MESSAGE;
 import static com.bipbup.handlers.impl.BasicStateHandler.WELCOME_MESSAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class BasicStateHandlerTest {

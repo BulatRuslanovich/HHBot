@@ -4,9 +4,9 @@ import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.StateHandler;
+import com.bipbup.utils.Decoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hashids.Hashids;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
@@ -26,8 +26,10 @@ public class QueryDeleteStateHandler implements StateHandler {
     protected static final String MESSAGE_UNEXPECTED_ERROR = "Произошла ошибка. Попробуйте еще раз.";
 
     private final AppUserDAO appUserDAO;
+
     private final AppUserConfigDAO appUserConfigDAO;
-    private final Hashids hashids;
+
+    private final Decoder decoder;
 
     @Override
     public String process(AppUser appUser, String text) {
@@ -58,7 +60,7 @@ public class QueryDeleteStateHandler implements StateHandler {
 
     private String handleDeleteYesCommand(AppUser appUser, String text) {
         var hash = text.substring(PREFIX_DELETE_YES.length());
-        var configId = hashids.decode(hash)[0];
+        var configId = decoder.decode(hash);
         var optional = appUserConfigDAO.findById(configId);
 
         if (optional.isPresent()) {

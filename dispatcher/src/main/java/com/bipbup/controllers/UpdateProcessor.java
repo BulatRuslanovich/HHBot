@@ -3,6 +3,7 @@ package com.bipbup.controllers;
 import com.bipbup.service.UpdateProducer;
 import com.bipbup.utils.MessageUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.ExtensionMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -11,17 +12,29 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+@ExtensionMethod(MessageUtil.class)
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class UpdateProcessor {
+    private final UpdateProducer updateProducer;
     @Value("${spring.kafka.topics.text-update-topic}")
     private String textUpdateTopic;
     @Value("${spring.kafka.topics.callback-query-update-topic}")
     private String callbackQueryUpdateTopic;
     private MyTelegramBot myTelegramBot;
-    private final MessageUtil messageUtil;
-    private final UpdateProducer updateProducer;
+
+    private static void logEmptyMessageUpdate(final Update update) {
+        var status = update.getMyChatMember().getNewChatMember().getStatus();
+        var user = update.getMyChatMember().getFrom();
+        if (status.equals("kicked")) {
+            log.info("User {} block the bot", user.getFirstName());
+        } else if (status.equals("member")) {
+            log.info("User {} joined", user.getFirstName());
+        } else {
+            log.error("Message is null");
+        }
+    }
 
     public void registerBot(final MyTelegramBot myTelegramBot) {
         this.myTelegramBot = myTelegramBot;
@@ -42,25 +55,11 @@ public class UpdateProcessor {
         }
     }
 
-    private static void logEmptyMessageUpdate(final Update update) {
-        var status = update.getMyChatMember().getNewChatMember().getStatus();
-        var user = update.getMyChatMember().getFrom();
-        if (status.equals("kicked")) {
-            log.info("User {} block the bot", user.getFirstName());
-        } else if (status.equals("member")) {
-            log.info("User {} joined", user.getFirstName());
-        } else {
-            log.error("Message is null");
-        }
-    }
-
     private void processMessage(Update update) {
         var message = update.getMessage();
 
         if (message.hasText()) {
-            log.info("{} write \"{}\"",
-                    message.getFrom().getFirstName(),
-                    message.getText());
+            log.info("{} write \"{}\"", message.getFrom().getFirstName(), message.getText());
 
             updateProducer.produce(textUpdateTopic, update);
         } else {
@@ -72,9 +71,7 @@ public class UpdateProcessor {
         var callbackQuery = update.getCallbackQuery();
 
         if (callbackQuery != null) {
-            log.debug("{} sent callback query with data: {}",
-                    callbackQuery.getFrom().getFirstName(),
-                    callbackQuery.getData());
+            log.debug("{} sent callback query with data: {}", callbackQuery.getFrom().getFirstName(), callbackQuery.getData());
 
             updateProducer.produce(callbackQueryUpdateTopic, update);
         } else {
@@ -83,8 +80,7 @@ public class UpdateProcessor {
     }
 
     private void setUnsupportedMessageType(final Update update) {
-        var sendMessage = messageUtil.generateSendMessage(update,
-                "Неподдерживаемый тип данных!");
+        var sendMessage = update.generateSendMessage("Неподдерживаемый тип данных!");
         setView(sendMessage);
     }
 

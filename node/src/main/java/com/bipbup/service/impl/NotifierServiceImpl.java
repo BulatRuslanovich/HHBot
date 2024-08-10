@@ -13,7 +13,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -43,10 +42,10 @@ public class NotifierServiceImpl implements NotifierService {
     private void processNewVacancies(final AppUserConfig appUserConfig) {
         List<VacancyDTO> newVacancies =
                 apiHandler.getNewVacancies(appUserConfig);
-        AppUser appUser = appUserConfig.getAppUser();
+        var appUser = appUserConfig.getAppUser();
 
         if (!newVacancies.isEmpty()) {
-            LocalDateTime lastNotificationTime =
+            var lastNotificationTime =
                     newVacancies.get(0).getPublishedAt().plusMinutes(1);
             Collections.reverse(newVacancies);
 

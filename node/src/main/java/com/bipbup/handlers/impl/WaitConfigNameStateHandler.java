@@ -27,6 +27,7 @@ public class WaitConfigNameStateHandler implements StateHandler {
     protected static final String CONFIG_NOT_FOUND_MESSAGE = "Произошла ошибка. Попробуйте ещё раз.";
 
     private final AppUserDAO appUserDAO;
+
     private final AppUserConfigDAO appUserConfigDAO;
     private final ConfigUtil configUtil;
 

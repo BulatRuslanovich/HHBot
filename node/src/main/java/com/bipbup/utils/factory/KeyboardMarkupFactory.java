@@ -2,9 +2,8 @@ package com.bipbup.utils.factory;
 
 import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.entity.AppUser;
-import com.bipbup.entity.AppUserConfig;
+import com.bipbup.utils.Encoder;
 import lombok.RequiredArgsConstructor;
-import org.hashids.Hashids;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -12,6 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 @RequiredArgsConstructor
 @Component
@@ -36,25 +36,25 @@ public class KeyboardMarkupFactory {
 
     private final AppUserConfigDAO appUserConfigDAO;
 
-    private final Hashids hashids;
+    private final Encoder encoder;
 
     public InlineKeyboardMarkup createUserConfigListKeyboard(AppUser appUser) {
-        List<AppUserConfig> appUserConfigs = appUserConfigDAO.findByAppUser(appUser);
+        var userConfigs = appUserConfigDAO.findByAppUser(appUser);
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
-        appUserConfigs.forEach(config ->
-                buttons.add(createButton(config.getConfigName(), QUERY_PREFIX + hashids.encode(config.getUserConfigId())))
-        );
+        userConfigs.forEach(c -> buttons.add(createButton(c.getConfigName(),
+                String.format("%s%s", QUERY_PREFIX, encoder.encode(c.getUserConfigId())))
+        ));
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
     public InlineKeyboardMarkup createConfigManagementKeyboard(CallbackQuery callbackQuery) {
-        String configId = extractId(callbackQuery.getData(), QUERY_PREFIX);
+        var hash = extractHash(callbackQuery.getData(), QUERY_PREFIX);
 
         List<InlineKeyboardButton> buttons = List.of(
-                createButton(BUTTON_TEXT_UPDATE, UPDATE_PREFIX + configId),
-                createButton(BUTTON_TEXT_DELETE, DELETE_PREFIX + configId),
+                createButton(BUTTON_TEXT_UPDATE, UPDATE_PREFIX + hash),
+                createButton(BUTTON_TEXT_DELETE, DELETE_PREFIX + hash),
                 createButton(BUTTON_TEXT_BACK, "back_to_query_list")
         );
 
@@ -62,10 +62,10 @@ public class KeyboardMarkupFactory {
     }
 
     public InlineKeyboardMarkup createDeleteConfirmationKeyboard(CallbackQuery callbackQuery) {
-        String configId = extractId(callbackQuery.getData(), DELETE_PREFIX);
+        var hash = extractHash(callbackQuery.getData(), DELETE_PREFIX);
 
         List<InlineKeyboardButton> buttons = List.of(
-                createButton(BUTTON_TEXT_DELETE_YES, "delete_yes_" + configId),
+                createButton(BUTTON_TEXT_DELETE_YES, "delete_yes_" + hash),
                 createButton(BUTTON_TEXT_DELETE_NO, "delete_no")
         );
 
@@ -73,15 +73,15 @@ public class KeyboardMarkupFactory {
     }
 
     public InlineKeyboardMarkup createUpdateConfigKeyboard(CallbackQuery callbackQuery) {
-        String configId = extractId(callbackQuery.getData(), UPDATE_PREFIX);
+        var hash = extractHash(callbackQuery.getData(), UPDATE_PREFIX);
 
         List<InlineKeyboardButton> buttons = List.of(
-                createButton(BUTTON_TEXT_EDIT_CONFIG_NAME, "edit_config_name_" + configId),
-                createButton(BUTTON_TEXT_EDIT_QUERY, "edit_query_" + configId),
-                createButton(BUTTON_TEXT_EDIT_AREA, "edit_area_" + configId),
-                createButton(BUTTON_TEXT_EDIT_EXPERIENCE, "edit_experience_" + configId),
-                createButton(BUTTON_TEXT_EDIT_EDUCATION, "edit_education_" + configId),
-                createButton(BUTTON_TEXT_EDIT_SCHEDULE, "edit_schedule_" + configId)
+                createButton(BUTTON_TEXT_EDIT_CONFIG_NAME, "edit_config_name_" + hash),
+                createButton(BUTTON_TEXT_EDIT_QUERY, "edit_query_" + hash),
+                createButton(BUTTON_TEXT_EDIT_AREA, "edit_area_" + hash),
+                createButton(BUTTON_TEXT_EDIT_EXPERIENCE, "edit_experience_" + hash),
+                createButton(BUTTON_TEXT_EDIT_EDUCATION, "edit_education_" + hash),
+                createButton(BUTTON_TEXT_EDIT_SCHEDULE, "edit_schedule_" + hash)
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
@@ -104,7 +104,7 @@ public class KeyboardMarkupFactory {
         return markup;
     }
 
-    private String extractId(String data, String prefix) {
+    private String extractHash(String data, String prefix) {
         return data.substring(prefix.length());
     }
 }

@@ -5,6 +5,7 @@ import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
 import com.bipbup.handlers.StateHandler;
+import com.bipbup.utils.Decoder;
 import com.bipbup.utils.ConfigUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,7 @@ public class QueryUpdateStateHandler implements StateHandler {
 
     private final AppUserDAO appUserDAO;
     private final AppUserConfigDAO appUserConfigDAO;
-    private final Hashids hashids;
+    private final Decoder decoder;
     private final ConfigUtil configUtil;
 
     @Override
@@ -46,11 +47,17 @@ public class QueryUpdateStateHandler implements StateHandler {
             if (COMMAND_CANCEL.equals(text)) {
                 return cancelCommand(appUser);
             } else if (text.startsWith(PREFIX_EDIT_CONFIG_NAME)) {
-                return handleEditConfigCommand(appUser, text, PREFIX_EDIT_CONFIG_NAME.length(),
-                        WAIT_CONFIG_NAME_STATE, ENTER_CONFIG_NAME_MESSAGE);
+                return handleEditConfigCommand(appUser,
+                        text,
+                        PREFIX_EDIT_CONFIG_NAME.length(),
+                        WAIT_CONFIG_NAME_STATE,
+                        ENTER_CONFIG_NAME_MESSAGE);
             } else if (text.startsWith(PREFIX_EDIT_QUERY)) {
-                return handleEditConfigCommand(appUser, text, PREFIX_EDIT_QUERY.length(),
-                        WAIT_QUERY_STATE, ENTER_QUERY_MESSAGE);
+                return handleEditConfigCommand(appUser,
+                        text,
+                        PREFIX_EDIT_QUERY.length(),
+                        WAIT_QUERY_STATE,
+                        ENTER_QUERY_MESSAGE);
             }
         } catch (NumberFormatException e) {
             log.error("Failed to parse configId from text: {}", text, e);
@@ -75,7 +82,7 @@ public class QueryUpdateStateHandler implements StateHandler {
                                            AppUserState state,
                                            String message) {
         var hash = text.substring(prefixLength);
-        var configId = hashids.decode(hash)[0];
+        var configId = decoder.decode(hash);
         var optional = appUserConfigDAO.findById(configId);
 
         if (optional.isPresent()) {

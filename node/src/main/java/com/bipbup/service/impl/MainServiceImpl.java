@@ -82,7 +82,7 @@ public class MainServiceImpl implements MainService {
         var userState = appUser.getState();
         var output = "";
 
-        StateHandler handler = stateHandlers.get(userState);
+        var handler = stateHandlers.get(userState);
         if (handler != null) {
             output = handler.process(appUser, data);
         }
@@ -122,7 +122,7 @@ public class MainServiceImpl implements MainService {
     private void sendAnswer(final String text,
                             final Long chatId,
                             final ReplyKeyboard keyboard) {
-        SendMessage sendMessage = SendMessage.builder()
+        var sendMessage = SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
                 .replyMarkup(keyboard != null ? keyboard : new ReplyKeyboardRemove(true))
@@ -135,7 +135,7 @@ public class MainServiceImpl implements MainService {
                             final Long chatId,
                             final Integer messageId,
                             final InlineKeyboardMarkup markup) {
-        EditMessageText messageText = EditMessageText.builder()
+        var messageText = EditMessageText.builder()
                 .text(output)
                 .chatId(chatId)
                 .messageId(messageId)
