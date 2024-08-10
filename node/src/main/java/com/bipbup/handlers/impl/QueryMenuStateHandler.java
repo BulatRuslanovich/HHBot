@@ -8,6 +8,7 @@ import com.bipbup.enums.EnumParam;
 import com.bipbup.handlers.StateHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hashids.Hashids;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
@@ -31,6 +32,7 @@ public class QueryMenuStateHandler implements StateHandler {
     private final BasicStateHandler basicStateHandler;
     private final AppUserDAO appUserDAO;
     private final AppUserConfigDAO appUserConfigDAO;
+    private final Hashids hashids;
 
     @Override
     public String process(AppUser appUser, String text) {
@@ -72,7 +74,8 @@ public class QueryMenuStateHandler implements StateHandler {
     }
 
     private String handleUpdateCommand(AppUser appUser, String text) {
-        long configId = Long.parseLong(text.substring(PREFIX_UPDATE.length()));
+        var hash = text.substring(PREFIX_UPDATE.length());
+        var configId = hashids.decode(hash)[0];
         var optionalAppUserConfig = appUserConfigDAO.findById(configId);
 
         if (optionalAppUserConfig.isPresent()) {
