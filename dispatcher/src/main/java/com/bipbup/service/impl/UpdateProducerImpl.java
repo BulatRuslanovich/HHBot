@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @RequiredArgsConstructor
 @Service
 public class UpdateProducerImpl implements UpdateProducer {
+
     private final KafkaTemplate<String, Update> kafkaTemplate;
 
     @Override

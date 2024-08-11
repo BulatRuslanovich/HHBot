@@ -17,11 +17,15 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @RequiredArgsConstructor
 @Component
 public class UpdateProcessor {
-    private final UpdateProducer updateProducer;
+
     @Value("${spring.kafka.topics.text-update-topic}")
     private String textUpdateTopic;
+
     @Value("${spring.kafka.topics.callback-query-update-topic}")
     private String callbackQueryUpdateTopic;
+
+    private final UpdateProducer updateProducer;
+
     private MyTelegramBot myTelegramBot;
 
     private static void logEmptyMessageUpdate(final Update update) {

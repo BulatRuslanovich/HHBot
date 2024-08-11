@@ -8,12 +8,16 @@ import org.springframework.kafka.config.TopicBuilder;
 
 @Configuration
 public class KafkaTopicConfig {
+
     @Value("${spring.kafka.topics.answer-topic}")
     private String answerTopic;
+
     @Value("${spring.kafka.topics.text-update-topic}")
     private String textUpdateTopic;
+
     @Value("${spring.kafka.topics.callback-query-update-topic}")
     private String callbackQueryUpdateTopic;
+
     @Value("${spring.kafka.topics.edit-topic}")
     private String editTopic;
 

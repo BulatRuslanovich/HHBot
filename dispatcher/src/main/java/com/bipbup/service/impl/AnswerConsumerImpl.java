@@ -12,6 +12,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 @RequiredArgsConstructor
 @Service
 public class AnswerConsumerImpl implements AnswerConsumer {
+
     private final UpdateProcessor updateProcessor;
 
     @Override
