@@ -6,8 +6,10 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.utils.Decoder;
+import com.bipbup.utils.ConfigUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hashids.Hashids;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.*;
@@ -35,10 +37,9 @@ public class QueryUpdateStateHandler implements StateHandler {
     protected static final String SELECT_SCHEDULE_MESSAGE = "Выберите график работы:";
 
     private final AppUserDAO appUserDAO;
-
     private final AppUserConfigDAO appUserConfigDAO;
-
     private final Decoder decoder;
+    private final ConfigUtil configUtil;
 
     @Override
     public String process(AppUser appUser, String text) {
@@ -87,6 +88,7 @@ public class QueryUpdateStateHandler implements StateHandler {
         if (optional.isPresent()) {
             appUser.setState(state);
             appUserDAO.saveAndFlush(appUser);
+            configUtil.saveConfigSelection(appUser.getTelegramId(), configId);
             log.debug("User {} selected parameter to edit and state set to {}", appUser.getFirstName(), state);
             return message;
         } else {
