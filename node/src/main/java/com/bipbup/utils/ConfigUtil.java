@@ -16,7 +16,7 @@ public class ConfigUtil {
 
     @Cacheable(value = "configSelections")
     public Long getSelectedConfigId(Long telegramId) {
-        log.debug("No configuration selected for user with telegramId: " + telegramId);
+        log.debug("No configuration selected for user with telegramId: {}", telegramId);
         return null;
     }
 

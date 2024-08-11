@@ -17,6 +17,13 @@ import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 @RequiredArgsConstructor
 @Component
 public class WaitConfigNameStateHandler implements StateHandler {
+
+    private final AppUserDAO appUserDAO;
+
+    private final AppUserConfigDAO appUserConfigDAO;
+
+    private final ConfigUtil configUtil;
+
     protected static final int MAX_CONFIG_NAME_LENGTH = 50;
     protected static final String CANCEL_COMMAND = "/cancel";
     protected static final String CANCEL_MESSAGE = "Команда была отменена.";
@@ -25,11 +32,6 @@ public class WaitConfigNameStateHandler implements StateHandler {
     protected static final String CONFIG_UPDATED_MESSAGE = "Название конфигурации изменено.";
     protected static final String INVALID_CONFIG_NAME_MESSAGE = "Некорректное название. Пожалуйста, проверьте введенные данные.";
     protected static final String CONFIG_NOT_FOUND_MESSAGE = "Произошла ошибка. Попробуйте ещё раз.";
-
-    private final AppUserDAO appUserDAO;
-
-    private final AppUserConfigDAO appUserConfigDAO;
-    private final ConfigUtil configUtil;
 
     @Override
     public String process(final AppUser appUser, final String text) {

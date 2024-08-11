@@ -9,7 +9,6 @@ import com.bipbup.utils.Decoder;
 import com.bipbup.utils.ConfigUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hashids.Hashids;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.*;
@@ -18,6 +17,15 @@ import static com.bipbup.enums.AppUserState.*;
 @RequiredArgsConstructor
 @Component
 public class QueryUpdateStateHandler implements StateHandler {
+
+    private final AppUserDAO appUserDAO;
+
+    private final AppUserConfigDAO appUserConfigDAO;
+
+    private final Decoder decoder;
+
+    private final ConfigUtil configUtil;
+
     protected static final String COMMAND_CANCEL = "/cancel";
     protected static final String PREFIX_EDIT_CONFIG_NAME = "edit_config_name_";
     protected static final String PREFIX_EDIT_QUERY = "edit_query_";
@@ -35,11 +43,6 @@ public class QueryUpdateStateHandler implements StateHandler {
     protected static final String SELECT_EXPERIENCE_MESSAGE = "Выберите опыт работы:";
     protected static final String SELECT_EDUCATION_MESSAGE = "Выберите уровень образования:";
     protected static final String SELECT_SCHEDULE_MESSAGE = "Выберите график работы:";
-
-    private final AppUserDAO appUserDAO;
-    private final AppUserConfigDAO appUserConfigDAO;
-    private final Decoder decoder;
-    private final ConfigUtil configUtil;
 
     @Override
     public String process(AppUser appUser, String text) {

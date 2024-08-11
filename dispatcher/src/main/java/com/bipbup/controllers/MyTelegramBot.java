@@ -12,10 +12,10 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Slf4j
 @Component
 public class MyTelegramBot extends TelegramLongPollingBot {
-
-    private final UpdateProcessor updateProcessor;
     @Value("${bot.username}")
     private String botUsername;
+
+    private final UpdateProcessor updateProcessor;
 
     public MyTelegramBot(final UpdateProcessor updateProcessor,
                          final @Value("${bot.token}") String botToken) {

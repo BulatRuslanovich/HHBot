@@ -16,6 +16,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 public class KeyboardMarkupFactory {
+
+    private final AppUserConfigDAO appUserConfigDAO;
+
+    private final Encoder encoder;
+
     private static final int BUTTONS_PER_ROW = 2;
 
     private static final String QUERY_PREFIX = "query_";
@@ -33,10 +38,6 @@ public class KeyboardMarkupFactory {
     private static final String BUTTON_TEXT_EDIT_EXPERIENCE = "Изменить опыт работы";
     private static final String BUTTON_TEXT_EDIT_EDUCATION = "Изменить уровень образования";
     private static final String BUTTON_TEXT_EDIT_SCHEDULE = "Изменить график работы";
-
-    private final AppUserConfigDAO appUserConfigDAO;
-
-    private final Encoder encoder;
 
     public InlineKeyboardMarkup createUserConfigListKeyboard(AppUser appUser) {
         var userConfigs = appUserConfigDAO.findByAppUser(appUser);

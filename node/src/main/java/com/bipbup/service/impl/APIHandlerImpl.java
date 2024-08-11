@@ -28,18 +28,21 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class APIHandlerImpl implements APIHandler {
+
+    @Value("${headhunter.endpoint.searchForVacancy}")
+    private String searchForVacancyURI;
+
+    private final APIConnection apiConnection;
+
+    private final ObjectMapper objectMapper;
+
+    private final RestTemplate restTemplate;
+
     private static final int COUNT_OF_VACANCIES_IN_PAGE = 100;
     public static final int COUNT_OF_DAYS = 4;
     private static final int TIMESTAMP_FULL_LENGTH = 24;
     private static final int TIMESTAMP_TRIMMED_LENGTH = 19;
     private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
-
-    private final APIConnection apiConnection;
-    private final ObjectMapper objectMapper;
-    private final RestTemplate restTemplate;
-
-    @Value("${headhunter.endpoint.searchForVacancy}")
-    private String searchForVacancyURI;
 
     @Override
     public List<VacancyDTO> getNewVacancies(final AppUserConfig appUserConfig) {

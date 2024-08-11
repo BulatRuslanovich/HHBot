@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 public class Decoder {
+
     private final Hashids hashids;
 
     public Long idOf(String hash) {

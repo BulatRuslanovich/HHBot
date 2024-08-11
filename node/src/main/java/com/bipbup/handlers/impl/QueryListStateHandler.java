@@ -17,6 +17,15 @@ import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
 @RequiredArgsConstructor
 @Component
 public class QueryListStateHandler implements StateHandler {
+
+    private final AppUserDAO appUserDAO;
+
+    private final AppUserConfigDAO appUserConfigDAO;
+
+    private final BasicStateHandler basicStateHandler;
+
+    private final Decoder decoder;
+
     protected static final String COMMAND_CANCEL = "/cancel";
     protected static final String COMMAND_MY_QUERIES = "/myqueries";
     protected static final String COMMAND_NEW_QUERY = "/newquery";
@@ -26,14 +35,6 @@ public class QueryListStateHandler implements StateHandler {
     protected static final String QUERY_OUTPUT_FORMAT = """
             Конфигурация "%s" с запросом "%s"
             Что хотите сделать с ней?""";
-
-    private final AppUserDAO appUserDAO;
-
-    private final AppUserConfigDAO appUserConfigDAO;
-
-    private final BasicStateHandler basicStateHandler;
-
-    private final Decoder decoder;
 
     @Override
     public String process(AppUser appUser, String text) {

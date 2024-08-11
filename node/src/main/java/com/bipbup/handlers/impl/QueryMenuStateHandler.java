@@ -19,6 +19,15 @@ import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
 @RequiredArgsConstructor
 @Component
 public class QueryMenuStateHandler implements StateHandler {
+
+    private final BasicStateHandler basicStateHandler;
+
+    private final AppUserDAO appUserDAO;
+
+    private final AppUserConfigDAO appUserConfigDAO;
+
+    private final Decoder decoder;
+
     protected static final String COMMAND_CANCEL = "/cancel";
     protected static final String COMMAND_BACK_TO_QUERY_LIST = "back_to_query_list";
     protected static final String COMMAND_MY_QUERIES = "/myqueries";
@@ -28,14 +37,6 @@ public class QueryMenuStateHandler implements StateHandler {
     protected static final String MESSAGE_COMMAND_CANCELLED = "Команда отменена!";
     protected static final String MESSAGE_DELETE_CONFIRMATION = "Вы уверены, что хотите удалить этот запрос?";
     protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена.";
-
-    private final BasicStateHandler basicStateHandler;
-
-    private final AppUserDAO appUserDAO;
-
-    private final AppUserConfigDAO appUserConfigDAO;
-
-    private final Decoder decoder;
 
     @Override
     public String process(AppUser appUser, String text) {

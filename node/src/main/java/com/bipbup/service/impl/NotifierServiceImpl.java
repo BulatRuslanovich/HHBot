@@ -20,8 +20,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class NotifierServiceImpl implements NotifierService {
+
     private final APIHandler apiHandler;
+
     private final AnswerProducer answerProducer;
+
     private final AppUserConfigDAO appUserConfigDAO;
 
     @Override

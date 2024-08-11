@@ -20,6 +20,13 @@ import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 @RequiredArgsConstructor
 @Component
 public class BasicStateHandler implements StateHandler {
+
+    private final AppUserDAO appUserDAO;
+
+    private final AppUserConfigDAO appUserConfigDAO;
+
+    private Map<String, Function<AppUser, String>> commandHandlers;
+
     protected static final String WELCOME_MESSAGE = "Добро пожаловать в капитализм, %s!";
     protected static final String QUERY_PROMPT_MESSAGE = "Введите название вашей конфигурации, если хотите отменить команду, пожалуйста, введите /cancel:";
     protected static final String USER_QUERIES_MESSAGE = "Ваши запросы:";
@@ -27,10 +34,6 @@ public class BasicStateHandler implements StateHandler {
                 У вас пока нет сохранённых запросов.
                 Введите /newquery, чтобы добавить новый запрос.
                 """;
-
-    private final AppUserDAO appUserDAO;
-    private final AppUserConfigDAO appUserConfigDAO;
-    private Map<String, Function<AppUser, String>> commandHandlers;
 
     @PostConstruct
     public void init() {

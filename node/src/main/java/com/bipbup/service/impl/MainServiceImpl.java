@@ -37,8 +37,11 @@ import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 @Service
 public class MainServiceImpl implements MainService {
     private final UserUtil userUtil;
+
     private final KeyboardMarkupFactory markupFactory;
+
     private final AnswerProducer answerProducer;
+
     private final Map<AppUserState, StateHandler> stateHandlers;
 
     public MainServiceImpl(final UserUtil userUtil,
@@ -92,25 +95,25 @@ public class MainServiceImpl implements MainService {
         }
     }
 
-    private void handleOutput(AppUser appUser, Update update, String output) {
-        if (appUser.getState().equals(QUERY_LIST_STATE) && !update.hasCallbackQuery()) {
-            sendAnswer(output, appUser.getTelegramId(), markupFactory.createUserConfigListKeyboard(appUser));
+    private void handleOutput(AppUser user, Update update, String output) {
+        if (user.getState().equals(QUERY_LIST_STATE) && !update.hasCallbackQuery()) {
+            sendAnswer(output, user.getTelegramId(), markupFactory.createUserConfigListKeyboard(user));
         } else if (update.hasCallbackQuery()) {
-            handleCallbackQuery(appUser, update, output);
+            handleCallbackQuery(user, update, output);
         } else {
-            sendAnswer(output, appUser.getTelegramId());
+            sendAnswer(output, user.getTelegramId());
         }
     }
 
-    private void handleCallbackQuery(AppUser appUser, Update update, String output) {
+    private void handleCallbackQuery(AppUser user, Update update, String output) {
         var callbackQuery = update.getCallbackQuery();
 
-        var isWaitState = appUser.getState().toString().startsWith("WAIT_");
+        var isWaitState = user.getState().toString().startsWith("WAIT_");
         if (isWaitState) {
-            sendAnswer(output, appUser.getTelegramId());
+            sendAnswer(output, user.getTelegramId());
         } else {
-            editAnswer(output, appUser.getTelegramId(), callbackQuery.getMessage().getMessageId(),
-                    getKeyboard(appUser, callbackQuery));
+            editAnswer(output, user.getTelegramId(), callbackQuery.getMessage().getMessageId(),
+                    getKeyboard(user, callbackQuery));
         }
     }
 

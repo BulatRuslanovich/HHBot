@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @RequiredArgsConstructor
 @Service
 public class UpdateConsumerImpl implements UpdateConsumer {
+
     private final MainService mainService;
 
     @Override

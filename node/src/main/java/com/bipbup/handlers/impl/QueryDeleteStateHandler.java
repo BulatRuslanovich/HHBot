@@ -41,9 +41,6 @@ public class QueryDeleteStateHandler implements StateHandler {
             } else if (COMMAND_DELETE_NO.equals(text)) {
                 return handleDeleteNoCommand(appUser);
             }
-        } catch (NumberFormatException e) {
-            log.error("Failed to parse configId from text: {}", text, e);
-            return MESSAGE_ERROR_PROCESSING_COMMAND;
         } catch (Exception e) {
             log.error("An unexpected error occurred while processing text: {}", text, e);
             return MESSAGE_UNEXPECTED_ERROR;

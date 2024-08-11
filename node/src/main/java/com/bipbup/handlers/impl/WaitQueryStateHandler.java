@@ -18,16 +18,19 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 @RequiredArgsConstructor
 @Component
 public class WaitQueryStateHandler implements StateHandler {
+
+    private final AppUserConfigDAO appUserConfigDAO;
+
+    private final AppUserDAO appUserDAO;
+
+    private final ConfigUtil configUtil;
+
     protected static final int MAX_QUERY_LENGTH = 50;
     protected static final String CANCEL_COMMAND = "/cancel";
     protected static final String CANCEL_MESSAGE = "Команда была отменена.";
     protected static final String INVALID_QUERY_MESSAGE = "Некорректный запрос. Пожалуйста, проверьте введенные данные.";
     protected static final String QUERY_SET_MESSAGE_TEMPLATE = "Запрос \"%s\" успешно установлен в конфигурации \"%s\".";
     protected static final String CONFIG_NOT_FOUND_MESSAGE = "Произошла ошибка. Попробуйте ещё раз.";
-
-    private final AppUserConfigDAO appUserConfigDAO;
-    private final AppUserDAO appUserDAO;
-    private final ConfigUtil configUtil;
 
     @Override
     public String process(final AppUser appUser, final String query) {

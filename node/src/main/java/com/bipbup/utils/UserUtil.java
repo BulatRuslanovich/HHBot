@@ -14,6 +14,7 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 @Component
 @Transactional
 public class UserUtil {
+
     private final AppUserDAO appUserDAO;
 
     public AppUser findOrSaveAppUser(final Update update) {
