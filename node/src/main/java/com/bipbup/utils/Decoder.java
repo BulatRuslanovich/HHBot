@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class Decoder {
     private final Hashids hashids;
 
-    public Long decode(String hash) {
+    public Long idOf(String hash) {
         var decode = hashids.decode(hash);
 
         if (decode != null && decode.length > 0) {

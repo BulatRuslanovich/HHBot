@@ -81,7 +81,7 @@ public class QueryUpdateStateHandler implements StateHandler {
                                            AppUserState state,
                                            String message) {
         var hash = text.substring(prefixLength);
-        var configId = decoder.decode(hash);
+        var configId = decoder.idOf(hash);
         var optional = appUserConfigDAO.findById(configId);
 
         if (optional.isPresent()) {

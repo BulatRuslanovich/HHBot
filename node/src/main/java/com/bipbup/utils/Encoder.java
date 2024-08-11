@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class Encoder {
     private final Hashids hashids;
 
-    public String encode(Long number) {
+    public String hashOf(Long number) {
         var encode = hashids.encode(number);
 
         if (encode != null && !encode.isEmpty()) {

@@ -78,7 +78,7 @@ public class QueryMenuStateHandler implements StateHandler {
 
     private String handleUpdateCommand(AppUser appUser, String text) {
         var hash = text.substring(PREFIX_UPDATE.length());
-        var configId = decoder.decode(hash);
+        var configId = decoder.idOf(hash);
         var optionalAppUserConfig = appUserConfigDAO.findById(configId);
 
         if (optionalAppUserConfig.isPresent()) {

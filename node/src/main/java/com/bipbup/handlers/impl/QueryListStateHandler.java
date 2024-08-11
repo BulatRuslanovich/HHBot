@@ -56,7 +56,7 @@ public class QueryListStateHandler implements StateHandler {
 
     private String handleQueryCommand(AppUser appUser, String text) {
         var hash = text.substring(PREFIX_QUERY.length());
-        var configId = decoder.decode(hash);
+        var configId = decoder.idOf(hash);
         var answer = generateQueryOutput(configId);
 
         if (Boolean.TRUE.equals(answer.getSecond())) {

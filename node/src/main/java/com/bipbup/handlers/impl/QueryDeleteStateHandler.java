@@ -60,7 +60,7 @@ public class QueryDeleteStateHandler implements StateHandler {
 
     private String handleDeleteYesCommand(AppUser appUser, String text) {
         var hash = text.substring(PREFIX_DELETE_YES.length());
-        var configId = decoder.decode(hash);
+        var configId = decoder.idOf(hash);
         var optional = appUserConfigDAO.findById(configId);
 
         if (optional.isPresent()) {

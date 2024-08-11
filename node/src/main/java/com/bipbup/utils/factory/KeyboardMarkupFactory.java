@@ -43,7 +43,7 @@ public class KeyboardMarkupFactory {
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         userConfigs.forEach(c -> buttons.add(createButton(c.getConfigName(),
-                String.format("%s%s", QUERY_PREFIX, encoder.encode(c.getUserConfigId())))
+                String.format("%s%s", QUERY_PREFIX, encoder.hashOf(c.getUserConfigId())))
         ));
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
