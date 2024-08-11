@@ -4,14 +4,9 @@ import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.StateHandler;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
@@ -25,8 +20,9 @@ public class BasicStateHandler implements StateHandler {
 
     private final AppUserConfigDAO appUserConfigDAO;
 
-    private Map<String, Function<AppUser, String>> commandHandlers;
-
+    protected static final String START_COMMAND = "/start";
+    protected static final String NEWQUERY_COMMAND = "/newquery";
+    protected static final String MYQUERIES_COMMAND = "/myqueries";
     protected static final String WELCOME_MESSAGE = "Добро пожаловать в капитализм, %s!";
     protected static final String QUERY_PROMPT_MESSAGE = "Введите название вашей конфигурации, если хотите отменить команду, пожалуйста, введите /cancel:";
     protected static final String USER_QUERIES_MESSAGE = "Ваши запросы:";
@@ -35,44 +31,51 @@ public class BasicStateHandler implements StateHandler {
                 Введите /newquery, чтобы добавить новый запрос.
                 """;
 
-    @PostConstruct
-    public void init() {
-        commandHandlers = new HashMap<>();
-        commandHandlers.put("/start", this::startInteraction);
-        commandHandlers.put("/newquery", this::addQueryOutput);
-        commandHandlers.put("/myqueries", this::showQueriesOutput);
-    }
-
     @Override
-    public String process(final AppUser appUser, final String text) {
-        return commandHandlers.getOrDefault(text, user -> "").apply(appUser);
+    public String process(final AppUser user, final String input) {
+        if (isStartCommand(input)) return processStartCommand(user);
+        if (isNewQueryCommand(input)) return processNewQueryCommand(user);
+        if (isMyQueriesCommand(input)) return processMyQueriesCommand(user);
+        return "";
     }
 
-    private String startInteraction(final AppUser appUser) {
-        var firstName = appUser.getFirstName();
+    private boolean isStartCommand(String input) {
+        return START_COMMAND.equals(input);
+    }
+
+    private boolean isNewQueryCommand(String input) {
+        return NEWQUERY_COMMAND.equals(input);
+    }
+
+    private boolean isMyQueriesCommand(String input) {
+        return MYQUERIES_COMMAND.equals(input);
+    }
+
+    private String processStartCommand(final AppUser user) {
+        var firstName = user.getFirstName();
         return String.format(WELCOME_MESSAGE, firstName);
     }
 
-    private String addQueryOutput(final AppUser appUser) {
-        if (!WAIT_CONFIG_NAME_STATE.equals(appUser.getState())) {
-            appUser.setState(WAIT_CONFIG_NAME_STATE);
-            appUserDAO.saveAndFlush(appUser);
-            log.debug("User {} changed state to WAIT_CONFIG_NAME_STATE", appUser.getFirstName());
+    private String processNewQueryCommand(final AppUser user) {
+        if (!WAIT_CONFIG_NAME_STATE.equals(user.getState())) {
+            user.setState(WAIT_CONFIG_NAME_STATE);
+            appUserDAO.saveAndFlush(user);
+            log.debug("User {} changed state to WAIT_CONFIG_NAME_STATE", user.getFirstName());
         }
+
         return QUERY_PROMPT_MESSAGE;
     }
 
-    protected String showQueriesOutput(final AppUser appUser) {
-        var appUserConfigs = appUserConfigDAO.findByAppUser(appUser);
-        if (appUserConfigs == null || appUserConfigs.isEmpty()) {
-            return NO_SAVED_QUERIES_MESSAGE;
+    protected String processMyQueriesCommand(final AppUser user) {
+        var appUserConfigs = appUserConfigDAO.findByAppUser(user);
+        if (appUserConfigs == null || appUserConfigs.isEmpty()) return NO_SAVED_QUERIES_MESSAGE;
+
+        if (!QUERY_LIST_STATE.equals(user.getState())) {
+            user.setState(QUERY_LIST_STATE);
+            appUserDAO.saveAndFlush(user);
+            log.debug("User {} changed state to QUERY_LIST_STATE", user.getFirstName());
         }
 
-        if (!QUERY_LIST_STATE.equals(appUser.getState())) {
-            appUser.setState(QUERY_LIST_STATE);
-            appUserDAO.saveAndFlush(appUser);
-            log.debug("User {} changed state to QUERY_LIST_STATE", appUser.getFirstName());
-        }
         return USER_QUERIES_MESSAGE;
     }
 }

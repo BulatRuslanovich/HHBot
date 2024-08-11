@@ -12,9 +12,18 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_DELETE_STATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 class QueryMenuStateHandlerTest {
+
+    protected static final String CANCEL_COMMAND = "/cancel";
+    protected static final String MYQUERIES_COMMAND = "/myqueries";
+    protected static final String NEWQUERY_COMMAND = "/newquery";
+    protected static final String MESSAGE_COMMAND_CANCELLED = "Команда была отменена.";
 
     @Mock
     private BasicStateHandler basicStateHandler;
@@ -35,39 +44,39 @@ class QueryMenuStateHandlerTest {
     }
 
     @Test
-    void testHandleCancelCommand() {
-        String result = queryMenuStateHandler.process(appUser, QueryMenuStateHandler.COMMAND_CANCEL);
+    void testProcessCancelCommand() {
+        String result = queryMenuStateHandler.process(appUser, CANCEL_COMMAND);
 
-        assertEquals(QueryMenuStateHandler.MESSAGE_COMMAND_CANCELLED, result);
+        assertEquals(MESSAGE_COMMAND_CANCELLED, result);
         assertEquals(BASIC_STATE, appUser.getState());
         verify(appUserDAO, times(1)).saveAndFlush(appUser);
     }
 
     @Test
-    void testHandleMyQueriesCommand() {
-        when(basicStateHandler.process(any(AppUser.class), eq(QueryMenuStateHandler.COMMAND_MY_QUERIES)))
+    void testProcessMyQueriesCommand() {
+        when(basicStateHandler.process(any(AppUser.class), eq(MYQUERIES_COMMAND)))
                 .thenReturn("My Queries Output");
 
-        String result = queryMenuStateHandler.process(appUser, QueryMenuStateHandler.COMMAND_MY_QUERIES);
+        String result = queryMenuStateHandler.process(appUser, MYQUERIES_COMMAND);
 
         assertEquals("My Queries Output", result);
-        verify(basicStateHandler, times(1)).process(appUser, QueryMenuStateHandler.COMMAND_MY_QUERIES);
+        verify(basicStateHandler, times(1)).process(appUser, MYQUERIES_COMMAND);
     }
 
     @Test
     void testHandleNewQueryCommand() {
-        when(basicStateHandler.process(any(AppUser.class), eq(QueryMenuStateHandler.COMMAND_NEW_QUERY)))
+        when(basicStateHandler.process(any(AppUser.class), eq(NEWQUERY_COMMAND)))
                 .thenReturn("New Query Output");
 
-        String result = queryMenuStateHandler.process(appUser, QueryMenuStateHandler.COMMAND_NEW_QUERY);
+        String result = queryMenuStateHandler.process(appUser, NEWQUERY_COMMAND);
 
         assertEquals("New Query Output", result);
-        verify(basicStateHandler, times(1)).process(appUser, QueryMenuStateHandler.COMMAND_NEW_QUERY);
+        verify(basicStateHandler, times(1)).process(appUser, NEWQUERY_COMMAND);
     }
 
     @Test
-    void testHandleDeleteCommand() {
-        String result = queryMenuStateHandler.process(appUser, QueryMenuStateHandler.PREFIX_DELETE + "123");
+    void testProcessDeleteCommand() {
+        String result = queryMenuStateHandler.process(appUser, QueryMenuStateHandler.DELETE_PREFIX + "123");
 
         assertEquals(QueryMenuStateHandler.MESSAGE_DELETE_CONFIRMATION, result);
         assertEquals(QUERY_DELETE_STATE, appUser.getState());

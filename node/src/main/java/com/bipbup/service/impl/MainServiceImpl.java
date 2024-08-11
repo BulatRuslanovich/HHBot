@@ -91,21 +91,25 @@ public class MainServiceImpl implements MainService {
         }
 
         if (!output.isEmpty()) {
-            handleOutput(appUser, update, output);
+            processOutput(appUser, update, output);
         }
     }
 
-    private void handleOutput(AppUser user, Update update, String output) {
+    private void processOutput(final AppUser user,
+                               final Update update,
+                               final String output) {
         if (user.getState().equals(QUERY_LIST_STATE) && !update.hasCallbackQuery()) {
             sendAnswer(output, user.getTelegramId(), markupFactory.createUserConfigListKeyboard(user));
         } else if (update.hasCallbackQuery()) {
-            handleCallbackQuery(user, update, output);
+            processCallbackQuery(user, update, output);
         } else {
             sendAnswer(output, user.getTelegramId());
         }
     }
 
-    private void handleCallbackQuery(AppUser user, Update update, String output) {
+    private void processCallbackQuery(final AppUser user,
+                                      final Update update,
+                                      final String output) {
         var callbackQuery = update.getCallbackQuery();
 
         var isWaitState = user.getState().toString().startsWith("WAIT_");
@@ -113,7 +117,7 @@ public class MainServiceImpl implements MainService {
             sendAnswer(output, user.getTelegramId());
         } else {
             editAnswer(output, user.getTelegramId(), callbackQuery.getMessage().getMessageId(),
-                    getKeyboard(user, callbackQuery));
+                    fetchKeyboard(user, callbackQuery));
         }
     }
 
@@ -148,8 +152,8 @@ public class MainServiceImpl implements MainService {
         answerProducer.produceEdit(messageText);
     }
 
-    private InlineKeyboardMarkup getKeyboard(final AppUser appUser,
-                                             final CallbackQuery callbackQuery) {
+    private InlineKeyboardMarkup fetchKeyboard(final AppUser appUser,
+                                               final CallbackQuery callbackQuery) {
         var userState = appUser.getState();
         if (userState.equals(QUERY_LIST_STATE)) {
             return markupFactory.createUserConfigListKeyboard(appUser);

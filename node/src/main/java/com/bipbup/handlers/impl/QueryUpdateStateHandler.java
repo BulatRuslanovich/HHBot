@@ -4,21 +4,18 @@ import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
+import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
-import com.bipbup.utils.Decoder;
 import com.bipbup.utils.ConfigUtil;
-import lombok.RequiredArgsConstructor;
+import com.bipbup.utils.Decoder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.*;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
-public class QueryUpdateStateHandler implements StateHandler {
-
-    private final AppUserDAO appUserDAO;
+public class QueryUpdateStateHandler extends Cancellable implements StateHandler {
 
     private final AppUserConfigDAO appUserConfigDAO;
 
@@ -26,14 +23,12 @@ public class QueryUpdateStateHandler implements StateHandler {
 
     private final ConfigUtil configUtil;
 
-    protected static final String COMMAND_CANCEL = "/cancel";
-    protected static final String PREFIX_EDIT_CONFIG_NAME = "edit_config_name_";
-    protected static final String PREFIX_EDIT_QUERY = "edit_query_";
-    protected static final String PREFIX_EDIT_AREA = "edit_area_";
-    protected static final String PREFIX_EDIT_EXPERIENCE = "edit_experience_";
-    protected static final String PREFIX_EDIT_EDUCATION = "edit_education_";
-    protected static final String PREFIX_EDIT_SCHEDULE = "edit_schedule_";
-    protected static final String MESSAGE_COMMAND_CANCELLED = "Команда отменена!";
+    protected static final String EDIT_CONFIG_NAME_PREFIX = "edit_config_name_";
+    protected static final String EDIT_QUERY_PREFIX = "edit_query_";
+    protected static final String EDIT_AREA_PREFIX = "edit_area_";
+    protected static final String EDIT_EXPERIENCE_PREFIX = "edit_experience_";
+    protected static final String EDIT_EDUCATION_PREFIX = "edit_education_";
+    protected static final String EDIT_SCHEDULE_PREFIX = "edit_schedule_";
     protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена";
     protected static final String MESSAGE_ERROR_PROCESSING_COMMAND = "Ошибка при обработке команды. Попробуйте еще раз.";
     protected static final String MESSAGE_UNEXPECTED_ERROR = "Произошла ошибка. Попробуйте еще раз.";
@@ -44,47 +39,52 @@ public class QueryUpdateStateHandler implements StateHandler {
     protected static final String SELECT_EDUCATION_MESSAGE = "Выберите уровень образования:";
     protected static final String SELECT_SCHEDULE_MESSAGE = "Выберите график работы:";
 
+    public QueryUpdateStateHandler(AppUserDAO appUserDAO,
+                                   BasicStateHandler basicStateHandler,
+                                   AppUserConfigDAO appUserConfigDAO,
+                                   Decoder decoder,
+                                   ConfigUtil configUtil) {
+        super(appUserDAO, basicStateHandler);
+        this.appUserConfigDAO = appUserConfigDAO;
+        this.decoder = decoder;
+        this.configUtil = configUtil;
+    }
+
     @Override
-    public String process(AppUser appUser, String text) {
-        try {
-            if (COMMAND_CANCEL.equals(text)) {
-                return cancelCommand(appUser);
-            } else if (text.startsWith(PREFIX_EDIT_CONFIG_NAME)) {
-                return handleEditConfigCommand(appUser,
-                        text,
-                        PREFIX_EDIT_CONFIG_NAME.length(),
-                        WAIT_CONFIG_NAME_STATE,
-                        ENTER_CONFIG_NAME_MESSAGE);
-            } else if (text.startsWith(PREFIX_EDIT_QUERY)) {
-                return handleEditConfigCommand(appUser,
-                        text,
-                        PREFIX_EDIT_QUERY.length(),
-                        WAIT_QUERY_STATE,
-                        ENTER_QUERY_MESSAGE);
-            }
-        } catch (NumberFormatException e) {
-            log.error("Failed to parse configId from text: {}", text, e);
-            return MESSAGE_ERROR_PROCESSING_COMMAND;
-        } catch (Exception e) {
-            log.error("An unexpected error occurred while processing text: {}", text, e);
-            return MESSAGE_UNEXPECTED_ERROR;
+    public String process(AppUser user, String input) {
+        if (isCancelCommand(input)) return processCancelCommand(user);
+        if (isBasicCommand(input)) return processBasicCommand(user, input);
+        if (hasEditConfigNamePrefix(input)) {
+            return processEditConfigCommand(user, input,
+                    EDIT_CONFIG_NAME_PREFIX.length(),
+                    WAIT_CONFIG_NAME_STATE,
+                    ENTER_CONFIG_NAME_MESSAGE);
         }
+        
+        if (hasEditQueryPrefix(input)) {
+            return processEditConfigCommand(user, input,
+                    EDIT_QUERY_PREFIX.length(),
+                    WAIT_QUERY_STATE,
+                    ENTER_QUERY_MESSAGE);
+        }
+        
         return "";
     }
-
-    private String cancelCommand(AppUser appUser) {
-        appUser.setState(BASIC_STATE);
-        appUserDAO.saveAndFlush(appUser);
-        log.debug("User {} cancelled the command and state set to BASIC_STATE", appUser.getFirstName());
-        return MESSAGE_COMMAND_CANCELLED;
+    
+    private boolean hasEditQueryPrefix(String input) {
+        return input.startsWith(EDIT_QUERY_PREFIX);
     }
 
-    private String handleEditConfigCommand(AppUser appUser,
-                                           String text,
-                                           int prefixLength,
-                                           AppUserState state,
-                                           String message) {
-        var hash = text.substring(prefixLength);
+    private boolean hasEditConfigNamePrefix(String input) {
+        return input.startsWith(EDIT_CONFIG_NAME_PREFIX);
+    }
+
+    private String processEditConfigCommand(AppUser appUser,
+                                            String input,
+                                            int prefixLength,
+                                            AppUserState state,
+                                            String message) {
+        var hash = input.substring(prefixLength);
         var configId = decoder.idOf(hash);
         var optional = appUserConfigDAO.findById(configId);
 

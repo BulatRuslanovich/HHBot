@@ -43,17 +43,16 @@ class BasicStateHandlerTest {
         appUser = new AppUser();
         appUser.setFirstName("John");
         appUser.setState(AppUserState.BASIC_STATE);
-        basicStateHandler.init();
     }
 
     @Test
-    void testStartInteraction() {
+    void testProcessStartCommand() {
         String result = basicStateHandler.process(appUser, "/start");
         assertEquals(String.format(WELCOME_MESSAGE, "John"), result);
     }
 
     @Test
-    void testAddQueryOutput_ChangesState() {
+    void testProcessNewQueryCommand_ChangesState() {
         String result = basicStateHandler.process(appUser, "/newquery");
         assertEquals(QUERY_PROMPT_MESSAGE, result);
         assertEquals(AppUserState.WAIT_CONFIG_NAME_STATE, appUser.getState());
@@ -61,7 +60,7 @@ class BasicStateHandlerTest {
     }
 
     @Test
-    void testShowQueriesOutput_NoQueries() {
+    void testProcessMyQueriesOutput_NoQueries() {
         when(appUserConfigDAO.findByAppUser(appUser)).thenReturn(Collections.emptyList());
 
         String result = basicStateHandler.process(appUser, "/myqueries");
@@ -70,7 +69,7 @@ class BasicStateHandlerTest {
     }
 
     @Test
-    void testShowQueriesOutput_WithQueries() {
+    void testProcessMyQueriesOutput_WithQueries() {
         AppUserConfig appUserConfig = mock(AppUserConfig.class);
         when(appUserConfigDAO.findByAppUser(appUser)).thenReturn(Collections.singletonList(appUserConfig));
 
@@ -82,7 +81,7 @@ class BasicStateHandlerTest {
     }
 
     @Test
-    void testAddQueryOutput_AlreadyInWaitConfigNameState() {
+    void testProcessNewQueryCommand_AlreadyInWaitConfigNameState() {
         appUser.setState(AppUserState.WAIT_CONFIG_NAME_STATE);
 
         String result = basicStateHandler.process(appUser, "/newquery");
@@ -93,7 +92,7 @@ class BasicStateHandlerTest {
     }
 
     @Test
-    void testShowQueriesOutput_AlreadyInQueryListState() {
+    void testProcessMyQueriesCommand_AlreadyInQueryListState() {
         appUser.setState(AppUserState.QUERY_LIST_STATE);
         AppUserConfig appUserConfig = mock(AppUserConfig.class);
         when(appUserConfigDAO.findByAppUser(appUser)).thenReturn(Collections.singletonList(appUserConfig));
