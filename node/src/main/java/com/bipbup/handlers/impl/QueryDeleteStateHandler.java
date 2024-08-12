@@ -6,10 +6,9 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.utils.Decoder;
+import com.bipbup.utils.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import static com.bipbup.enums.AppUserState.BASIC_STATE;
 
 @Slf4j
 @Component
@@ -28,10 +27,11 @@ public class QueryDeleteStateHandler extends Cancellable implements StateHandler
     protected static final String MESSAGE_UNEXPECTED_ERROR = "Произошла ошибка. Попробуйте еще раз.";
 
     public QueryDeleteStateHandler(AppUserDAO appUserDAO,
+                                   UserUtil userUtil,
                                    BasicStateHandler basicStateHandler,
                                    AppUserConfigDAO appUserConfigDAO,
                                    Decoder decoder) {
-        super(appUserDAO, basicStateHandler);
+        super(appUserDAO, userUtil, basicStateHandler);
         this.appUserConfigDAO = appUserConfigDAO;
         this.decoder = decoder;
     }
@@ -61,8 +61,7 @@ public class QueryDeleteStateHandler extends Cancellable implements StateHandler
 
         if (optional.isPresent()) {
             appUserConfigDAO.delete(optional.get());
-            user.setState(BASIC_STATE);
-            appUserDAO.saveAndFlush(user);
+            userUtil.clearUserState(user.getTelegramId());
             log.debug("User {} deleted configuration with id {} and state set to BASIC_STATE", user.getFirstName(), configId);
             return MESSAGE_CONFIGURATION_DELETED;
         } else {
@@ -72,8 +71,7 @@ public class QueryDeleteStateHandler extends Cancellable implements StateHandler
     }
 
     private String processDeleteNoCommand(AppUser user) {
-        user.setState(BASIC_STATE);
-        appUserDAO.saveAndFlush(user);
+        userUtil.clearUserState(user.getTelegramId());
         log.debug("User {} chose not to delete the configuration and state set to BASIC_STATE", user.getFirstName());
         return MESSAGE_CONFIGURATION_NOT_DELETED;
     }

@@ -2,7 +2,11 @@ package com.bipbup.utils;
 
 import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
+import com.bipbup.enums.AppUserState;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -32,10 +36,22 @@ public class UserUtil {
                 .username(messageSender.getUserName())
                 .firstName(messageSender.getFirstName())
                 .lastName(messageSender.getLastName())
-                .state(BASIC_STATE)
                 .build();
 
         appUserDAO.save(appUser);
         return appUser;
     }
+
+    @CachePut(value = "userStates", key = "#telegramId")
+    public AppUserState saveUserState(Long telegramId, AppUserState state) {
+        return state;
+    }
+
+    @Cacheable(value = "userStates")
+    public AppUserState getUserState(Long telegramId) {
+        return BASIC_STATE;
+    }
+
+    @CacheEvict(value = "userStates")
+    public void clearUserState(Long telegramId) {}
 }

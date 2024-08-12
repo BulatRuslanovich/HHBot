@@ -7,10 +7,10 @@ import com.bipbup.entity.AppUserConfig;
 import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.utils.ConfigUtil;
+import com.bipbup.utils.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import static com.bipbup.enums.AppUserState.BASIC_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 
 @Slf4j
@@ -29,10 +29,11 @@ public class WaitConfigNameStateHandler extends Cancellable implements StateHand
     protected static final String CONFIG_NOT_FOUND_MESSAGE = "Произошла ошибка. Попробуйте ещё раз.";
 
     public WaitConfigNameStateHandler(AppUserDAO appUserDAO,
+                                      UserUtil userUtil,
                                       BasicStateHandler basicStateHandler,
                                       AppUserConfigDAO appUserConfigDAO,
                                       ConfigUtil configUtil) {
-        super(appUserDAO, basicStateHandler);
+        super(appUserDAO, userUtil, basicStateHandler);
         this.appUserConfigDAO = appUserConfigDAO;
         this.configUtil = configUtil;
     }
@@ -75,15 +76,13 @@ public class WaitConfigNameStateHandler extends Cancellable implements StateHand
                                     final String configName) {
         config.setConfigName(configName);
         appUserConfigDAO.saveAndFlush(config);
-        user.setState(BASIC_STATE);
-        appUserDAO.saveAndFlush(user);
-        log.debug("User {} updated config \"{}\" and state set to BASIC_STATE", user, configName);
+        userUtil.clearUserState(user.getTelegramId());
+        log.debug("User {} updated config \"{}\" and state set to BASIC_STATE", user.getFirstName(), configName);
         return CONFIG_UPDATED_MESSAGE;
     }
 
     private String processExistingConfig(final AppUser user, final String configName) {
-        user.setState(BASIC_STATE);
-        appUserDAO.saveAndFlush(user);
+        userUtil.clearUserState(user.getTelegramId());
         log.debug("User {} attempted to create an existing config '{}'", user.getFirstName(), configName);
         return String.format(CONFIG_EXISTS_MESSAGE_TEMPLATE, configName);
     }
@@ -98,24 +97,21 @@ public class WaitConfigNameStateHandler extends Cancellable implements StateHand
 
     private String processConfigNotFoundMessage(final AppUser user, final Long configId) {
         configUtil.clearConfigSelection(user.getTelegramId());
-        user.setState(BASIC_STATE);
-        appUserDAO.saveAndFlush(user);
-        log.warn("Config with id {} not found for user {}", configId, user.getTelegramId());
+        userUtil.clearUserState(user.getTelegramId());
+        log.warn("Config with id {} not found for user {}", configId, user.getFirstName());
         return CONFIG_NOT_FOUND_MESSAGE;
     }
 
     private String processNewConfig(final AppUser user, final String configName) {
         AppUserConfig newConfig = createConfigWithOnlyName(user, configName);
         appUserConfigDAO.saveAndFlush(newConfig);
-        user.setState(WAIT_QUERY_STATE);
-        appUserDAO.saveAndFlush(user);
-        log.debug("User {} created config \"{}\" and state set to WAIT_QUERY_STATE", user, configName);
+        userUtil.saveUserState(user.getTelegramId(), WAIT_QUERY_STATE);
+        log.debug("User {} created config \"{}\" and state set to WAIT_QUERY_STATE", user.getFirstName(), configName);
         return String.format(ENTER_QUERY_MESSAGE_TEMPLATE, configName);
     }
 
     private String processInvalidConfigName(AppUser user) {
-        user.setState(BASIC_STATE);
-        appUserDAO.saveAndFlush(user);
+        userUtil.clearUserState(user.getTelegramId());
         log.debug("User {} provided an invalid config name.", user.getFirstName());
         return INVALID_CONFIG_NAME_MESSAGE;
     }

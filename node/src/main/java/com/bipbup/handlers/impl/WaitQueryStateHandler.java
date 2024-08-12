@@ -7,12 +7,11 @@ import com.bipbup.entity.AppUserConfig;
 import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.utils.ConfigUtil;
+import com.bipbup.utils.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-
-import static com.bipbup.enums.AppUserState.BASIC_STATE;
 
 @Slf4j
 @Component
@@ -27,12 +26,12 @@ public class WaitQueryStateHandler extends Cancellable implements StateHandler {
     protected static final String QUERY_SET_MESSAGE_TEMPLATE = "Запрос \"%s\" успешно установлен в конфигурации \"%s\".";
     protected static final String CONFIG_NOT_FOUND_MESSAGE = "Произошла ошибка. Попробуйте ещё раз.";
 
-
     public WaitQueryStateHandler(AppUserDAO appUserDAO,
                                  BasicStateHandler basicStateHandler,
+                                 UserUtil userUtil,
                                  AppUserConfigDAO appUserConfigDAO,
                                  ConfigUtil configUtil) {
-        super(appUserDAO, basicStateHandler);
+        super(appUserDAO, userUtil, basicStateHandler);
         this.appUserConfigDAO = appUserConfigDAO;
         this.configUtil = configUtil;
     }
@@ -91,15 +90,13 @@ public class WaitQueryStateHandler extends Cancellable implements StateHandler {
     private String processConfigNotFoundMessage(final AppUser user) {
         var configId = configUtil.getSelectedConfigId(user.getTelegramId()); //TODO: не понимаю зачем нам айди мертвых душ
         configUtil.clearConfigSelection(user.getTelegramId());
-        user.setState(BASIC_STATE);
-        appUserDAO.saveAndFlush(user);
+        userUtil.clearUserState(user.getTelegramId());
         log.warn("Config with id {} not found for user {}", configId, user.getTelegramId());
         return CONFIG_NOT_FOUND_MESSAGE;
     }
 
     private String processInvalidQuery(final AppUser user) {
-        user.setState(BASIC_STATE);
-        appUserDAO.saveAndFlush(user);
+        userUtil.clearUserState(user.getTelegramId());
         log.debug("User {} provided an invalid query and state set to BASIC_STATE.", user.getFirstName());
         return INVALID_QUERY_MESSAGE;
     }
@@ -107,8 +104,7 @@ public class WaitQueryStateHandler extends Cancellable implements StateHandler {
     private String processValidQuery(final AppUser user, final AppUserConfig config, final String input) {
         config.setQueryText(input);
         appUserConfigDAO.saveAndFlush(config);
-        user.setState(BASIC_STATE);
-        appUserDAO.saveAndFlush(user);
+        userUtil.clearUserState(user.getTelegramId());
         log.info("User {} set query '{}' in configuration '{}'", user.getFirstName(), input, config.getConfigName());
         return String.format(QUERY_SET_MESSAGE_TEMPLATE, input, config.getConfigName());
     }

@@ -6,6 +6,7 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.utils.Decoder;
+import com.bipbup.utils.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
@@ -27,10 +28,11 @@ public class QueryListStateHandler extends Cancellable implements StateHandler {
             Что хотите сделать с ней?""";
 
     public QueryListStateHandler(AppUserDAO appUserDAO,
+                                 UserUtil userUtil,
                                  BasicStateHandler basicStateHandler,
                                  AppUserConfigDAO appUserConfigDAO,
                                  Decoder decoder) {
-        super(appUserDAO, basicStateHandler);
+        super(appUserDAO, userUtil, basicStateHandler);
         this.appUserConfigDAO = appUserConfigDAO;
         this.decoder = decoder;
     }
@@ -64,8 +66,7 @@ public class QueryListStateHandler extends Cancellable implements StateHandler {
         var answer = generateQueryOutput(configId);
 
         if (Boolean.TRUE.equals(answer.getSecond())) {
-            user.setState(QUERY_MENU_STATE);
-            appUserDAO.saveAndFlush(user);
+            userUtil.saveUserState(user.getTelegramId(), QUERY_MENU_STATE);
         }
 
         log.debug("User {} queried configuration with id {} and state set to QUERY_MENU_STATE", user.getFirstName(), configId);

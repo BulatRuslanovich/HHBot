@@ -4,6 +4,7 @@ import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.StateHandler;
+import com.bipbup.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,8 @@ public class BasicStateHandler implements StateHandler {
     private final AppUserDAO appUserDAO;
 
     private final AppUserConfigDAO appUserConfigDAO;
+
+    private final UserUtil userUtil;
 
     protected static final String START_COMMAND = "/start";
     protected static final String NEWQUERY_COMMAND = "/newquery";
@@ -57,9 +60,9 @@ public class BasicStateHandler implements StateHandler {
     }
 
     private String processNewQueryCommand(final AppUser user) {
-        if (!WAIT_CONFIG_NAME_STATE.equals(user.getState())) {
-            user.setState(WAIT_CONFIG_NAME_STATE);
-            appUserDAO.saveAndFlush(user);
+        var userState = userUtil.getUserState(user.getTelegramId());
+        if (!WAIT_CONFIG_NAME_STATE.equals(userState)) {
+            userUtil.saveUserState(user.getTelegramId(), WAIT_CONFIG_NAME_STATE);
             log.debug("User {} changed state to WAIT_CONFIG_NAME_STATE", user.getFirstName());
         }
 
@@ -70,9 +73,9 @@ public class BasicStateHandler implements StateHandler {
         var appUserConfigs = appUserConfigDAO.findByAppUser(user);
         if (appUserConfigs == null || appUserConfigs.isEmpty()) return NO_SAVED_QUERIES_MESSAGE;
 
-        if (!QUERY_LIST_STATE.equals(user.getState())) {
-            user.setState(QUERY_LIST_STATE);
-            appUserDAO.saveAndFlush(user);
+        var userState = userUtil.getUserState(user.getTelegramId());
+        if (!QUERY_LIST_STATE.equals(userState)) {
+            userUtil.saveUserState(user.getTelegramId(), QUERY_LIST_STATE);
             log.debug("User {} changed state to QUERY_LIST_STATE", user.getFirstName());
         }
 

@@ -8,6 +8,7 @@ import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.utils.ConfigUtil;
 import com.bipbup.utils.Decoder;
+import com.bipbup.utils.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -40,11 +41,12 @@ public class QueryUpdateStateHandler extends Cancellable implements StateHandler
     protected static final String SELECT_SCHEDULE_MESSAGE = "Выберите график работы:";
 
     public QueryUpdateStateHandler(AppUserDAO appUserDAO,
+                                   UserUtil userUtil,
                                    BasicStateHandler basicStateHandler,
                                    AppUserConfigDAO appUserConfigDAO,
                                    Decoder decoder,
                                    ConfigUtil configUtil) {
-        super(appUserDAO, basicStateHandler);
+        super(appUserDAO, userUtil, basicStateHandler);
         this.appUserConfigDAO = appUserConfigDAO;
         this.decoder = decoder;
         this.configUtil = configUtil;
@@ -79,7 +81,7 @@ public class QueryUpdateStateHandler extends Cancellable implements StateHandler
         return input.startsWith(EDIT_CONFIG_NAME_PREFIX);
     }
 
-    private String processEditConfigCommand(AppUser appUser,
+    private String processEditConfigCommand(AppUser user,
                                             String input,
                                             int prefixLength,
                                             AppUserState state,
@@ -89,13 +91,12 @@ public class QueryUpdateStateHandler extends Cancellable implements StateHandler
         var optional = appUserConfigDAO.findById(configId);
 
         if (optional.isPresent()) {
-            appUser.setState(state);
-            appUserDAO.saveAndFlush(appUser);
-            configUtil.saveConfigSelection(appUser.getTelegramId(), configId);
-            log.debug("User {} selected parameter to edit and state set to {}", appUser.getFirstName(), state);
+            userUtil.saveUserState(user.getTelegramId(), state);
+            configUtil.saveConfigSelection(user.getTelegramId(), configId);
+            log.debug("User {} selected parameter to edit and state set to {}", user.getFirstName(), state);
             return message;
         } else {
-            log.warn("Configuration with id {} not found for user {}", configId, appUser.getFirstName());
+            log.warn("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return MESSAGE_CONFIGURATION_NOT_FOUND;
         }
     }

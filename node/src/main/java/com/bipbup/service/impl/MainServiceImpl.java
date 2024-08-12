@@ -81,24 +81,25 @@ public class MainServiceImpl implements MainService {
 
     private void processUpdate(final Update update,
                                final String data) {
-        var appUser = userUtil.findOrSaveAppUser(update);
-        var userState = appUser.getState();
+        var user = userUtil.findOrSaveAppUser(update);
+        var userState = userUtil.getUserState(user.getTelegramId());
         var output = "";
 
         var handler = stateHandlers.get(userState);
         if (handler != null) {
-            output = handler.process(appUser, data);
+            output = handler.process(user, data);
         }
 
         if (!output.isEmpty()) {
-            processOutput(appUser, update, output);
+            processOutput(user, update, output);
         }
     }
 
     private void processOutput(final AppUser user,
                                final Update update,
                                final String output) {
-        if (user.getState().equals(QUERY_LIST_STATE) && !update.hasCallbackQuery()) {
+        var userState = userUtil.getUserState(user.getTelegramId());
+        if (userState.equals(QUERY_LIST_STATE) && !update.hasCallbackQuery()) {
             sendAnswer(output, user.getTelegramId(), markupFactory.createUserConfigListKeyboard(user));
         } else if (update.hasCallbackQuery()) {
             processCallbackQuery(user, update, output);
@@ -112,7 +113,8 @@ public class MainServiceImpl implements MainService {
                                       final String output) {
         var callbackQuery = update.getCallbackQuery();
 
-        var isWaitState = user.getState().toString().startsWith("WAIT_");
+        var userState = userUtil.getUserState(user.getTelegramId());
+        var isWaitState = userState.toString().startsWith("WAIT_");
         if (isWaitState) {
             sendAnswer(output, user.getTelegramId());
         } else {
@@ -152,11 +154,11 @@ public class MainServiceImpl implements MainService {
         answerProducer.produceEdit(messageText);
     }
 
-    private InlineKeyboardMarkup fetchKeyboard(final AppUser appUser,
+    private InlineKeyboardMarkup fetchKeyboard(final AppUser user,
                                                final CallbackQuery callbackQuery) {
-        var userState = appUser.getState();
+        var userState = userUtil.getUserState(user.getTelegramId());
         if (userState.equals(QUERY_LIST_STATE)) {
-            return markupFactory.createUserConfigListKeyboard(appUser);
+            return markupFactory.createUserConfigListKeyboard(user);
         } else if (userState.equals(QUERY_MENU_STATE)) {
             return markupFactory.createConfigManagementKeyboard(callbackQuery);
         } else if (userState.equals(QUERY_DELETE_STATE)) {

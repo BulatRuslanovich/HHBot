@@ -8,6 +8,7 @@ import com.bipbup.enums.EnumParam;
 import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.utils.Decoder;
+import com.bipbup.utils.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -29,9 +30,10 @@ public class QueryMenuStateHandler extends Cancellable implements StateHandler {
 
     public QueryMenuStateHandler(AppUserDAO appUserDAO,
                                  BasicStateHandler basicStateHandler,
+                                 UserUtil userUtil,
                                  AppUserConfigDAO appUserConfigDAO,
                                  Decoder decoder) {
-        super(appUserDAO, basicStateHandler);
+        super(appUserDAO, userUtil, basicStateHandler);
         this.appUserConfigDAO = appUserConfigDAO;
         this.decoder = decoder;
     }
@@ -78,8 +80,7 @@ public class QueryMenuStateHandler extends Cancellable implements StateHandler {
     }
 
     private String processDeleteCommand(AppUser user) {
-        user.setState(QUERY_DELETE_STATE);
-        appUserDAO.saveAndFlush(user);
+        userUtil.saveUserState(user.getTelegramId(), QUERY_DELETE_STATE);
         log.debug("User {} set state to QUERY_DELETE_STATE", user.getFirstName());
         return MESSAGE_DELETE_CONFIRMATION;
     }
@@ -92,8 +93,7 @@ public class QueryMenuStateHandler extends Cancellable implements StateHandler {
         if (optionalAppUserConfig.isPresent()) {
             AppUserConfig config = optionalAppUserConfig.get();
 
-            user.setState(QUERY_UPDATE_STATE);
-            appUserDAO.saveAndFlush(user);
+            userUtil.saveUserState(user.getTelegramId(), QUERY_UPDATE_STATE);
             log.debug("User {} set state to QUERY_UPDATE_STATE", user.getFirstName());
 
             return showDetailedQueryOutput(config);
