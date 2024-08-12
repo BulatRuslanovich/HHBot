@@ -1,8 +1,9 @@
-package com.bipbup.utils;
+package com.bipbup.service.impl;
 
 import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
+import com.bipbup.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -16,30 +17,17 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 
 @RequiredArgsConstructor
 @Component
-@Transactional
-public class UserUtil {
+public class UserServiceImpl implements UserService {
 
     private final AppUserDAO appUserDAO;
 
+    @Transactional
     public AppUser findOrSaveAppUser(final Update update) {
         var messageSender = update.hasMessage()
                 ? update.getMessage().getFrom()
                 : update.getCallbackQuery().getFrom();
-        var appUserOptional =
-                appUserDAO.findByTelegramId(messageSender.getId());
+        var appUserOptional = appUserDAO.findByTelegramId(messageSender.getId());
         return appUserOptional.orElseGet(() -> saveAppUser(messageSender));
-    }
-
-    private AppUser saveAppUser(final User messageSender) {
-        var appUser = AppUser.builder()
-                .telegramId(messageSender.getId())
-                .username(messageSender.getUserName())
-                .firstName(messageSender.getFirstName())
-                .lastName(messageSender.getLastName())
-                .build();
-
-        appUserDAO.save(appUser);
-        return appUser;
     }
 
     @CachePut(value = "userStates", key = "#telegramId")
@@ -54,4 +42,16 @@ public class UserUtil {
 
     @CacheEvict(value = "userStates")
     public void clearUserState(Long telegramId) {}
+
+    private AppUser saveAppUser(final User messageSender) {
+        var appUser = AppUser.builder()
+                .telegramId(messageSender.getId())
+                .username(messageSender.getUserName())
+                .firstName(messageSender.getFirstName())
+                .lastName(messageSender.getLastName())
+                .build();
+
+        appUserDAO.save(appUser);
+        return appUser;
+    }
 }

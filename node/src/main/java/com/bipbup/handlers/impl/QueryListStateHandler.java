@@ -1,12 +1,11 @@
 package com.bipbup.handlers.impl;
 
-import com.bipbup.dao.AppUserConfigDAO;
-import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
+import com.bipbup.service.ConfigService;
+import com.bipbup.service.UserService;
 import com.bipbup.utils.Decoder;
-import com.bipbup.utils.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
@@ -17,7 +16,7 @@ import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
 @Component
 public class QueryListStateHandler extends Cancellable implements StateHandler {
 
-    private final AppUserConfigDAO appUserConfigDAO;
+    private final ConfigService configService;
 
     private final Decoder decoder;
 
@@ -27,13 +26,12 @@ public class QueryListStateHandler extends Cancellable implements StateHandler {
             Конфигурация "%s" с запросом "%s"
             Что хотите сделать с ней?""";
 
-    public QueryListStateHandler(AppUserDAO appUserDAO,
-                                 UserUtil userUtil,
+    public QueryListStateHandler(UserService userService,
                                  BasicStateHandler basicStateHandler,
-                                 AppUserConfigDAO appUserConfigDAO,
+                                 ConfigService configService,
                                  Decoder decoder) {
-        super(appUserDAO, userUtil, basicStateHandler);
-        this.appUserConfigDAO = appUserConfigDAO;
+        super(userService, basicStateHandler);
+        this.configService = configService;
         this.decoder = decoder;
     }
 
@@ -51,7 +49,7 @@ public class QueryListStateHandler extends Cancellable implements StateHandler {
     }
     
     private Pair<String, Boolean> generateQueryOutput(final long configId) {
-        var optionalAppUserConfig = appUserConfigDAO.findById(configId);
+        var optionalAppUserConfig = configService.getById(configId);
 
         if (optionalAppUserConfig.isEmpty()) return Pair.of(MESSAGE_CONFIGURATION_NOT_FOUND, false);
 
@@ -66,7 +64,7 @@ public class QueryListStateHandler extends Cancellable implements StateHandler {
         var answer = generateQueryOutput(configId);
 
         if (Boolean.TRUE.equals(answer.getSecond())) {
-            userUtil.saveUserState(user.getTelegramId(), QUERY_MENU_STATE);
+            userService.saveUserState(user.getTelegramId(), QUERY_MENU_STATE);
         }
 
         log.debug("User {} queried configuration with id {} and state set to QUERY_MENU_STATE", user.getFirstName(), configId);

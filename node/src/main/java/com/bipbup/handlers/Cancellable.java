@@ -1,9 +1,8 @@
 package com.bipbup.handlers;
 
-import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.impl.BasicStateHandler;
-import com.bipbup.utils.UserUtil;
+import com.bipbup.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,9 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public abstract class Cancellable {
 
-    protected final AppUserDAO appUserDAO;
-
-    protected final UserUtil userUtil;
+    protected final UserService userService;
 
     private final BasicStateHandler basicStateHandler;
 
@@ -34,7 +31,7 @@ public abstract class Cancellable {
     }
 
     protected String processCancelCommand(final AppUser user) {
-        userUtil.clearUserState(user.getTelegramId());
+        userService.clearUserState(user.getTelegramId());
         log.debug("User {} cancelled the command and state set to BASIC_STATE.", user.getFirstName());
         return MESSAGE_COMMAND_CANCELLED;
     }

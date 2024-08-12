@@ -12,7 +12,6 @@ import com.bipbup.handlers.impl.WaitConfigNameStateHandler;
 import com.bipbup.handlers.impl.WaitQueryStateHandler;
 import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.MainService;
-import com.bipbup.utils.UserUtil;
 import com.bipbup.utils.factory.KeyboardMarkupFactory;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -36,7 +35,7 @@ import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 
 @Service
 public class MainServiceImpl implements MainService {
-    private final UserUtil userUtil;
+    private final UserServiceImpl userService;
 
     private final KeyboardMarkupFactory markupFactory;
 
@@ -44,7 +43,7 @@ public class MainServiceImpl implements MainService {
 
     private final Map<AppUserState, StateHandler> stateHandlers;
 
-    public MainServiceImpl(final UserUtil userUtil,
+    public MainServiceImpl(final UserServiceImpl userService,
                            final KeyboardMarkupFactory markupFactory,
                            final AnswerProducer answerProducer,
                            final BasicStateHandler basicStateHandler,
@@ -54,7 +53,7 @@ public class MainServiceImpl implements MainService {
                            final QueryMenuStateHandler queryMenuStateHandler,
                            final QueryDeleteStateHandler queryDeleteStateHandler,
                            final QueryUpdateStateHandler queryUpdateStateHandler) {
-        this.userUtil = userUtil;
+        this.userService = userService;
         this.markupFactory = markupFactory;
         this.answerProducer = answerProducer;
 
@@ -81,8 +80,8 @@ public class MainServiceImpl implements MainService {
 
     private void processUpdate(final Update update,
                                final String data) {
-        var user = userUtil.findOrSaveAppUser(update);
-        var userState = userUtil.getUserState(user.getTelegramId());
+        var user = userService.findOrSaveAppUser(update);
+        var userState = userService.getUserState(user.getTelegramId());
         var output = "";
 
         var handler = stateHandlers.get(userState);
@@ -98,7 +97,7 @@ public class MainServiceImpl implements MainService {
     private void processOutput(final AppUser user,
                                final Update update,
                                final String output) {
-        var userState = userUtil.getUserState(user.getTelegramId());
+        var userState = userService.getUserState(user.getTelegramId());
         if (userState.equals(QUERY_LIST_STATE) && !update.hasCallbackQuery()) {
             sendAnswer(output, user.getTelegramId(), markupFactory.createUserConfigListKeyboard(user));
         } else if (update.hasCallbackQuery()) {
@@ -113,7 +112,7 @@ public class MainServiceImpl implements MainService {
                                       final String output) {
         var callbackQuery = update.getCallbackQuery();
 
-        var userState = userUtil.getUserState(user.getTelegramId());
+        var userState = userService.getUserState(user.getTelegramId());
         var isWaitState = userState.toString().startsWith("WAIT_");
         if (isWaitState) {
             sendAnswer(output, user.getTelegramId());
@@ -156,7 +155,7 @@ public class MainServiceImpl implements MainService {
 
     private InlineKeyboardMarkup fetchKeyboard(final AppUser user,
                                                final CallbackQuery callbackQuery) {
-        var userState = userUtil.getUserState(user.getTelegramId());
+        var userState = userService.getUserState(user.getTelegramId());
         if (userState.equals(QUERY_LIST_STATE)) {
             return markupFactory.createUserConfigListKeyboard(user);
         } else if (userState.equals(QUERY_MENU_STATE)) {

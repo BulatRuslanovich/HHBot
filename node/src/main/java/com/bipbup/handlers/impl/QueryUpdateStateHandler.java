@@ -1,14 +1,12 @@
 package com.bipbup.handlers.impl;
 
-import com.bipbup.dao.AppUserConfigDAO;
-import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
 import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
-import com.bipbup.utils.ConfigUtil;
+import com.bipbup.service.ConfigService;
+import com.bipbup.service.UserService;
 import com.bipbup.utils.Decoder;
-import com.bipbup.utils.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -18,11 +16,9 @@ import static com.bipbup.enums.AppUserState.*;
 @Component
 public class QueryUpdateStateHandler extends Cancellable implements StateHandler {
 
-    private final AppUserConfigDAO appUserConfigDAO;
-
     private final Decoder decoder;
 
-    private final ConfigUtil configUtil;
+    private final ConfigService configService;
 
     protected static final String EDIT_CONFIG_NAME_PREFIX = "edit_config_name_";
     protected static final String EDIT_QUERY_PREFIX = "edit_query_";
@@ -40,16 +36,13 @@ public class QueryUpdateStateHandler extends Cancellable implements StateHandler
     protected static final String SELECT_EDUCATION_MESSAGE = "Выберите уровень образования:";
     protected static final String SELECT_SCHEDULE_MESSAGE = "Выберите график работы:";
 
-    public QueryUpdateStateHandler(AppUserDAO appUserDAO,
-                                   UserUtil userUtil,
+    public QueryUpdateStateHandler(UserService userService,
                                    BasicStateHandler basicStateHandler,
-                                   AppUserConfigDAO appUserConfigDAO,
                                    Decoder decoder,
-                                   ConfigUtil configUtil) {
-        super(appUserDAO, userUtil, basicStateHandler);
-        this.appUserConfigDAO = appUserConfigDAO;
+                                   ConfigService configService) {
+        super(userService, basicStateHandler);
         this.decoder = decoder;
-        this.configUtil = configUtil;
+        this.configService = configService;
     }
 
     @Override
@@ -88,11 +81,11 @@ public class QueryUpdateStateHandler extends Cancellable implements StateHandler
                                             String message) {
         var hash = input.substring(prefixLength);
         var configId = decoder.idOf(hash);
-        var optional = appUserConfigDAO.findById(configId);
+        var optional = configService.getById(configId);
 
         if (optional.isPresent()) {
-            userUtil.saveUserState(user.getTelegramId(), state);
-            configUtil.saveConfigSelection(user.getTelegramId(), configId);
+            userService.saveUserState(user.getTelegramId(), state);
+            configService.saveConfigSelection(user.getTelegramId(), configId);
             log.debug("User {} selected parameter to edit and state set to {}", user.getFirstName(), state);
             return message;
         } else {

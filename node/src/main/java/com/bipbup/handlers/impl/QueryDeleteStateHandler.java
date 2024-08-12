@@ -1,12 +1,11 @@
 package com.bipbup.handlers.impl;
 
-import com.bipbup.dao.AppUserConfigDAO;
-import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
+import com.bipbup.service.ConfigService;
+import com.bipbup.service.UserService;
 import com.bipbup.utils.Decoder;
-import com.bipbup.utils.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class QueryDeleteStateHandler extends Cancellable implements StateHandler {
 
-    private final AppUserConfigDAO appUserConfigDAO;
+    private final ConfigService configService;
 
     private final Decoder decoder;
 
@@ -26,13 +25,12 @@ public class QueryDeleteStateHandler extends Cancellable implements StateHandler
     protected static final String MESSAGE_ERROR_PROCESSING_COMMAND = "Ошибка при обработке команды. Попробуйте еще раз.";
     protected static final String MESSAGE_UNEXPECTED_ERROR = "Произошла ошибка. Попробуйте еще раз.";
 
-    public QueryDeleteStateHandler(AppUserDAO appUserDAO,
-                                   UserUtil userUtil,
+    public QueryDeleteStateHandler(UserService userService,
                                    BasicStateHandler basicStateHandler,
-                                   AppUserConfigDAO appUserConfigDAO,
+                                   ConfigService configService,
                                    Decoder decoder) {
-        super(appUserDAO, userUtil, basicStateHandler);
-        this.appUserConfigDAO = appUserConfigDAO;
+        super(userService, basicStateHandler);
+        this.configService = configService;
         this.decoder = decoder;
     }
 
@@ -57,11 +55,11 @@ public class QueryDeleteStateHandler extends Cancellable implements StateHandler
     private String processDeleteYesCommand(AppUser user, String input) {
         var hash = input.substring(DELETE_YES_PREFIX.length());
         var configId = decoder.idOf(hash);
-        var optional = appUserConfigDAO.findById(configId);
+        var optional = configService.getById(configId);
 
         if (optional.isPresent()) {
-            appUserConfigDAO.delete(optional.get());
-            userUtil.clearUserState(user.getTelegramId());
+            configService.delete(optional.get());
+            userService.clearUserState(user.getTelegramId());
             log.debug("User {} deleted configuration with id {} and state set to BASIC_STATE", user.getFirstName(), configId);
             return MESSAGE_CONFIGURATION_DELETED;
         } else {
@@ -71,7 +69,7 @@ public class QueryDeleteStateHandler extends Cancellable implements StateHandler
     }
 
     private String processDeleteNoCommand(AppUser user) {
-        userUtil.clearUserState(user.getTelegramId());
+        userService.clearUserState(user.getTelegramId());
         log.debug("User {} chose not to delete the configuration and state set to BASIC_STATE", user.getFirstName());
         return MESSAGE_CONFIGURATION_NOT_DELETED;
     }

@@ -1,14 +1,13 @@
 package com.bipbup.handlers.impl;
 
-import com.bipbup.dao.AppUserConfigDAO;
-import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.EnumParam;
 import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
+import com.bipbup.service.ConfigService;
+import com.bipbup.service.UserService;
 import com.bipbup.utils.Decoder;
-import com.bipbup.utils.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +18,7 @@ import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
 @Component
 public class QueryMenuStateHandler extends Cancellable implements StateHandler {
 
-    private final AppUserConfigDAO appUserConfigDAO;
+    private final ConfigService configService;
 
     private final Decoder decoder;
 
@@ -28,13 +27,12 @@ public class QueryMenuStateHandler extends Cancellable implements StateHandler {
     protected static final String MESSAGE_DELETE_CONFIRMATION = "Вы уверены, что хотите удалить этот запрос?";
     protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена.";
 
-    public QueryMenuStateHandler(AppUserDAO appUserDAO,
-                                 BasicStateHandler basicStateHandler,
-                                 UserUtil userUtil,
-                                 AppUserConfigDAO appUserConfigDAO,
+    public QueryMenuStateHandler(BasicStateHandler basicStateHandler,
+                                 UserService userService,
+                                 ConfigService configService,
                                  Decoder decoder) {
-        super(appUserDAO, userUtil, basicStateHandler);
-        this.appUserConfigDAO = appUserConfigDAO;
+        super(userService, basicStateHandler);
+        this.configService = configService;
         this.decoder = decoder;
     }
 
@@ -80,7 +78,7 @@ public class QueryMenuStateHandler extends Cancellable implements StateHandler {
     }
 
     private String processDeleteCommand(AppUser user) {
-        userUtil.saveUserState(user.getTelegramId(), QUERY_DELETE_STATE);
+        userService.saveUserState(user.getTelegramId(), QUERY_DELETE_STATE);
         log.debug("User {} set state to QUERY_DELETE_STATE", user.getFirstName());
         return MESSAGE_DELETE_CONFIRMATION;
     }
@@ -88,12 +86,12 @@ public class QueryMenuStateHandler extends Cancellable implements StateHandler {
     private String processUpdateCommand(AppUser user, String input) {
         var hash = input.substring(UPDATE_PREFIX.length());
         var configId = decoder.idOf(hash);
-        var optionalAppUserConfig = appUserConfigDAO.findById(configId);
+        var optionalAppUserConfig = configService.getById(configId);
 
         if (optionalAppUserConfig.isPresent()) {
             AppUserConfig config = optionalAppUserConfig.get();
 
-            userUtil.saveUserState(user.getTelegramId(), QUERY_UPDATE_STATE);
+            userService.saveUserState(user.getTelegramId(), QUERY_UPDATE_STATE);
             log.debug("User {} set state to QUERY_UPDATE_STATE", user.getFirstName());
 
             return showDetailedQueryOutput(config);
