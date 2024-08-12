@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,6 +19,13 @@ import java.util.Optional;
 public class ConfigServiceImpl implements ConfigService {
 
     private final AppUserConfigDAO appUserConfigDAO;
+
+    @Override
+    public List<AppUserConfig> getAll(int page, int size) {
+        var pageRequest = PageRequest.of(page, size);
+        var pageResult = appUserConfigDAO.findAll(pageRequest);
+        return pageResult.toList();
+    }
 
     @Override
     public AppUserConfig save(AppUserConfig config) {

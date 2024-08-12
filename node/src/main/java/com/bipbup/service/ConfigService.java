@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ConfigService {
+    List<AppUserConfig> getAll(int page, int size);
+
     AppUserConfig save(final AppUserConfig config);
 
     void delete(final AppUserConfig config);

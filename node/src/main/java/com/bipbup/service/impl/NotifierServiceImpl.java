@@ -1,11 +1,11 @@
 package com.bipbup.service.impl;
 
-import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.dto.VacancyDTO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.service.APIHandler;
 import com.bipbup.service.AnswerProducer;
+import com.bipbup.service.ConfigService;
 import com.bipbup.service.NotifierService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,20 +25,28 @@ public class NotifierServiceImpl implements NotifierService {
 
     private final AnswerProducer answerProducer;
 
-    private final AppUserConfigDAO appUserConfigDAO;
+    private final ConfigService configService;
 
     @Override
     @Scheduled(fixedRateString = "${notifier.period}")
     public void searchNewVacancies() {
-        var appUserConfigs = appUserConfigDAO.findAll();
+        int page = 0;
+        int sizeOfPage = 50;
 
-        for (var appUserConfig : appUserConfigs) {
-            if (appUserConfig.getQueryText() == null
-                    || appUserConfig.getQueryText().isEmpty()) {
-                continue;
+        List<AppUserConfig> configs = configService.getAll(page, sizeOfPage);
+
+        while (!configs.isEmpty()) {
+            for (var config : configs) {
+                if (config.getQueryText() == null
+                        || config.getQueryText().isEmpty()) {
+                    continue;
+                }
+
+                processNewVacancies(config);
             }
 
-            processNewVacancies(appUserConfig);
+            page++;
+            configs = configService.getAll(page, sizeOfPage);
         }
     }
 
@@ -57,7 +65,7 @@ public class NotifierServiceImpl implements NotifierService {
             }
 
             appUserConfig.setLastNotificationTime(lastNotificationTime);
-            appUserConfigDAO.save(appUserConfig);
+            configService.save(appUserConfig);
         }
 
         log.info("For user {} find {} vacancies with config {}",

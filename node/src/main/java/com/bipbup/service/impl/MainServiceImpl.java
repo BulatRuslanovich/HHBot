@@ -12,6 +12,7 @@ import com.bipbup.handlers.impl.WaitConfigNameStateHandler;
 import com.bipbup.handlers.impl.WaitQueryStateHandler;
 import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.MainService;
+import com.bipbup.service.UserService;
 import com.bipbup.utils.factory.KeyboardMarkupFactory;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -35,7 +36,7 @@ import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 
 @Service
 public class MainServiceImpl implements MainService {
-    private final UserServiceImpl userService;
+    private final UserService userService;
 
     private final KeyboardMarkupFactory markupFactory;
 
@@ -43,7 +44,7 @@ public class MainServiceImpl implements MainService {
 
     private final Map<AppUserState, StateHandler> stateHandlers;
 
-    public MainServiceImpl(final UserServiceImpl userService,
+    public MainServiceImpl(final UserService userService,
                            final KeyboardMarkupFactory markupFactory,
                            final AnswerProducer answerProducer,
                            final BasicStateHandler basicStateHandler,
