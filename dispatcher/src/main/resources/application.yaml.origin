@@ -1,13 +1,13 @@
-server:
-  port:
-
 bot:
   username:
   token:
-
 spring:
   kafka:
     bootstrap-servers:
     topics:
-      answer-topic:
-      text-update-topic:
+      edit-topic: EDIT_TOPIC
+      answer-topic: ANSWER_TOPIC
+      text-update-topic: TEXT_UPDATE_TOPIC
+      callback-query-update-topic: CALLBACK_QUERY_UPDATE_TOPIC
+server:
+  port:

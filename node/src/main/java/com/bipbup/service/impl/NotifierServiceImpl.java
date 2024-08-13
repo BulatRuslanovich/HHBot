@@ -1,63 +1,80 @@
 package com.bipbup.service.impl;
 
-import com.bipbup.dao.AppUserDAO;
+import com.bipbup.dto.VacancyDTO;
 import com.bipbup.entity.AppUser;
-import com.bipbup.model.Vacancy;
+import com.bipbup.entity.AppUserConfig;
 import com.bipbup.service.APIHandler;
 import com.bipbup.service.AnswerProducer;
+import com.bipbup.service.ConfigService;
 import com.bipbup.service.NotifierService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
-@Log4j
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class NotifierServiceImpl implements NotifierService {
+
     private final APIHandler apiHandler;
+
     private final AnswerProducer answerProducer;
-    private final AppUserDAO appUserDAO;
+
+    private final ConfigService configService;
 
     @Override
     @Scheduled(fixedRateString = "${notifier.period}")
     public void searchNewVacancies() {
-        var users = appUserDAO.findAll();
+        int page = 0;
+        int sizeOfPage = 50;
 
-        for (var user : users) {
-            if (Objects.isNull(user.getQueryText()) || user.getQueryText().isEmpty()) {
-                continue;
+        List<AppUserConfig> configs = configService.getAll(page, sizeOfPage);
+
+        while (!configs.isEmpty()) {
+            for (var config : configs) {
+                if (config.getQueryText() == null
+                        || config.getQueryText().isEmpty()) {
+                    continue;
+                }
+
+                processNewVacancies(config);
             }
 
-            processNewVacancies(user);
+            configs = configService.getAll(++page, sizeOfPage);
         }
     }
 
-    private void processNewVacancies(AppUser user) {
-        List<Vacancy> newVacancies = apiHandler.getNewVacancies(user);
+    private void processNewVacancies(final AppUserConfig appUserConfig) {
+        List<VacancyDTO> newVacancies =
+                apiHandler.getNewVacancies(appUserConfig);
+        var appUser = appUserConfig.getAppUser();
 
         if (!newVacancies.isEmpty()) {
-            LocalDateTime lastNotificationTime = newVacancies.get(0).getPublishedAt().plusMinutes(1);
+            var lastNotificationTime =
+                    newVacancies.get(0).getPublishedAt().plusMinutes(1);
             Collections.reverse(newVacancies);
 
             for (var vacancy : newVacancies) {
-                sendVacancyMessage(vacancy, user);
+                sendVacancyMessage(vacancy, appUser);
             }
 
-            user.setLastNotificationTime(lastNotificationTime);
-            appUserDAO.save(user);
+            appUserConfig.setLastNotificationTime(lastNotificationTime);
+            configService.save(appUserConfig);
         }
 
-        log.info("For user %s find %d vacancies".formatted(user.getFirstName(), newVacancies.size()));
+        log.info("For user {} find {} vacancies with config {}",
+                appUser.getFirstName(),
+                newVacancies.size(),
+                appUserConfig.getConfigName());
     }
 
-    private void sendVacancyMessage(Vacancy newVacancy, AppUser appUser) {
+    private void sendVacancyMessage(final VacancyDTO newVacancyDTO,
+                                    final AppUser appUser) {
         String message = String.format("""
                         *Вакансия:* %s
                         *Работодатель:* %s
@@ -65,11 +82,11 @@ public class NotifierServiceImpl implements NotifierService {
                         *Дата публикации:* %s
                         *Ссылка:* %s
                         """,
-                newVacancy.getNameVacancy(),
-                newVacancy.getNameEmployer(),
-                newVacancy.getNameArea(),
-                newVacancy.getPublishedAt().toLocalDate(),
-                newVacancy.getUrl());
+                newVacancyDTO.getNameVacancy(),
+                newVacancyDTO.getNameEmployer(),
+                newVacancyDTO.getNameArea(),
+                newVacancyDTO.getPublishedAt().toLocalDate(),
+                newVacancyDTO.getUrl());
 
 
         SendMessage sendMessage = SendMessage.builder()

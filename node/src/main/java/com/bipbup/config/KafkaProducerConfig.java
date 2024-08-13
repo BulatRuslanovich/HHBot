@@ -9,7 +9,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.interfaces.Validable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,21 +19,24 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    public Map<String,Object> kafkaProducerConfig() {
+    public Map<String, Object> kafkaProducerConfig() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                bootstrapServers);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                StringSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                JsonSerializer.class);
         return props;
     }
 
     @Bean
-    public ProducerFactory<String, SendMessage> producerFactory() {
+    public ProducerFactory<String, Validable> producerFactory() {
         return new DefaultKafkaProducerFactory<>(kafkaProducerConfig());
     }
 
     @Bean
-    public KafkaTemplate<String, SendMessage> kafkaTemplate() {
+    public KafkaTemplate<String, Validable> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }

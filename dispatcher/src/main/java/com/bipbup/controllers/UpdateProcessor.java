@@ -3,44 +3,48 @@ package com.bipbup.controllers;
 import com.bipbup.service.UpdateProducer;
 import com.bipbup.utils.MessageUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
-import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.List;
-
-@Log4j
+@ExtensionMethod(MessageUtil.class)
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class UpdateProcessor {
+
     @Value("${spring.kafka.topics.text-update-topic}")
     private String textUpdateTopic;
-    private MyTelegramBot myTelegramBot;
-    private final MessageUtil messageUtil;
+
+    @Value("${spring.kafka.topics.callback-query-update-topic}")
+    private String callbackQueryUpdateTopic;
+
     private final UpdateProducer updateProducer;
 
-    public void registerBot(MyTelegramBot myTelegramBot) {
+    private MyTelegramBot myTelegramBot;
+
+    private static void logEmptyMessageUpdate(final Update update) {
+        var status = update.getMyChatMember().getNewChatMember().getStatus();
+        var user = update.getMyChatMember().getFrom();
+        if (status.equals("kicked")) {
+            log.info("User {} block the bot", user.getFirstName());
+        } else if (status.equals("member")) {
+            log.info("User {} joined", user.getFirstName());
+        } else {
+            log.error("Message is null");
+        }
+    }
+
+    public void registerBot(final MyTelegramBot myTelegramBot) {
         this.myTelegramBot = myTelegramBot;
-        setCommandsMenu(setMenuCommands());
     }
 
-    private SetMyCommands setMenuCommands() {
-        var commands = List.of(
-                new BotCommand("set_query", "Задать запрос"),
-                new BotCommand("set_experience", "Выбрать опыт")
-        );
-
-        return new SetMyCommands(commands, new BotCommandScopeDefault(), null);
-    }
-
-
-    public void processUpdate(Update update) {
+    public void processUpdate(final Update update) {
         if (update == null) {
             log.error("Update is null");
             return;
@@ -48,8 +52,10 @@ public class UpdateProcessor {
 
         if (update.hasMessage()) {
             processMessage(update);
+        } else if (update.hasCallbackQuery()) {
+            processCallbackQuery(update);
         } else {
-            log.error("Message is null");
+            logEmptyMessageUpdate(update);
         }
     }
 
@@ -57,27 +63,40 @@ public class UpdateProcessor {
         var message = update.getMessage();
 
         if (message.hasText()) {
-            log.info(message.getText());
+            log.info("{} write \"{}\"", message.getFrom().getFirstName(), message.getText());
+
             updateProducer.produce(textUpdateTopic, update);
         } else {
             setUnsupportedMessageType(update);
         }
     }
 
-    private void setUnsupportedMessageType(Update update) {
-        var sendMessage = messageUtil.generateSendMessage(update, "Неподдерживаемый тип данных!");
+    private void processCallbackQuery(final Update update) {
+        var callbackQuery = update.getCallbackQuery();
+
+        if (callbackQuery != null) {
+            log.debug("{} sent callback query with data: {}", callbackQuery.getFrom().getFirstName(), callbackQuery.getData());
+
+            updateProducer.produce(callbackQueryUpdateTopic, update);
+        } else {
+            log.error("Update has no callback query");
+        }
+    }
+
+    private void setUnsupportedMessageType(final Update update) {
+        var sendMessage = update.generateSendMessage("Неподдерживаемый тип данных!");
         setView(sendMessage);
     }
 
-    public void setView(SendMessage sendMessage) {
+    public void setView(final SendMessage sendMessage) {
         myTelegramBot.sendAnswerMessage(sendMessage);
     }
 
-    private void setCommandsMenu(SetMyCommands commands) {
+    public void setEdit(final EditMessageText editMessage) {
         try {
-            myTelegramBot.execute(commands);
+            myTelegramBot.execute(editMessage);
         } catch (TelegramApiException e) {
-            log.error("Error with commands execute");
+            log.error("Error with edit message execute");
         }
     }
 }

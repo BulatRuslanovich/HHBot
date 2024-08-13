@@ -1,10 +1,10 @@
 package com.bipbup.service;
 
-import com.bipbup.entity.AppUser;
-import com.bipbup.model.Vacancy;
+import com.bipbup.dto.VacancyDTO;
+import com.bipbup.entity.AppUserConfig;
 
 import java.util.List;
 
 public interface APIHandler {
-    List<Vacancy> getNewVacancies(AppUser appUser);
+    List<VacancyDTO> getNewVacancies(AppUserConfig appUserConfig);
 }

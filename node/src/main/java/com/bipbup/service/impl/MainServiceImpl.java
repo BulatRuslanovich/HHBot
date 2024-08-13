@@ -1,110 +1,184 @@
 package com.bipbup.service.impl;
 
-import com.bipbup.config.KeyboardProperties;
+import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.handlers.impl.BasicStateHandler;
-import com.bipbup.handlers.impl.ExperienceStateHandler;
-import com.bipbup.handlers.impl.QueryStateHandler;
+import com.bipbup.handlers.impl.QueryDeleteStateHandler;
+import com.bipbup.handlers.impl.QueryListStateHandler;
+import com.bipbup.handlers.impl.QueryMenuStateHandler;
+import com.bipbup.handlers.impl.QueryUpdateStateHandler;
+import com.bipbup.handlers.impl.WaitConfigNameStateHandler;
+import com.bipbup.handlers.impl.WaitQueryStateHandler;
 import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.MainService;
-import com.bipbup.utils.UserUtil;
-import lombok.extern.log4j.Log4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.bipbup.service.UserService;
+import com.bipbup.utils.factory.KeyboardMarkupFactory;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
+import static com.bipbup.enums.AppUserState.QUERY_DELETE_STATE;
+import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
+import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
+import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
+import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
 
-@Log4j
+
 @Service
 public class MainServiceImpl implements MainService {
-    private final UserUtil userUtil;
+    private final UserService userService;
+
+    private final KeyboardMarkupFactory markupFactory;
+
     private final AnswerProducer answerProducer;
-    private final KeyboardProperties keyboardProperties;
 
-    private final Map<AppUserState, StateHandler> stateHandlers;
+    private final Map<AppUserState, StateHandler> messageStateHandlers;
 
-    @Autowired
-    public MainServiceImpl(UserUtil userUtil, AnswerProducer answerProducer, KeyboardProperties keyboardProperties, BasicStateHandler basicStateHandler, ExperienceStateHandler experienceStateHandler, QueryStateHandler queryStateHandler) {
-        this.userUtil = userUtil;
+    private final Map<AppUserState, StateHandler> callbackStateHandlers;
+
+    public MainServiceImpl(final UserService userService,
+                           final KeyboardMarkupFactory markupFactory,
+                           final AnswerProducer answerProducer,
+                           final BasicStateHandler basicStateHandler,
+                           final WaitConfigNameStateHandler waitConfigNameStateHandle,
+                           final WaitQueryStateHandler waitQueryStateHandler,
+                           final QueryListStateHandler queryListStateHandler,
+                           final QueryMenuStateHandler queryMenuStateHandler,
+                           final QueryDeleteStateHandler queryDeleteStateHandler,
+                           final QueryUpdateStateHandler queryUpdateStateHandler) {
+        this.userService = userService;
+        this.markupFactory = markupFactory;
         this.answerProducer = answerProducer;
-        this.keyboardProperties = keyboardProperties;
 
-        this.stateHandlers = Map.of(BASIC_STATE, basicStateHandler,
-                WAIT_EXPERIENCE_STATE, experienceStateHandler,
-                WAIT_QUERY_STATE, queryStateHandler);
+        this.messageStateHandlers = Map.of(BASIC_STATE, basicStateHandler,
+                WAIT_CONFIG_NAME_STATE, waitConfigNameStateHandle,
+                WAIT_QUERY_STATE, waitQueryStateHandler);
+
+        this.callbackStateHandlers = Map.of(QUERY_LIST_STATE, queryListStateHandler,
+                QUERY_MENU_STATE, queryMenuStateHandler,
+                QUERY_DELETE_STATE, queryDeleteStateHandler,
+                QUERY_UPDATE_STATE, queryUpdateStateHandler);
     }
 
     @Override
-    public void processMessage(Update update) {
-        var appUser = userUtil.findOrSaveAppUser(update);
-        var userState = appUser.getState();
+    public void processMessage(final Update update) {
         var text = update.getMessage().getText();
-        var output = "";
+        var user = userService.findOrSaveAppUser(update);
+        var userState = userService.getUserState(user.getTelegramId());
+        var handler = messageStateHandlers.getOrDefault(userState, messageStateHandlers.get(BASIC_STATE));
+        var output = handler.process(user, text);
 
-        StateHandler handler = stateHandlers.get(userState);
-        if (!Objects.isNull(handler)) {
-            output = handler.process(appUser, text);
-        }
-
-        if (!output.isEmpty()) {
-            ReplyKeyboard replyKeyboard = WAIT_EXPERIENCE_STATE.equals(appUser.getState()) ? getExperienceKeyboard() : null;
-            sendResponse(output, appUser.getTelegramId(), replyKeyboard);
-        }
+        if (!output.isEmpty())
+            processOutput(user, update, output);
     }
 
-    private void sendResponse(String output, Long telegramId, ReplyKeyboard replyKeyboard) {
-        if (replyKeyboard != null) {
-            sendAnswerWithKeyboard(output, telegramId, replyKeyboard);
-        } else {
-            sendAnswer(output, telegramId);
-        }
+    @Override
+    public void processCallbackQuery(final Update update) {
+        var callbackData = update.getCallbackQuery().getData();
+        var user = userService.findOrSaveAppUser(update);
+        var userState = userService.getUserState(user.getTelegramId());
+
+        var handler = callbackStateHandlers.getOrDefault(userState, getCallbackStateHandler(callbackData));
+        var output = handler.process(user, callbackData);
+
+        if (!output.isEmpty())
+            processOutput(user, update, output);
     }
 
-    private ReplyKeyboard getExperienceKeyboard() {
-        var row1 = new KeyboardRow();
-        var row2 = new KeyboardRow();
-        var row3 = new KeyboardRow();
+    private StateHandler getCallbackStateHandler(String callbackData) {
+        if (callbackData.startsWith("query_"))
+            return callbackStateHandlers.get(QUERY_LIST_STATE);
+        if (callbackData.startsWith("action_") || callbackData.equals(MYQUERIES_COMMAND))
+            return callbackStateHandlers.get(QUERY_MENU_STATE);
+        if (callbackData.startsWith("update_"))
+            return callbackStateHandlers.get(QUERY_UPDATE_STATE);
+        if (callbackData.startsWith("delete_"))
+            return callbackStateHandlers.get(QUERY_DELETE_STATE);
 
-        row1.add(keyboardProperties.getNoExperience());
-        row1.add(keyboardProperties.getOneToThreeYears());
-        row2.add(keyboardProperties.getThreeToSixYears());
-        row2.add(keyboardProperties.getMoreThanSixYears());
-        row3.add(keyboardProperties.getNoFilter());
-
-        return new ReplyKeyboardMarkup(List.of(row1, row2, row3));
+        return messageStateHandlers.get(BASIC_STATE);
     }
 
+    private void processOutput(final AppUser user,
+                               final Update update,
+                               final String output) {
+        var userState = userService.getUserState(user.getTelegramId());
+        if (userState.equals(QUERY_LIST_STATE) && !update.hasCallbackQuery())
+            sendAnswer(output, user.getTelegramId(), markupFactory.createUserConfigListKeyboard(user));
+        else if (update.hasCallbackQuery())
+            processCallbackQuery(user, update, output);
+        else
+            sendAnswer(output, user.getTelegramId());
+    }
 
-    private void sendAnswer(String text, Long chatId) {
-        SendMessage sendMessage = SendMessage.builder()
+    private void processCallbackQuery(final AppUser user,
+                                      final Update update,
+                                      final String output) {
+        var callbackQuery = update.getCallbackQuery();
+
+        var userState = userService.getUserState(user.getTelegramId());
+        var isWaitState = userState.toString().startsWith("WAIT_");
+        if (isWaitState)
+            sendAnswer(output, user.getTelegramId());
+        else
+            editAnswer(output, user.getTelegramId(), callbackQuery.getMessage().getMessageId(),
+                    fetchKeyboard(user, callbackQuery));
+    }
+
+    private void sendAnswer(final String text,
+                            final Long chatId) {
+        sendAnswer(text, chatId, null);
+    }
+
+    private void sendAnswer(final String text,
+                            final Long chatId,
+                            final ReplyKeyboard keyboard) {
+        var sendMessage = SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
-                .replyMarkup(new ReplyKeyboardRemove(true))
+                .replyMarkup(keyboard != null ? keyboard : new ReplyKeyboardRemove(true))
                 .build();
 
         answerProducer.produceAnswer(sendMessage);
     }
 
-    private void sendAnswerWithKeyboard(String text, Long chatId, ReplyKeyboard replyKeyboard) {
-        SendMessage sendMessage = SendMessage.builder()
+    private void editAnswer(final String output,
+                            final Long chatId,
+                            final Integer messageId,
+                            final InlineKeyboardMarkup markup) {
+        var messageText = EditMessageText.builder()
+                .text(output)
                 .chatId(chatId)
-                .text(text)
-                .replyMarkup(replyKeyboard)
+                .messageId(messageId)
+                .replyMarkup(markup)
                 .build();
 
-        answerProducer.produceAnswer(sendMessage);
+        answerProducer.produceEdit(messageText);
+    }
+
+    private InlineKeyboardMarkup fetchKeyboard(final AppUser user,
+                                               final CallbackQuery callbackQuery) {
+        var userState = userService.getUserState(user.getTelegramId());
+        if (userState.equals(QUERY_LIST_STATE))
+            return markupFactory.createUserConfigListKeyboard(user);
+        if (userState.equals(QUERY_MENU_STATE))
+            return markupFactory.createConfigManagementKeyboard(callbackQuery);
+        if (userState.equals(QUERY_DELETE_STATE))
+            return markupFactory.createDeleteConfirmationKeyboard(callbackQuery);
+        if (userState.equals(QUERY_UPDATE_STATE))
+            return markupFactory.createUpdateConfigKeyboard(callbackQuery);
+
+        return null;
     }
 }
+

@@ -2,30 +2,34 @@ server:
   port:
 
 spring:
+  cache:
+    type: redis
+    host:
+    port:
+    redis:
+      time-to-live: -1 # data will stay in the cache indefinitely
   kafka:
     bootstrap-servers:
     topics:
-      answer-topic:
-      text-update-topic:
+      answer-topic: ANSWER_TOPIC
+      edit-topic: EDIT_TOPIC
+      text-update-topic: TEXT_UPDATE_TOPIC
+      callback-query-update-topic: CALLBACK_QUERY_UPDATE_TOPIC
   datasource:
     url:
     username:
     password:
   jpa:
-    generate-ddl:
-
+    hibernate:
+      ddl-auto: none
+    generate-ddl: false
+    open-in-view: false
+  liquibase:
+    enabled: true
 headhunter:
-  token:
   user-agent:
   endpoint:
-    searchForVacancy:
-
+    searchForVacancy: https://api.hh.ru/vacancies
 notifier:
-  period:
-
-keyboard:
-  noExperience:
-  oneToThreeYears:
-  threeToSixYears:
-  moreThanSixYears:
-  noFilter:
+  period: 600000
+salt:
