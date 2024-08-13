@@ -14,6 +14,7 @@ import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
 import static com.bipbup.utils.CommandMessageConstants.ENTER_CONFIG_NAME_MESSAGE;
 import static com.bipbup.utils.CommandMessageConstants.ENTER_QUERY_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_CONFIG_NAME_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_QUERY_PREFIX;
 
@@ -26,16 +27,22 @@ public class QueryUpdateStateHandler implements StateHandler {
 
     private final Decoder decoder;
 
+    private final QueryListStateHandler queryListStateHandler;
+
     public QueryUpdateStateHandler(UserService userService,
                                    Decoder decoder,
-                                   ConfigService configService) {
+                                   ConfigService configService,
+                                   QueryListStateHandler queryListStateHandler) {
         this.userService = userService;
         this.decoder = decoder;
         this.configService = configService;
+        this.queryListStateHandler = queryListStateHandler;
     }
 
     @Override
     public String process(AppUser user, String input) {
+        if (isBackToQueryMenuCommand(input))
+            return processBackToQueryMenuCommand(user, input);
         if (hasEditConfigNamePrefix(input))
             return processEditConfigCommand(user, input,
                     UPDATE_CONFIG_NAME_PREFIX.length(),
@@ -49,7 +56,15 @@ public class QueryUpdateStateHandler implements StateHandler {
         
         return "";
     }
-    
+
+    private String processBackToQueryMenuCommand(AppUser user, String input) {
+        return queryListStateHandler.process(user, input);
+    }
+
+    private boolean isBackToQueryMenuCommand(String input) {
+        return input.startsWith(QUERY_PREFIX);
+    }
+
     private boolean hasEditQueryPrefix(String input) {
         return input.startsWith(UPDATE_QUERY_PREFIX);
     }

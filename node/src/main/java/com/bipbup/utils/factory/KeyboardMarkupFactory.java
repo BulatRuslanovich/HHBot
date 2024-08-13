@@ -90,7 +90,8 @@ public class KeyboardMarkupFactory {
                 createButton(BUTTON_TEXT_UPDATE_AREA, UPDATE_AREA_PREFIX + hash),
                 createButton(BUTTON_TEXT_UPDATE_EXPERIENCE, UPDATE_EXPERIENCE_PREFIX + hash),
                 createButton(BUTTON_TEXT_UPDATE_EDUCATION, UPDATE_EDUCATION_PREFIX + hash),
-                createButton(BUTTON_TEXT_UPDATE_SCHEDULE, UPDATE_SCHEDULE_PREFIX + hash)
+                createButton(BUTTON_TEXT_UPDATE_SCHEDULE, UPDATE_SCHEDULE_PREFIX + hash),
+                createButton(BUTTON_TEXT_BACK, QUERY_PREFIX + hash)
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
