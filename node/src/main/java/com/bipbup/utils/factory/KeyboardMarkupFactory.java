@@ -12,7 +12,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.bipbup.utils.CommandMessageConstants.BACK_TO_QUERY_LIST_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_BACK;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE_CANCEL;
@@ -27,6 +26,7 @@ import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_SCHEDU
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CANCEL_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRM_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_AREA_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_CONFIG_NAME_PREFIX;
@@ -64,7 +64,7 @@ public class KeyboardMarkupFactory {
         List<InlineKeyboardButton> buttons = List.of(
                 createButton(BUTTON_TEXT_UPDATE, UPDATE_PREFIX + hash),
                 createButton(BUTTON_TEXT_DELETE, DELETE_PREFIX + hash),
-                createButton(BUTTON_TEXT_BACK, BACK_TO_QUERY_LIST_COMMAND)
+                createButton(BUTTON_TEXT_BACK, MYQUERIES_COMMAND)
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);

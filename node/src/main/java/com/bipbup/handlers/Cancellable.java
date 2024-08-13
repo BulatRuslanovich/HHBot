@@ -6,7 +6,6 @@ import com.bipbup.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.bipbup.utils.CommandMessageConstants.BACK_TO_QUERY_LIST_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.CANCEL_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.COMMAND_CANCELLED_MESSAGE;
 import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
@@ -25,8 +24,7 @@ public abstract class Cancellable {
     }
 
     protected boolean isBasicCommand(String input) {
-        return BACK_TO_QUERY_LIST_COMMAND.equals(input)
-                || MYQUERIES_COMMAND.equals(input)
+        return MYQUERIES_COMMAND.equals(input)
                 || NEWQUERY_COMMAND.equals(input);
     }
 
@@ -37,7 +35,6 @@ public abstract class Cancellable {
     }
 
     protected String processBasicCommand(AppUser user, String input) {
-        input = input.equals(BACK_TO_QUERY_LIST_COMMAND) ? MYQUERIES_COMMAND : input;
         return basicStateHandler.process(user, input);
     }
 }

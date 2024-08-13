@@ -32,6 +32,7 @@ import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
+import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
 
 
 @Service
@@ -98,7 +99,7 @@ public class MainServiceImpl implements MainService {
     private StateHandler getCallbackStateHandler(String callbackData) {
         if (callbackData.startsWith("query_"))
             return callbackStateHandlers.get(QUERY_LIST_STATE);
-        if (callbackData.startsWith("action_") || callbackData.equals("back_to_query_list"))
+        if (callbackData.startsWith("action_") || callbackData.equals(MYQUERIES_COMMAND))
             return callbackStateHandlers.get(QUERY_MENU_STATE);
         if (callbackData.startsWith("update_"))
             return callbackStateHandlers.get(QUERY_UPDATE_STATE);

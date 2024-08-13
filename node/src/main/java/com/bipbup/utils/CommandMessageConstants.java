@@ -14,7 +14,6 @@ public class CommandMessageConstants {
     public static final String UPDATE_SCHEDULE_PREFIX = "update_schedule_";
     public static final String DELETE_CONFIRM_PREFIX = "delete_confirm_";
     public static final String DELETE_CANCEL_COMMAND = "delete_cancel";
-    public static final String BACK_TO_QUERY_LIST_COMMAND = "back_to_query_list";
 
     // cancellable messages and commands
     public static final String COMMAND_CANCELLED_MESSAGE = "Команда была отменена.";

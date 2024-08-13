@@ -2,6 +2,7 @@ package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
+import com.bipbup.enums.AppUserState;
 import com.bipbup.enums.EnumParam;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
@@ -15,6 +16,7 @@ import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
 import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRMATION_MESSAGE;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_PREFIX;
 
 @Slf4j
@@ -26,22 +28,35 @@ public class QueryMenuStateHandler implements StateHandler {
 
     private final Decoder decoder;
 
+    private final BasicStateHandler basicStateHandler;
+
     public QueryMenuStateHandler(UserService userService,
                                  ConfigService configService,
-                                 Decoder decoder) {
+                                 Decoder decoder,
+                                 BasicStateHandler basicStateHandler) {
         this.userService = userService;
         this.configService = configService;
         this.decoder = decoder;
+        this.basicStateHandler = basicStateHandler;
     }
 
     @Override
     public String process(AppUser user, String input) {
-        if (hasDeletePrefix(input)) return processDeleteCommand(user);
+        if (isBackToQueryListCommand(input)) return processBackToQueryListCommand(user);
+        if (hasDeletePrefix(input)) return processDeleteCommand(user, input);
         if (hasUpdatePrefix(input)) return processUpdateCommand(user, input);
-        
+
         return "";
     }
-    
+
+    private String processBackToQueryListCommand(AppUser user) {
+        return basicStateHandler.process(user, MYQUERIES_COMMAND);
+    }
+
+    private boolean isBackToQueryListCommand(String input) {
+        return MYQUERIES_COMMAND.equals(input);
+    }
+
     private boolean hasUpdatePrefix(String input) {
         return input.startsWith(UPDATE_PREFIX);
     }
@@ -73,24 +88,30 @@ public class QueryMenuStateHandler implements StateHandler {
         return output.toString();
     }
 
-    private String processDeleteCommand(AppUser user) {
-        userService.saveUserState(user.getTelegramId(), QUERY_DELETE_STATE);
-        log.debug("User {} set state to QUERY_DELETE_STATE", user.getFirstName());
-        return DELETE_CONFIRMATION_MESSAGE;
+    private String processDeleteCommand(AppUser user, String input) {
+        return processConfigActionCommand(user, input, DELETE_PREFIX, QUERY_DELETE_STATE);
     }
 
     private String processUpdateCommand(AppUser user, String input) {
-        var hash = input.substring(UPDATE_PREFIX.length());
+        return processConfigActionCommand(user, input, UPDATE_PREFIX, QUERY_UPDATE_STATE);
+    }
+
+    private String processConfigActionCommand(AppUser user, String input,
+                                              String prefix, AppUserState state) {
+        var hash = input.substring(prefix.length());
         var configId = decoder.idOf(hash);
         var optionalAppUserConfig = configService.getById(configId);
 
         if (optionalAppUserConfig.isPresent()) {
             AppUserConfig config = optionalAppUserConfig.get();
 
-            userService.saveUserState(user.getTelegramId(), QUERY_UPDATE_STATE);
-            log.debug("User {} set state to QUERY_UPDATE_STATE", user.getFirstName());
+            userService.saveUserState(user.getTelegramId(), state);
+            log.debug("User {} selected menu action and state set to {}", user.getFirstName(), state);
 
-            return showDetailedQueryOutput(config);
+            if (prefix.equals(UPDATE_PREFIX))
+                return showDetailedQueryOutput(config);
+            else
+                return DELETE_CONFIRMATION_MESSAGE;
         } else {
             log.warn("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return CONFIG_NOT_FOUND_MESSAGE;
