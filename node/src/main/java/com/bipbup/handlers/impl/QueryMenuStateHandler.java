@@ -3,7 +3,6 @@ package com.bipbup.handlers.impl;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.EnumParam;
-import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
@@ -16,30 +15,28 @@ import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
 
 @Slf4j
 @Component
-public class QueryMenuStateHandler extends Cancellable implements StateHandler {
+public class QueryMenuStateHandler implements StateHandler {
+    private final UserService userService;
 
     private final ConfigService configService;
 
     private final Decoder decoder;
 
-    protected static final String DELETE_PREFIX = "delete_";
-    protected static final String UPDATE_PREFIX = "update_";
+    protected static final String DELETE_PREFIX = "action_delete_";
+    protected static final String UPDATE_PREFIX = "action_update_";
     protected static final String MESSAGE_DELETE_CONFIRMATION = "Вы уверены, что хотите удалить этот запрос?";
     protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена.";
 
-    public QueryMenuStateHandler(BasicStateHandler basicStateHandler,
-                                 UserService userService,
+    public QueryMenuStateHandler(UserService userService,
                                  ConfigService configService,
                                  Decoder decoder) {
-        super(userService, basicStateHandler);
+        this.userService = userService;
         this.configService = configService;
         this.decoder = decoder;
     }
 
     @Override
     public String process(AppUser user, String input) {
-        if (isCancelCommand(input)) return processCancelCommand(user);
-        if (isBasicCommand(input)) return processBasicCommand(user, input);
         if (hasDeletePrefix(input)) return processDeleteCommand(user);
         if (hasUpdatePrefix(input)) return processUpdateCommand(user, input);
         

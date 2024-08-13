@@ -1,7 +1,6 @@
 package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
-import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
@@ -11,14 +10,15 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class QueryDeleteStateHandler extends Cancellable implements StateHandler {
+public class QueryDeleteStateHandler implements StateHandler {
+    private final UserService userService;
 
     private final ConfigService configService;
 
     private final Decoder decoder;
 
-    protected static final String DELETE_YES_PREFIX = "delete_yes_";
-    protected static final String DELETE_NO_COMMAND = "delete_no";
+    protected static final String DELETE_CONFIRM_PREFIX = "delete_confirm_";
+    protected static final String DELETE_CANCEL_COMMAND = "delete_cancel";
     protected static final String MESSAGE_CONFIGURATION_DELETED = "Конфигурация была удалена.";
     protected static final String MESSAGE_CONFIGURATION_NOT_DELETED = "Конфигурация не была удалена.";
     protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена.";
@@ -26,18 +26,15 @@ public class QueryDeleteStateHandler extends Cancellable implements StateHandler
     protected static final String MESSAGE_UNEXPECTED_ERROR = "Произошла ошибка. Попробуйте еще раз.";
 
     public QueryDeleteStateHandler(UserService userService,
-                                   BasicStateHandler basicStateHandler,
                                    ConfigService configService,
                                    Decoder decoder) {
-        super(userService, basicStateHandler);
+        this.userService = userService;
         this.configService = configService;
         this.decoder = decoder;
     }
 
     @Override
     public String process(AppUser user, String input) {
-        if (isCancelCommand(input)) return processCancelCommand(user);
-        if (isBasicCommand(input)) return processBasicCommand(user, input);
         if (hasDeleteYesPrefix(input)) return processDeleteYesCommand(user, input);
         if (isDeleteNoCommand(input)) return processDeleteNoCommand(user);
 
@@ -45,15 +42,15 @@ public class QueryDeleteStateHandler extends Cancellable implements StateHandler
     }
 
     private boolean isDeleteNoCommand(final String input) {
-        return DELETE_NO_COMMAND.equals(input);
+        return DELETE_CANCEL_COMMAND.equals(input);
     }
 
     private boolean hasDeleteYesPrefix(final String input) {
-        return input.startsWith(DELETE_YES_PREFIX);
+        return input.startsWith(DELETE_CONFIRM_PREFIX);
     }
 
     private String processDeleteYesCommand(AppUser user, String input) {
-        var hash = input.substring(DELETE_YES_PREFIX.length());
+        var hash = input.substring(DELETE_CONFIRM_PREFIX.length());
         var configId = decoder.idOf(hash);
         var optional = configService.getById(configId);
 

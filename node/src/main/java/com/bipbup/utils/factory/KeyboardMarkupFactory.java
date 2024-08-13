@@ -24,8 +24,17 @@ public class KeyboardMarkupFactory {
     private static final int BUTTONS_PER_ROW = 2;
 
     private static final String QUERY_PREFIX = "query_";
-    private static final String UPDATE_PREFIX = "update_";
-    private static final String DELETE_PREFIX = "delete_";
+    private static final String UPDATE_PREFIX = "action_update_";
+    private static final String DELETE_PREFIX = "action_delete_";
+    private static final String UPDATE_CONFIG_NAME_PREFIX = "update_config_name_";
+    private static final String UPDATE_QUERY_PREFIX = "update_query_";
+    private static final String UPDATE_AREA_PREFIX = "update_area_";
+    private static final String UPDATE_EXPERIENCE_PREFIX = "update_experience_";
+    private static final String UPDATE_EDUCATION_PREFIX = "update_education_";
+    private static final String UPDATE_SCHEDULE_PREFIX = "update_schedule_";
+    private static final String DELETE_CONFIRM_PREFIX = "delete_confirm_";
+    private static final String DELETE_CANCEL_COMMAND = "delete_cancel";
+    private static final String BACK_TO_QUERY_LIST_COMMAND = "back_to_query_list";
 
     private static final String BUTTON_TEXT_UPDATE = "Обновить";
     private static final String BUTTON_TEXT_DELETE = "Удалить";
@@ -56,7 +65,7 @@ public class KeyboardMarkupFactory {
         List<InlineKeyboardButton> buttons = List.of(
                 createButton(BUTTON_TEXT_UPDATE, UPDATE_PREFIX + hash),
                 createButton(BUTTON_TEXT_DELETE, DELETE_PREFIX + hash),
-                createButton(BUTTON_TEXT_BACK, "back_to_query_list")
+                createButton(BUTTON_TEXT_BACK, BACK_TO_QUERY_LIST_COMMAND)
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
@@ -66,8 +75,8 @@ public class KeyboardMarkupFactory {
         var hash = extractHash(callbackQuery.getData(), DELETE_PREFIX);
 
         List<InlineKeyboardButton> buttons = List.of(
-                createButton(BUTTON_TEXT_DELETE_YES, "delete_yes_" + hash),
-                createButton(BUTTON_TEXT_DELETE_NO, "delete_no")
+                createButton(BUTTON_TEXT_DELETE_YES, DELETE_CONFIRM_PREFIX + hash),
+                createButton(BUTTON_TEXT_DELETE_NO, DELETE_CANCEL_COMMAND)
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
@@ -77,12 +86,12 @@ public class KeyboardMarkupFactory {
         var hash = extractHash(callbackQuery.getData(), UPDATE_PREFIX);
 
         List<InlineKeyboardButton> buttons = List.of(
-                createButton(BUTTON_TEXT_EDIT_CONFIG_NAME, "edit_config_name_" + hash),
-                createButton(BUTTON_TEXT_EDIT_QUERY, "edit_query_" + hash),
-                createButton(BUTTON_TEXT_EDIT_AREA, "edit_area_" + hash),
-                createButton(BUTTON_TEXT_EDIT_EXPERIENCE, "edit_experience_" + hash),
-                createButton(BUTTON_TEXT_EDIT_EDUCATION, "edit_education_" + hash),
-                createButton(BUTTON_TEXT_EDIT_SCHEDULE, "edit_schedule_" + hash)
+                createButton(BUTTON_TEXT_EDIT_CONFIG_NAME, UPDATE_CONFIG_NAME_PREFIX + hash),
+                createButton(BUTTON_TEXT_EDIT_QUERY, UPDATE_QUERY_PREFIX + hash),
+                createButton(BUTTON_TEXT_EDIT_AREA, UPDATE_AREA_PREFIX + hash),
+                createButton(BUTTON_TEXT_EDIT_EXPERIENCE, UPDATE_EXPERIENCE_PREFIX + hash),
+                createButton(BUTTON_TEXT_EDIT_EDUCATION, UPDATE_EDUCATION_PREFIX + hash),
+                createButton(BUTTON_TEXT_EDIT_SCHEDULE, UPDATE_SCHEDULE_PREFIX + hash)
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);

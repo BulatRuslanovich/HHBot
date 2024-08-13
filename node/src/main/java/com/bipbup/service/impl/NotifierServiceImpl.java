@@ -45,8 +45,7 @@ public class NotifierServiceImpl implements NotifierService {
                 processNewVacancies(config);
             }
 
-            page++;
-            configs = configService.getAll(page, sizeOfPage);
+            configs = configService.getAll(++page, sizeOfPage);
         }
     }
 

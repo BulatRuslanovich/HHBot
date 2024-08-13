@@ -42,7 +42,9 @@ public class MainServiceImpl implements MainService {
 
     private final AnswerProducer answerProducer;
 
-    private final Map<AppUserState, StateHandler> stateHandlers;
+    private final Map<AppUserState, StateHandler> messageStateHandlers;
+
+    private final Map<AppUserState, StateHandler> callbackStateHandlers;
 
     public MainServiceImpl(final UserService userService,
                            final KeyboardMarkupFactory markupFactory,
@@ -58,10 +60,11 @@ public class MainServiceImpl implements MainService {
         this.markupFactory = markupFactory;
         this.answerProducer = answerProducer;
 
-        this.stateHandlers = Map.of(BASIC_STATE, basicStateHandler,
+        this.messageStateHandlers = Map.of(BASIC_STATE, basicStateHandler,
                 WAIT_CONFIG_NAME_STATE, waitConfigNameStateHandle,
-                WAIT_QUERY_STATE, waitQueryStateHandler,
-                QUERY_LIST_STATE, queryListStateHandler,
+                WAIT_QUERY_STATE, waitQueryStateHandler);
+
+        this.callbackStateHandlers = Map.of(QUERY_LIST_STATE, queryListStateHandler,
                 QUERY_MENU_STATE, queryMenuStateHandler,
                 QUERY_DELETE_STATE, queryDeleteStateHandler,
                 QUERY_UPDATE_STATE, queryUpdateStateHandler);
@@ -70,42 +73,51 @@ public class MainServiceImpl implements MainService {
     @Override
     public void processMessage(final Update update) {
         var text = update.getMessage().getText();
-        processUpdate(update, text);
+        var user = userService.findOrSaveAppUser(update);
+        var userState = userService.getUserState(user.getTelegramId());
+        var handler = messageStateHandlers.getOrDefault(userState, messageStateHandlers.get(BASIC_STATE));
+        var output = handler.process(user, text);
+
+        if (!output.isEmpty())
+            processOutput(user, update, output);
     }
 
     @Override
     public void processCallbackQuery(final Update update) {
         var callbackData = update.getCallbackQuery().getData();
-        processUpdate(update, callbackData);
-    }
-
-    private void processUpdate(final Update update,
-                               final String data) {
         var user = userService.findOrSaveAppUser(update);
         var userState = userService.getUserState(user.getTelegramId());
-        var output = "";
 
-        var handler = stateHandlers.get(userState);
-        if (handler != null) {
-            output = handler.process(user, data);
-        }
+        var handler = callbackStateHandlers.getOrDefault(userState, getCallbackStateHandler(callbackData));
+        var output = handler.process(user, callbackData);
 
-        if (!output.isEmpty()) {
+        if (!output.isEmpty())
             processOutput(user, update, output);
-        }
+    }
+
+    private StateHandler getCallbackStateHandler(String callbackData) {
+        if (callbackData.startsWith("query_"))
+            return callbackStateHandlers.get(QUERY_LIST_STATE);
+        if (callbackData.startsWith("action_") || callbackData.equals("back_to_query_list"))
+            return callbackStateHandlers.get(QUERY_MENU_STATE);
+        if (callbackData.startsWith("update_"))
+            return callbackStateHandlers.get(QUERY_UPDATE_STATE);
+        if (callbackData.startsWith("delete_"))
+            return callbackStateHandlers.get(QUERY_DELETE_STATE);
+
+        return messageStateHandlers.get(BASIC_STATE);
     }
 
     private void processOutput(final AppUser user,
                                final Update update,
                                final String output) {
         var userState = userService.getUserState(user.getTelegramId());
-        if (userState.equals(QUERY_LIST_STATE) && !update.hasCallbackQuery()) {
+        if (userState.equals(QUERY_LIST_STATE) && !update.hasCallbackQuery())
             sendAnswer(output, user.getTelegramId(), markupFactory.createUserConfigListKeyboard(user));
-        } else if (update.hasCallbackQuery()) {
+        else if (update.hasCallbackQuery())
             processCallbackQuery(user, update, output);
-        } else {
+        else
             sendAnswer(output, user.getTelegramId());
-        }
     }
 
     private void processCallbackQuery(final AppUser user,
@@ -115,12 +127,11 @@ public class MainServiceImpl implements MainService {
 
         var userState = userService.getUserState(user.getTelegramId());
         var isWaitState = userState.toString().startsWith("WAIT_");
-        if (isWaitState) {
+        if (isWaitState)
             sendAnswer(output, user.getTelegramId());
-        } else {
+        else
             editAnswer(output, user.getTelegramId(), callbackQuery.getMessage().getMessageId(),
                     fetchKeyboard(user, callbackQuery));
-        }
     }
 
     private void sendAnswer(final String text,
@@ -157,17 +168,16 @@ public class MainServiceImpl implements MainService {
     private InlineKeyboardMarkup fetchKeyboard(final AppUser user,
                                                final CallbackQuery callbackQuery) {
         var userState = userService.getUserState(user.getTelegramId());
-        if (userState.equals(QUERY_LIST_STATE)) {
+        if (userState.equals(QUERY_LIST_STATE))
             return markupFactory.createUserConfigListKeyboard(user);
-        } else if (userState.equals(QUERY_MENU_STATE)) {
+        if (userState.equals(QUERY_MENU_STATE))
             return markupFactory.createConfigManagementKeyboard(callbackQuery);
-        } else if (userState.equals(QUERY_DELETE_STATE)) {
+        if (userState.equals(QUERY_DELETE_STATE))
             return markupFactory.createDeleteConfirmationKeyboard(callbackQuery);
-        } else if (userState.equals(QUERY_UPDATE_STATE)) {
+        if (userState.equals(QUERY_UPDATE_STATE))
             return markupFactory.createUpdateConfigKeyboard(callbackQuery);
-        } else {
-            return null;
-        }
+
+        return null;
     }
 }
 

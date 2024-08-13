@@ -1,7 +1,6 @@
 package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
-import com.bipbup.handlers.Cancellable;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
@@ -14,7 +13,8 @@ import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
 
 @Slf4j
 @Component
-public class QueryListStateHandler extends Cancellable implements StateHandler {
+public class QueryListStateHandler implements StateHandler {
+    private final UserService userService;
 
     private final ConfigService configService;
 
@@ -27,18 +27,15 @@ public class QueryListStateHandler extends Cancellable implements StateHandler {
             Что хотите сделать с ней?""";
 
     public QueryListStateHandler(UserService userService,
-                                 BasicStateHandler basicStateHandler,
                                  ConfigService configService,
                                  Decoder decoder) {
-        super(userService, basicStateHandler);
+        this.userService = userService;
         this.configService = configService;
         this.decoder = decoder;
     }
 
     @Override
     public String process(AppUser user, String input) {
-        if (isCancelCommand(input)) return processCancelCommand(user);
-        if (isBasicCommand(input)) return processBasicCommand(user, input);
         if (hasQueryPrefix(input)) return processQueryCommand(user, input);
 
         return "";
