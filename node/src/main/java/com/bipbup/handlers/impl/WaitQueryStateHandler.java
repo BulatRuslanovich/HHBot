@@ -11,6 +11,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.INVALID_QUERY_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.QUERY_SET_MESSAGE_TEMPLATE;
+
 @Slf4j
 @Component
 public class WaitQueryStateHandler extends Cancellable implements StateHandler {
@@ -18,9 +22,6 @@ public class WaitQueryStateHandler extends Cancellable implements StateHandler {
     private final ConfigService configService;
 
     protected static final int MAX_QUERY_LENGTH = 50;
-    protected static final String INVALID_QUERY_MESSAGE = "Некорректный запрос. Пожалуйста, проверьте введенные данные.";
-    protected static final String QUERY_SET_MESSAGE_TEMPLATE = "Запрос \"%s\" успешно установлен в конфигурации \"%s\".";
-    protected static final String CONFIG_NOT_FOUND_MESSAGE = "Произошла ошибка. Попробуйте ещё раз.";
 
     public WaitQueryStateHandler(BasicStateHandler basicStateHandler,
                                  UserService userService,

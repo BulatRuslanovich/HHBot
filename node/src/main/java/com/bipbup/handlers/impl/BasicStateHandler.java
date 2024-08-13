@@ -10,6 +10,13 @@ import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
+import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
+import static com.bipbup.utils.CommandMessageConstants.NEWQUERY_COMMAND;
+import static com.bipbup.utils.CommandMessageConstants.NO_SAVED_QUERIES_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.QUERY_PROMPT_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.START_COMMAND;
+import static com.bipbup.utils.CommandMessageConstants.USER_QUERIES_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.WELCOME_MESSAGE;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,17 +26,6 @@ public class BasicStateHandler implements StateHandler {
     private final UserService userService;
 
     private final ConfigService configService;
-
-    protected static final String START_COMMAND = "/start";
-    protected static final String NEWQUERY_COMMAND = "/newquery";
-    protected static final String MYQUERIES_COMMAND = "/myqueries";
-    protected static final String WELCOME_MESSAGE = "Добро пожаловать в капитализм, %s!";
-    protected static final String QUERY_PROMPT_MESSAGE = "Введите название вашей конфигурации, если хотите отменить команду, пожалуйста, введите /cancel:";
-    protected static final String USER_QUERIES_MESSAGE = "Ваши запросы:";
-    protected static final String NO_SAVED_QUERIES_MESSAGE = """
-                У вас пока нет сохранённых запросов.
-                Введите /newquery, чтобы добавить новый запрос.
-                """;
 
     @Override
     public String process(final AppUser user, final String input) {

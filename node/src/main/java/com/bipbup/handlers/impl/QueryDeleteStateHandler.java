@@ -8,6 +8,12 @@ import com.bipbup.utils.Decoder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import static com.bipbup.utils.CommandMessageConstants.CONFIG_DELETED_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_DELETED_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.DELETE_CANCEL_COMMAND;
+import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRM_PREFIX;
+
 @Slf4j
 @Component
 public class QueryDeleteStateHandler implements StateHandler {
@@ -16,14 +22,6 @@ public class QueryDeleteStateHandler implements StateHandler {
     private final ConfigService configService;
 
     private final Decoder decoder;
-
-    protected static final String DELETE_CONFIRM_PREFIX = "delete_confirm_";
-    protected static final String DELETE_CANCEL_COMMAND = "delete_cancel";
-    protected static final String MESSAGE_CONFIGURATION_DELETED = "Конфигурация была удалена.";
-    protected static final String MESSAGE_CONFIGURATION_NOT_DELETED = "Конфигурация не была удалена.";
-    protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена.";
-    protected static final String MESSAGE_ERROR_PROCESSING_COMMAND = "Ошибка при обработке команды. Попробуйте еще раз.";
-    protected static final String MESSAGE_UNEXPECTED_ERROR = "Произошла ошибка. Попробуйте еще раз.";
 
     public QueryDeleteStateHandler(UserService userService,
                                    ConfigService configService,
@@ -58,16 +56,16 @@ public class QueryDeleteStateHandler implements StateHandler {
             configService.delete(optional.get());
             userService.clearUserState(user.getTelegramId());
             log.debug("User {} deleted configuration with id {} and state set to BASIC_STATE", user.getFirstName(), configId);
-            return MESSAGE_CONFIGURATION_DELETED;
+            return CONFIG_DELETED_MESSAGE;
         } else {
             log.warn("Configuration with id {} not found for user {}", configId, user.getFirstName());
-            return MESSAGE_CONFIGURATION_NOT_FOUND;
+            return CONFIG_NOT_FOUND_MESSAGE;
         }
     }
 
     private String processDeleteNoCommand(AppUser user) {
         userService.clearUserState(user.getTelegramId());
         log.debug("User {} chose not to delete the configuration and state set to BASIC_STATE", user.getFirstName());
-        return MESSAGE_CONFIGURATION_NOT_DELETED;
+        return CONFIG_NOT_DELETED_MESSAGE;
     }
 }

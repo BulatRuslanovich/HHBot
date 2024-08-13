@@ -10,6 +10,9 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
+import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.QUERY_OUTPUT_MESSAGE_TEMPLATE;
+import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
 
 @Slf4j
 @Component
@@ -19,12 +22,6 @@ public class QueryListStateHandler implements StateHandler {
     private final ConfigService configService;
 
     private final Decoder decoder;
-
-    protected static final String QUERY_PREFIX = "query_";
-    protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена";
-    protected static final String QUERY_OUTPUT_FORMAT = """
-            Конфигурация "%s" с запросом "%s"
-            Что хотите сделать с ней?""";
 
     public QueryListStateHandler(UserService userService,
                                  ConfigService configService,
@@ -48,10 +45,10 @@ public class QueryListStateHandler implements StateHandler {
     private Pair<String, Boolean> generateQueryOutput(final long configId) {
         var optionalAppUserConfig = configService.getById(configId);
 
-        if (optionalAppUserConfig.isEmpty()) return Pair.of(MESSAGE_CONFIGURATION_NOT_FOUND, false);
+        if (optionalAppUserConfig.isEmpty()) return Pair.of(CONFIG_NOT_FOUND_MESSAGE, false);
 
         var config = optionalAppUserConfig.get();
-        var answer = String.format(QUERY_OUTPUT_FORMAT, config.getConfigName(), config.getQueryText());
+        var answer = String.format(QUERY_OUTPUT_MESSAGE_TEMPLATE, config.getConfigName(), config.getQueryText());
         return Pair.of(answer, true);
     }
 

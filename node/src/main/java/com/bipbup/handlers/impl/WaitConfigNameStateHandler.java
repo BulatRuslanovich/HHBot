@@ -10,6 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
+import static com.bipbup.utils.CommandMessageConstants.CONFIG_EXISTS_MESSAGE_TEMPLATE;
+import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.CONFIG_UPDATED_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.ENTER_QUERY_MESSAGE_TEMPLATE;
+import static com.bipbup.utils.CommandMessageConstants.INVALID_CONFIG_NAME_MESSAGE;
 
 @Slf4j
 @Component
@@ -18,11 +23,6 @@ public class WaitConfigNameStateHandler extends Cancellable implements StateHand
     private final ConfigService configService;
 
     protected static final int MAX_CONFIG_NAME_LENGTH = 50;
-    protected static final String CONFIG_EXISTS_MESSAGE_TEMPLATE = "Конфигурация с названием \"%s\" уже существует.";
-    protected static final String ENTER_QUERY_MESSAGE_TEMPLATE = "Введите запрос для конфигурации \"%s\":";
-    protected static final String CONFIG_UPDATED_MESSAGE = "Название конфигурации изменено.";
-    protected static final String INVALID_CONFIG_NAME_MESSAGE = "Некорректное название. Пожалуйста, проверьте введенные данные.";
-    protected static final String CONFIG_NOT_FOUND_MESSAGE = "Произошла ошибка. Попробуйте ещё раз.";
 
     public WaitConfigNameStateHandler(UserService userService,
                                       BasicStateHandler basicStateHandler,

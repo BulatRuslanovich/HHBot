@@ -12,6 +12,30 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.bipbup.utils.CommandMessageConstants.BACK_TO_QUERY_LIST_COMMAND;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_BACK;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE_CANCEL;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE_CONFIRM;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_AREA;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_CONFIG_NAME;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_EDUCATION;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_EXPERIENCE;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_QUERY;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_SCHEDULE;
+import static com.bipbup.utils.CommandMessageConstants.DELETE_CANCEL_COMMAND;
+import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRM_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.DELETE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.UPDATE_AREA_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.UPDATE_CONFIG_NAME_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.UPDATE_EDUCATION_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.UPDATE_EXPERIENCE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.UPDATE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.UPDATE_QUERY_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.UPDATE_SCHEDULE_PREFIX;
+
 
 @RequiredArgsConstructor
 @Component
@@ -22,31 +46,6 @@ public class KeyboardMarkupFactory {
     private final Encoder encoder;
 
     private static final int BUTTONS_PER_ROW = 2;
-
-    private static final String QUERY_PREFIX = "query_";
-    private static final String UPDATE_PREFIX = "action_update_";
-    private static final String DELETE_PREFIX = "action_delete_";
-    private static final String UPDATE_CONFIG_NAME_PREFIX = "update_config_name_";
-    private static final String UPDATE_QUERY_PREFIX = "update_query_";
-    private static final String UPDATE_AREA_PREFIX = "update_area_";
-    private static final String UPDATE_EXPERIENCE_PREFIX = "update_experience_";
-    private static final String UPDATE_EDUCATION_PREFIX = "update_education_";
-    private static final String UPDATE_SCHEDULE_PREFIX = "update_schedule_";
-    private static final String DELETE_CONFIRM_PREFIX = "delete_confirm_";
-    private static final String DELETE_CANCEL_COMMAND = "delete_cancel";
-    private static final String BACK_TO_QUERY_LIST_COMMAND = "back_to_query_list";
-
-    private static final String BUTTON_TEXT_UPDATE = "Обновить";
-    private static final String BUTTON_TEXT_DELETE = "Удалить";
-    private static final String BUTTON_TEXT_BACK = "Назад";
-    private static final String BUTTON_TEXT_DELETE_YES = "Да, удалить";
-    private static final String BUTTON_TEXT_DELETE_NO = "Нет, не удалять";
-    private static final String BUTTON_TEXT_EDIT_CONFIG_NAME = "Изменить название";
-    private static final String BUTTON_TEXT_EDIT_QUERY = "Изменить запрос";
-    private static final String BUTTON_TEXT_EDIT_AREA = "Изменить регион";
-    private static final String BUTTON_TEXT_EDIT_EXPERIENCE = "Изменить опыт работы";
-    private static final String BUTTON_TEXT_EDIT_EDUCATION = "Изменить уровень образования";
-    private static final String BUTTON_TEXT_EDIT_SCHEDULE = "Изменить график работы";
 
     public InlineKeyboardMarkup createUserConfigListKeyboard(AppUser appUser) {
         var userConfigs = appUserConfigDAO.findByAppUser(appUser);
@@ -75,8 +74,8 @@ public class KeyboardMarkupFactory {
         var hash = extractHash(callbackQuery.getData(), DELETE_PREFIX);
 
         List<InlineKeyboardButton> buttons = List.of(
-                createButton(BUTTON_TEXT_DELETE_YES, DELETE_CONFIRM_PREFIX + hash),
-                createButton(BUTTON_TEXT_DELETE_NO, DELETE_CANCEL_COMMAND)
+                createButton(BUTTON_TEXT_DELETE_CONFIRM, DELETE_CONFIRM_PREFIX + hash),
+                createButton(BUTTON_TEXT_DELETE_CANCEL, DELETE_CANCEL_COMMAND)
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
@@ -86,12 +85,12 @@ public class KeyboardMarkupFactory {
         var hash = extractHash(callbackQuery.getData(), UPDATE_PREFIX);
 
         List<InlineKeyboardButton> buttons = List.of(
-                createButton(BUTTON_TEXT_EDIT_CONFIG_NAME, UPDATE_CONFIG_NAME_PREFIX + hash),
-                createButton(BUTTON_TEXT_EDIT_QUERY, UPDATE_QUERY_PREFIX + hash),
-                createButton(BUTTON_TEXT_EDIT_AREA, UPDATE_AREA_PREFIX + hash),
-                createButton(BUTTON_TEXT_EDIT_EXPERIENCE, UPDATE_EXPERIENCE_PREFIX + hash),
-                createButton(BUTTON_TEXT_EDIT_EDUCATION, UPDATE_EDUCATION_PREFIX + hash),
-                createButton(BUTTON_TEXT_EDIT_SCHEDULE, UPDATE_SCHEDULE_PREFIX + hash)
+                createButton(BUTTON_TEXT_UPDATE_CONFIG_NAME, UPDATE_CONFIG_NAME_PREFIX + hash),
+                createButton(BUTTON_TEXT_UPDATE_QUERY, UPDATE_QUERY_PREFIX + hash),
+                createButton(BUTTON_TEXT_UPDATE_AREA, UPDATE_AREA_PREFIX + hash),
+                createButton(BUTTON_TEXT_UPDATE_EXPERIENCE, UPDATE_EXPERIENCE_PREFIX + hash),
+                createButton(BUTTON_TEXT_UPDATE_EDUCATION, UPDATE_EDUCATION_PREFIX + hash),
+                createButton(BUTTON_TEXT_UPDATE_SCHEDULE, UPDATE_SCHEDULE_PREFIX + hash)
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);

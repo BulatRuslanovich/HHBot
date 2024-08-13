@@ -21,6 +21,7 @@ public class UserServiceImpl implements UserService {
 
     private final AppUserDAO appUserDAO;
 
+    @Override
     @Transactional
     public AppUser findOrSaveAppUser(final Update update) {
         var messageSender = update.hasMessage()
@@ -30,18 +31,23 @@ public class UserServiceImpl implements UserService {
         return appUserOptional.orElseGet(() -> saveAppUser(messageSender));
     }
 
+    @Override
     @CachePut(value = "userStates", key = "#telegramId")
     public AppUserState saveUserState(Long telegramId, AppUserState state) {
         return state;
     }
 
+    @Override
     @Cacheable(value = "userStates")
     public AppUserState getUserState(Long telegramId) {
         return BASIC_STATE;
     }
 
+    @Override
     @CacheEvict(value = "userStates")
-    public void clearUserState(Long telegramId) {}
+    public void clearUserState(Long telegramId) {
+        // clearing cache, doesn't need implementing
+    }
 
     private AppUser saveAppUser(final User messageSender) {
         var appUser = AppUser.builder()

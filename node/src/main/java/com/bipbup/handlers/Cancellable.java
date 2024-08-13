@@ -6,6 +6,12 @@ import com.bipbup.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.bipbup.utils.CommandMessageConstants.BACK_TO_QUERY_LIST_COMMAND;
+import static com.bipbup.utils.CommandMessageConstants.CANCEL_COMMAND;
+import static com.bipbup.utils.CommandMessageConstants.COMMAND_CANCELLED_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
+import static com.bipbup.utils.CommandMessageConstants.NEWQUERY_COMMAND;
+
 @Slf4j
 @RequiredArgsConstructor
 public abstract class Cancellable {
@@ -13,12 +19,6 @@ public abstract class Cancellable {
     protected final UserService userService;
 
     private final BasicStateHandler basicStateHandler;
-
-    protected static final String MESSAGE_COMMAND_CANCELLED = "Команда была отменена.";
-    protected static final String CANCEL_COMMAND = "/cancel";
-    protected static final String MYQUERIES_COMMAND = "/myqueries";
-    protected static final String NEWQUERY_COMMAND = "/newquery";
-    protected static final String BACK_TO_QUERY_LIST_COMMAND = "back_to_query_list";
 
     protected boolean isCancelCommand(final String input) {
         return CANCEL_COMMAND.equals(input);
@@ -33,7 +33,7 @@ public abstract class Cancellable {
     protected String processCancelCommand(final AppUser user) {
         userService.clearUserState(user.getTelegramId());
         log.debug("User {} cancelled the command and state set to BASIC_STATE.", user.getFirstName());
-        return MESSAGE_COMMAND_CANCELLED;
+        return COMMAND_CANCELLED_MESSAGE;
     }
 
     protected String processBasicCommand(AppUser user, String input) {

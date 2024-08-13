@@ -61,5 +61,7 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     @CacheEvict(value = "configSelections")
-    public void clearConfigSelection(Long telegramId) {}
+    public void clearConfigSelection(Long telegramId) {
+        // clearing cache, doesn't need implementing
+    }
 }

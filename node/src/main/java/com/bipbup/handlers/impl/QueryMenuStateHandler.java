@@ -12,6 +12,10 @@ import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.QUERY_DELETE_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
+import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRMATION_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.DELETE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.UPDATE_PREFIX;
 
 @Slf4j
 @Component
@@ -21,11 +25,6 @@ public class QueryMenuStateHandler implements StateHandler {
     private final ConfigService configService;
 
     private final Decoder decoder;
-
-    protected static final String DELETE_PREFIX = "action_delete_";
-    protected static final String UPDATE_PREFIX = "action_update_";
-    protected static final String MESSAGE_DELETE_CONFIRMATION = "Вы уверены, что хотите удалить этот запрос?";
-    protected static final String MESSAGE_CONFIGURATION_NOT_FOUND = "Конфигурация не найдена.";
 
     public QueryMenuStateHandler(UserService userService,
                                  ConfigService configService,
@@ -77,7 +76,7 @@ public class QueryMenuStateHandler implements StateHandler {
     private String processDeleteCommand(AppUser user) {
         userService.saveUserState(user.getTelegramId(), QUERY_DELETE_STATE);
         log.debug("User {} set state to QUERY_DELETE_STATE", user.getFirstName());
-        return MESSAGE_DELETE_CONFIRMATION;
+        return DELETE_CONFIRMATION_MESSAGE;
     }
 
     private String processUpdateCommand(AppUser user, String input) {
@@ -94,7 +93,7 @@ public class QueryMenuStateHandler implements StateHandler {
             return showDetailedQueryOutput(config);
         } else {
             log.warn("Configuration with id {} not found for user {}", configId, user.getFirstName());
-            return MESSAGE_CONFIGURATION_NOT_FOUND;
+            return CONFIG_NOT_FOUND_MESSAGE;
         }
     }
 }
