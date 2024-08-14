@@ -6,9 +6,11 @@ import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import com.bipbup.utils.Decoder;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import static com.bipbup.enums.AppUserState.WAIT_AREA_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
@@ -20,8 +22,10 @@ import static com.bipbup.utils.CommandMessageConstants.SELECT_EXPERIENCE_MESSAGE
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_CONFIG_NAME_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_EXPERIENCE_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_QUERY_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.UPDATE_STATE_PREFIX;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class QueryUpdateStateHandler implements StateHandler {
     private final UserService userService;
@@ -32,37 +36,18 @@ public class QueryUpdateStateHandler implements StateHandler {
 
     private final QueryListStateHandler queryListStateHandler;
 
-    public QueryUpdateStateHandler(UserService userService,
-                                   Decoder decoder,
-                                   ConfigService configService,
-                                   QueryListStateHandler queryListStateHandler) {
-        this.userService = userService;
-        this.decoder = decoder;
-        this.configService = configService;
-        this.queryListStateHandler = queryListStateHandler;
-    }
-
     @Override
     public String process(AppUser user, String input) {
         if (isBackToQueryMenuCommand(input))
             return processBackToQueryMenuCommand(user, input);
-        if (hasEditConfigNamePrefix(input))
-            return processEditConfigCommand(user, input,
-                    UPDATE_CONFIG_NAME_PREFIX.length(),
-                    WAIT_CONFIG_NAME_STATE,
-                    ENTER_CONFIG_NAME_MESSAGE);
-        if (hasEditQueryPrefix(input))
-            return processEditConfigCommand(user, input,
-                    UPDATE_QUERY_PREFIX.length(),
-                    WAIT_QUERY_STATE,
-                    ENTER_QUERY_MESSAGE);
-        if (hasEditExperiencePrefix(input))
-            return processEditConfigCommand(user, input,
-                    UPDATE_EXPERIENCE_PREFIX.length(),
-                    WAIT_EXPERIENCE_STATE,
-                    SELECT_EXPERIENCE_MESSAGE);
-        
+        if (hasUpdatePrefix(input))
+            return processUpdateConfigCommand(user, input);
+
         return "";
+    }
+
+    private boolean hasUpdatePrefix(String input) {
+        return input.startsWith(UPDATE_STATE_PREFIX);
     }
 
     private String processBackToQueryMenuCommand(AppUser user, String input) {
@@ -73,33 +58,57 @@ public class QueryUpdateStateHandler implements StateHandler {
         return input.startsWith(QUERY_PREFIX);
     }
 
-    private boolean hasEditQueryPrefix(String input) {
+    private boolean hasUpdateQueryPrefix(String input) {
         return input.startsWith(UPDATE_QUERY_PREFIX);
     }
 
-    private boolean hasEditConfigNamePrefix(String input) {
+    private boolean hasUpdateConfigNamePrefix(String input) {
         return input.startsWith(UPDATE_CONFIG_NAME_PREFIX);
     }
 
-    private boolean hasEditExperiencePrefix(String input) {
+    private boolean hasUpdateExperiencePrefix(String input) {
         return input.startsWith(UPDATE_EXPERIENCE_PREFIX);
     }
 
-    private String processEditConfigCommand(AppUser user,
-                                            String input,
-                                            int prefixLength,
-                                            AppUserState state,
-                                            String message) {
-        var hash = input.substring(prefixLength);
+    private String processUpdateConfigCommand(AppUser user, String input) {
+        if (hasUpdateConfigNamePrefix(input))
+            return updateConfigSelectionAndUserState(user, input,
+                    UPDATE_CONFIG_NAME_PREFIX,
+                    WAIT_CONFIG_NAME_STATE,
+                    ENTER_CONFIG_NAME_MESSAGE);
+        if (hasUpdateQueryPrefix(input))
+            return updateConfigSelectionAndUserState(user, input,
+                    UPDATE_QUERY_PREFIX,
+                    WAIT_QUERY_STATE,
+                    ENTER_QUERY_MESSAGE);
+        if (hasUpdateExperiencePrefix(input))
+            return updateConfigSelectionAndUserState(user, input,
+                    UPDATE_EXPERIENCE_PREFIX,
+                    WAIT_EXPERIENCE_STATE,
+                    SELECT_EXPERIENCE_MESSAGE);
+
+        return "";
+    }
+
+    private String updateConfigSelectionAndUserState(AppUser user,
+                                                     String input,
+                                                     String prefix,
+                                                     AppUserState state,
+                                                     String message) {
+        var hash = input.substring(prefix.length());
         var configId = decoder.idOf(hash);
         var optional = configService.getById(configId);
 
         if (optional.isPresent()) {
             userService.saveUserState(user.getTelegramId(), state);
-            configService.saveConfigSelection(user.getTelegramId(), configId);
+            if (state.equals(WAIT_CONFIG_NAME_STATE)
+                    || state.equals(WAIT_QUERY_STATE)
+                    || state.equals(WAIT_AREA_STATE))
+                configService.saveConfigSelection(user.getTelegramId(), configId);
             log.debug("User {} selected parameter to edit and state set to {}", user.getFirstName(), state);
             return message;
         } else {
+            userService.clearUserState(user.getTelegramId());
             log.warn("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return CONFIG_NOT_FOUND_MESSAGE;
         }
