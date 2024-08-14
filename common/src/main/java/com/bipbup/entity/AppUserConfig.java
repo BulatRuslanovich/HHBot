@@ -43,7 +43,7 @@ public class AppUserConfig {
 
     private String queryText;
 
-    private String region;
+    private String area;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

@@ -71,7 +71,7 @@ public class QueryMenuStateHandler implements StateHandler {
         StringBuilder output = new StringBuilder()
                 .append(config.getConfigName())
                 .append("\nТекст запроса: ").append(config.getQueryText())
-                .append("\nРегион: ").append(config.getRegion() == null ? "Любой" : config.getRegion())
+                .append("\nРегион: ").append(config.getArea() == null ? "Любой" : config.getArea())
                 .append("\nОпыт работы: ").append(config.getExperience().getDescription());
 
         appendEnumParams(output, config.getEducationLevels(), "\nУровень образования: ");

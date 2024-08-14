@@ -72,17 +72,19 @@ public class CommandMessageConstants {
     // wait config name state messages
     public static final String CONFIG_EXISTS_MESSAGE_TEMPLATE = "Конфигурация с названием \"%s\" уже существует.";
     public static final String CONFIG_NAME_UPDATED_MESSAGE_TEMPLATE = "Название конфигурации \"%s\" успешно изменено на \"%s\".";
-    public static final String INVALID_CONFIG_NAME_MESSAGE = "Некорректное название. Пожалуйста, проверьте введенные данные.";
 
     // wait query state messages
-    public static final String INVALID_QUERY_MESSAGE = "Некорректный запрос. Пожалуйста, проверьте введенные данные.";
     public static final String QUERY_SET_MESSAGE_TEMPLATE = "Запрос \"%s\" успешно установлен в конфигурации \"%s\".";
 
     // wait experience state messages
     public static final String EXP_SET_MESSAGE_TEMPLATE = "Опыт работы \"%s\" успешно установлен в конфигурации \"%s\".";
 
+    // wait area state messages
+    public static final String AREA_SET_MESSAGE_TEMPLATE = "Регион \"%s\" успешно установлен в конфигурации \"%s\".";
+
     // error messages
     public static final String CONFIG_NOT_FOUND_MESSAGE = "Конфигурация не найдена.";
+    public static final String INVALID_INPUT_MESSAGE = "Некорректный ввод. Пожалуйста, проверьте введенные данные.";
     public static final String PROCESSING_COMMAND_ERROR_MESSAGE = "Ошибка при обработке команды. Попробуйте еще раз.";
     public static final String UNEXPECTED_ERROR_MESSAGE = "Произошла ошибка. Попробуйте еще раз.";
 

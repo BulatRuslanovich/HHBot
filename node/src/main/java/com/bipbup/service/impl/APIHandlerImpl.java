@@ -5,6 +5,7 @@ import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.service.APIConnection;
 import com.bipbup.service.APIHandler;
+import com.bipbup.utils.AreaUtil;
 import com.bipbup.utils.factory.VacancyFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -130,22 +131,21 @@ public class APIHandlerImpl implements APIHandler {
 
     private String generateVacancySearchUri(final int pageNumber,
                                             final AppUserConfig appUserConfig) {
+        String areaId = AreaUtil.getAreaIdByName(appUserConfig.getArea());
         var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
                 .queryParam("page", String.valueOf(pageNumber))
                 .queryParam("per_page", COUNT_OF_VACANCIES_IN_PAGE)
                 .queryParam("text", appUserConfig.getQueryText().replace("+", "%2B"))
                 .queryParam("search_field", "name")
-                .queryParam("area", 88) // magic number (id of Kazan)
                 .queryParam("period", COUNT_OF_DAYS)
                 .queryParam("order_by", "publication_time");
 
-        if (!appUserConfig.getExperience().equals(ExperienceParam.NO_MATTER)) {
-            builder.queryParam("experience",
-                    appUserConfig.getExperience().getParam());
-        }
+        if (areaId != null)
+            builder.queryParam("area", Integer.parseInt(areaId));
+
+        if (!appUserConfig.getExperience().equals(ExperienceParam.NO_MATTER))
+            builder.queryParam("experience", appUserConfig.getExperience().getParam());
 
         return builder.build().toUriString();
-
-        // TODO: add other searching parameters
     }
 }

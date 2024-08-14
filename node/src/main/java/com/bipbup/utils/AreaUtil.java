@@ -14,22 +14,27 @@ import java.net.http.HttpResponse;
 
 @Slf4j
 @Component
-public class RegionUtil {
-    private RegionUtil() {
+public class AreaUtil {
+    private AreaUtil() {
     }
 
     private static final String URL = "https://api.hh.ru/areas";
     private static final int HTTP_STATUS_OK = 200;
 
-    public static String getAreaIdByName(final String areaName)
-            throws IOException, InterruptedException {
+    public static String getAreaIdByName(final String areaName) {
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(URL))
                 .build();
-        HttpResponse<String> response = client.send(request,
-                HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response;
+        try {
+            response = client.send(request,
+                    HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            log.error("Error querying API", e);
+            return null;
+        }
 
         if (response.statusCode() == HTTP_STATUS_OK) {
             JSONArray areas = new JSONArray(response.body());

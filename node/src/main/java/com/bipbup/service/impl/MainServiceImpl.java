@@ -8,6 +8,7 @@ import com.bipbup.handlers.impl.QueryDeleteStateHandler;
 import com.bipbup.handlers.impl.QueryListStateHandler;
 import com.bipbup.handlers.impl.QueryMenuStateHandler;
 import com.bipbup.handlers.impl.QueryUpdateStateHandler;
+import com.bipbup.handlers.impl.WaitAreaStateHandler;
 import com.bipbup.handlers.impl.WaitConfigNameStateHandler;
 import com.bipbup.handlers.impl.WaitExperienceStateHandler;
 import com.bipbup.handlers.impl.WaitQueryStateHandler;
@@ -31,6 +32,7 @@ import static com.bipbup.enums.AppUserState.QUERY_DELETE_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_AREA_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
@@ -64,14 +66,16 @@ public class MainServiceImpl implements MainService {
                            final QueryMenuStateHandler queryMenuStateHandler,
                            final QueryDeleteStateHandler queryDeleteStateHandler,
                            final QueryUpdateStateHandler queryUpdateStateHandler,
-                           final WaitExperienceStateHandler waitExperienceStateHandler) {
+                           final WaitExperienceStateHandler waitExperienceStateHandler,
+                           final WaitAreaStateHandler waitAreaStateHandler) {
         this.userService = userService;
         this.markupFactory = markupFactory;
         this.answerProducer = answerProducer;
 
         this.messageStateHandlers = Map.of(BASIC_STATE, basicStateHandler,
                 WAIT_CONFIG_NAME_STATE, waitConfigNameStateHandle,
-                WAIT_QUERY_STATE, waitQueryStateHandler);
+                WAIT_QUERY_STATE, waitQueryStateHandler,
+                WAIT_AREA_STATE, waitAreaStateHandler);
 
         this.callbackStateHandlers = Map.of(QUERY_LIST_STATE, queryListStateHandler,
                 QUERY_MENU_STATE, queryMenuStateHandler,

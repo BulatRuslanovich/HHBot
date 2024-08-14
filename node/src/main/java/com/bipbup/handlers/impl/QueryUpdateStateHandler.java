@@ -15,10 +15,12 @@ import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.ENTER_AREA_MESSAGE_TEMPLATE;
 import static com.bipbup.utils.CommandMessageConstants.ENTER_CONFIG_NAME_MESSAGE_TEMPLATE;
 import static com.bipbup.utils.CommandMessageConstants.ENTER_QUERY_MESSAGE_TEMPLATE;
 import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.SELECT_EXPERIENCE_MESSAGE_TEMPLATE;
+import static com.bipbup.utils.CommandMessageConstants.UPDATE_AREA_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_CONFIG_NAME_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_EXPERIENCE_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_QUERY_PREFIX;
@@ -58,6 +60,35 @@ public class QueryUpdateStateHandler implements StateHandler {
         return input.startsWith(QUERY_PREFIX);
     }
 
+    private String processUpdateConfigCommand(AppUser user, String input) {
+        if (hasUpdateConfigNamePrefix(input))
+            return updateConfigSelectionAndUserState(user, input,
+                    UPDATE_CONFIG_NAME_PREFIX,
+                    WAIT_CONFIG_NAME_STATE,
+                    ENTER_CONFIG_NAME_MESSAGE_TEMPLATE,
+                    true);
+        if (hasUpdateQueryPrefix(input))
+            return updateConfigSelectionAndUserState(user, input,
+                    UPDATE_QUERY_PREFIX,
+                    WAIT_QUERY_STATE,
+                    ENTER_QUERY_MESSAGE_TEMPLATE,
+                    true);
+        if (hasUpdateExperiencePrefix(input))
+            return updateConfigSelectionAndUserState(user, input,
+                    UPDATE_EXPERIENCE_PREFIX,
+                    WAIT_EXPERIENCE_STATE,
+                    SELECT_EXPERIENCE_MESSAGE_TEMPLATE,
+                    false);
+        if (hasUpdateAreaPrefix(input))
+            return updateConfigSelectionAndUserState(user, input,
+                    UPDATE_AREA_PREFIX,
+                    WAIT_AREA_STATE,
+                    ENTER_AREA_MESSAGE_TEMPLATE,
+                    true);
+
+        return "";
+    }
+
     private boolean hasUpdateQueryPrefix(String input) {
         return input.startsWith(UPDATE_QUERY_PREFIX);
     }
@@ -70,31 +101,16 @@ public class QueryUpdateStateHandler implements StateHandler {
         return input.startsWith(UPDATE_EXPERIENCE_PREFIX);
     }
 
-    private String processUpdateConfigCommand(AppUser user, String input) {
-        if (hasUpdateConfigNamePrefix(input))
-            return updateConfigSelectionAndUserState(user, input,
-                    UPDATE_CONFIG_NAME_PREFIX,
-                    WAIT_CONFIG_NAME_STATE,
-                    ENTER_CONFIG_NAME_MESSAGE_TEMPLATE);
-        if (hasUpdateQueryPrefix(input))
-            return updateConfigSelectionAndUserState(user, input,
-                    UPDATE_QUERY_PREFIX,
-                    WAIT_QUERY_STATE,
-                    ENTER_QUERY_MESSAGE_TEMPLATE);
-        if (hasUpdateExperiencePrefix(input))
-            return updateConfigSelectionAndUserState(user, input,
-                    UPDATE_EXPERIENCE_PREFIX,
-                    WAIT_EXPERIENCE_STATE,
-                    SELECT_EXPERIENCE_MESSAGE_TEMPLATE);
-
-        return "";
+    private boolean hasUpdateAreaPrefix(String input) {
+        return input.startsWith(UPDATE_AREA_PREFIX);
     }
 
     private String updateConfigSelectionAndUserState(AppUser user,
                                                      String input,
                                                      String prefix,
                                                      AppUserState state,
-                                                     String messageTemplate) {
+                                                     String messageTemplate,
+                                                     boolean shouldSaveConfigSelection) {
         var hash = input.substring(prefix.length());
         var configId = decoder.idOf(hash);
         var configOptional = configService.getById(configId);
@@ -103,9 +119,7 @@ public class QueryUpdateStateHandler implements StateHandler {
             var configName = configOptional.get().getConfigName();
 
             userService.saveUserState(user.getTelegramId(), state);
-            if (state.equals(WAIT_CONFIG_NAME_STATE)
-                    || state.equals(WAIT_QUERY_STATE)
-                    || state.equals(WAIT_AREA_STATE))
+            if (shouldSaveConfigSelection)
                 configService.saveConfigSelection(user.getTelegramId(), configId);
 
             log.debug("User {} selected parameter to edit and state set to {}", user.getFirstName(), state);
