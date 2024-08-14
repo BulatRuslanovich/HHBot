@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 import static com.bipbup.utils.CommandMessageConstants.CONFIG_EXISTS_MESSAGE_TEMPLATE;
 import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NAME_UPDATED_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.CONFIG_NAME_UPDATED_MESSAGE_TEMPLATE;
 import static com.bipbup.utils.CommandMessageConstants.ENTER_QUERY_MESSAGE_TEMPLATE;
 import static com.bipbup.utils.CommandMessageConstants.INVALID_CONFIG_NAME_MESSAGE;
 
@@ -66,12 +66,13 @@ public class WaitConfigNameStateHandler extends Cancellable implements StateHand
 
     private String updateConfigName(final AppUser user,
                                     final AppUserConfig config,
-                                    final String configName) {
-        config.setConfigName(configName);
+                                    final String newConfigName) {
+        var oldConfigName = config.getConfigName();
+        config.setConfigName(newConfigName);
         configService.save(config);
         userService.clearUserState(user.getTelegramId());
-        log.debug("User {} updated config \"{}\" and state set to BASIC_STATE", user.getFirstName(), configName);
-        return CONFIG_NAME_UPDATED_MESSAGE;
+        log.debug("User {} updated name of config \"{}\" and state set to BASIC_STATE", user.getFirstName(), oldConfigName);
+        return String.format(CONFIG_NAME_UPDATED_MESSAGE_TEMPLATE, oldConfigName, newConfigName);
     }
 
     private String processExistingConfig(final AppUser user, final String configName) {

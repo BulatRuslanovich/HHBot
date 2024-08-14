@@ -123,31 +123,33 @@ public class MainServiceImpl implements MainService {
     private void processOutput(final AppUser user,
                                final Update update,
                                final String output) {
-        var userState = userService.getUserState(user.getTelegramId());
+        var userTelegramId = user.getTelegramId();
+        var userState = userService.getUserState(userTelegramId);
         if (userState.equals(QUERY_LIST_STATE) && !update.hasCallbackQuery())
-            sendAnswer(output, user.getTelegramId(), markupFactory.createUserConfigListKeyboard(user));
+            sendAnswer(output, userTelegramId, markupFactory.createUserConfigListKeyboard(user));
         else if (update.hasCallbackQuery())
-            processCallbackQuery(user, update, output);
+            processCallbackQueryOutput(user, update.getCallbackQuery(), output);
         else
-            sendAnswer(output, user.getTelegramId());
+            sendAnswer(output, userTelegramId);
     }
 
-    private void processCallbackQuery(final AppUser user,
-                                      final Update update,
-                                      final String output) {
-        var callbackQuery = update.getCallbackQuery();
+    private void processCallbackQueryOutput(final AppUser user,
+                                            final CallbackQuery callbackQuery,
+                                            final String output) {
+        var callbackData = callbackQuery.getData();
+        var userTelegramId = user.getTelegramId();
 
-        var userState = userService.getUserState(user.getTelegramId());
+        var userState = userService.getUserState(userTelegramId);
         var isWaitState = userState.toString().startsWith("WAIT_");
         if (isWaitState) {
-            var isUpdating = callbackQuery.getData().startsWith(UPDATE_STATE_PREFIX);
+            var isUpdating = callbackData.startsWith(UPDATE_STATE_PREFIX);
             if (isUpdating)
-                sendAnswer(output, user.getTelegramId(), fetchKeyboard(user, callbackQuery));
+                sendAnswer(output, userTelegramId, fetchKeyboard(user, callbackData));
             else
-                sendAnswer(output, user.getTelegramId());
+                sendAnswer(output, userTelegramId);
         } else
-            editAnswer(output, user.getTelegramId(), callbackQuery.getMessage().getMessageId(),
-                    fetchKeyboard(user, callbackQuery));
+            editAnswer(output, userTelegramId, callbackQuery.getMessage().getMessageId(),
+                    fetchKeyboard(user, callbackData));
     }
 
     private void sendAnswer(final String text,
@@ -182,18 +184,18 @@ public class MainServiceImpl implements MainService {
     }
 
     private InlineKeyboardMarkup fetchKeyboard(final AppUser user,
-                                               final CallbackQuery callbackQuery) {
+                                               final String callbackData) {
         var userState = userService.getUserState(user.getTelegramId());
         if (userState.equals(QUERY_LIST_STATE))
             return markupFactory.createUserConfigListKeyboard(user);
         if (userState.equals(QUERY_MENU_STATE))
-            return markupFactory.createConfigManagementKeyboard(callbackQuery);
+            return markupFactory.createConfigManagementKeyboard(callbackData);
         if (userState.equals(QUERY_DELETE_STATE))
-            return markupFactory.createDeleteConfirmationKeyboard(callbackQuery);
+            return markupFactory.createDeleteConfirmationKeyboard(callbackData);
         if (userState.equals(QUERY_UPDATE_STATE))
-            return markupFactory.createUpdateConfigKeyboard(callbackQuery);
+            return markupFactory.createUpdateConfigKeyboard(callbackData);
         if (userState.equals(WAIT_EXPERIENCE_STATE))
-            return markupFactory.createExperienceSelectionKeyboard(callbackQuery);
+            return markupFactory.createExperienceSelectionKeyboard(callbackData);
 
         return null;
     }

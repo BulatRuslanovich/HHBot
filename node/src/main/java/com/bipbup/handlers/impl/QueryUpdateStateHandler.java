@@ -15,10 +15,10 @@ import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.ENTER_CONFIG_NAME_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.ENTER_QUERY_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.ENTER_CONFIG_NAME_MESSAGE_TEMPLATE;
+import static com.bipbup.utils.CommandMessageConstants.ENTER_QUERY_MESSAGE_TEMPLATE;
 import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.SELECT_EXPERIENCE_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.SELECT_EXPERIENCE_MESSAGE_TEMPLATE;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_CONFIG_NAME_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_EXPERIENCE_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_QUERY_PREFIX;
@@ -75,17 +75,17 @@ public class QueryUpdateStateHandler implements StateHandler {
             return updateConfigSelectionAndUserState(user, input,
                     UPDATE_CONFIG_NAME_PREFIX,
                     WAIT_CONFIG_NAME_STATE,
-                    ENTER_CONFIG_NAME_MESSAGE);
+                    ENTER_CONFIG_NAME_MESSAGE_TEMPLATE);
         if (hasUpdateQueryPrefix(input))
             return updateConfigSelectionAndUserState(user, input,
                     UPDATE_QUERY_PREFIX,
                     WAIT_QUERY_STATE,
-                    ENTER_QUERY_MESSAGE);
+                    ENTER_QUERY_MESSAGE_TEMPLATE);
         if (hasUpdateExperiencePrefix(input))
             return updateConfigSelectionAndUserState(user, input,
                     UPDATE_EXPERIENCE_PREFIX,
                     WAIT_EXPERIENCE_STATE,
-                    SELECT_EXPERIENCE_MESSAGE);
+                    SELECT_EXPERIENCE_MESSAGE_TEMPLATE);
 
         return "";
     }
@@ -94,19 +94,22 @@ public class QueryUpdateStateHandler implements StateHandler {
                                                      String input,
                                                      String prefix,
                                                      AppUserState state,
-                                                     String message) {
+                                                     String messageTemplate) {
         var hash = input.substring(prefix.length());
         var configId = decoder.idOf(hash);
-        var optional = configService.getById(configId);
+        var configOptional = configService.getById(configId);
 
-        if (optional.isPresent()) {
+        if (configOptional.isPresent()) {
+            var configName = configOptional.get().getConfigName();
+
             userService.saveUserState(user.getTelegramId(), state);
             if (state.equals(WAIT_CONFIG_NAME_STATE)
                     || state.equals(WAIT_QUERY_STATE)
                     || state.equals(WAIT_AREA_STATE))
                 configService.saveConfigSelection(user.getTelegramId(), configId);
+
             log.debug("User {} selected parameter to edit and state set to {}", user.getFirstName(), state);
-            return message;
+            return String.format(messageTemplate, configName);
         } else {
             userService.clearUserState(user.getTelegramId());
             log.warn("Configuration with id {} not found for user {}", configId, user.getFirstName());

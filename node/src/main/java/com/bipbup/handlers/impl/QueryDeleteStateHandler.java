@@ -5,6 +5,7 @@ import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import com.bipbup.utils.Decoder;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import static com.bipbup.utils.CommandMessageConstants.DELETE_CANCEL_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRM_PREFIX;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class QueryDeleteStateHandler implements StateHandler {
     private final UserService userService;
@@ -22,14 +24,6 @@ public class QueryDeleteStateHandler implements StateHandler {
     private final ConfigService configService;
 
     private final Decoder decoder;
-
-    public QueryDeleteStateHandler(UserService userService,
-                                   ConfigService configService,
-                                   Decoder decoder) {
-        this.userService = userService;
-        this.configService = configService;
-        this.decoder = decoder;
-    }
 
     @Override
     public String process(AppUser user, String input) {

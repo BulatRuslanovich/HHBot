@@ -5,7 +5,6 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.utils.Encoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
@@ -68,8 +67,8 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    public InlineKeyboardMarkup createConfigManagementKeyboard(CallbackQuery callbackQuery) {
-        var hash = extractHash(callbackQuery.getData(), QUERY_PREFIX);
+    public InlineKeyboardMarkup createConfigManagementKeyboard(String callbackData) {
+        var hash = extractHash(callbackData, QUERY_PREFIX);
 
         List<InlineKeyboardButton> buttons = List.of(
                 createButton(BUTTON_TEXT_UPDATE, UPDATE_PREFIX + hash),
@@ -80,8 +79,8 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    public InlineKeyboardMarkup createDeleteConfirmationKeyboard(CallbackQuery callbackQuery) {
-        var hash = extractHash(callbackQuery.getData(), DELETE_PREFIX);
+    public InlineKeyboardMarkup createDeleteConfirmationKeyboard(String callbackData) {
+        var hash = extractHash(callbackData, DELETE_PREFIX);
 
         List<InlineKeyboardButton> buttons = List.of(
                 createButton(BUTTON_TEXT_DELETE_CONFIRM, DELETE_CONFIRM_PREFIX + hash),
@@ -91,8 +90,8 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    public InlineKeyboardMarkup createUpdateConfigKeyboard(CallbackQuery callbackQuery) {
-        var hash = extractHash(callbackQuery.getData(), UPDATE_PREFIX);
+    public InlineKeyboardMarkup createUpdateConfigKeyboard(String callbackData) {
+        var hash = extractHash(callbackData, UPDATE_PREFIX);
 
         List<InlineKeyboardButton> buttons = List.of(
                 createButton(BUTTON_TEXT_UPDATE_CONFIG_NAME, UPDATE_CONFIG_NAME_PREFIX + hash),
@@ -107,8 +106,8 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    public InlineKeyboardMarkup createExperienceSelectionKeyboard(CallbackQuery callbackQuery) {
-        var hash = extractHash(callbackQuery.getData(), UPDATE_EXPERIENCE_PREFIX);
+    public InlineKeyboardMarkup createExperienceSelectionKeyboard(String callbackData) {
+        var hash = extractHash(callbackData, UPDATE_EXPERIENCE_PREFIX);
 
         List<InlineKeyboardButton> buttons = List.of(
                 createButton(BUTTON_TEXT_NO_EXP, NO_EXP_PREFIX + hash),

@@ -8,6 +8,7 @@ import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import com.bipbup.utils.Decoder;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,7 @@ import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_PREFIX;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class QueryMenuStateHandler implements StateHandler {
     private final UserService userService;
@@ -29,16 +31,6 @@ public class QueryMenuStateHandler implements StateHandler {
     private final Decoder decoder;
 
     private final BasicStateHandler basicStateHandler;
-
-    public QueryMenuStateHandler(UserService userService,
-                                 ConfigService configService,
-                                 Decoder decoder,
-                                 BasicStateHandler basicStateHandler) {
-        this.userService = userService;
-        this.configService = configService;
-        this.decoder = decoder;
-        this.basicStateHandler = basicStateHandler;
-    }
 
     @Override
     public String process(AppUser user, String input) {

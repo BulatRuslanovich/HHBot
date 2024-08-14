@@ -59,18 +59,17 @@ public class CommandMessageConstants {
     public static final String CONFIG_DELETED_MESSAGE = "Конфигурация была удалена.";
     public static final String CONFIG_NOT_DELETED_MESSAGE = "Конфигурация не была удалена.";
 
-    // query update state messages
-    public static final String ENTER_CONFIG_NAME_MESSAGE = "Введите новое название конфигурации:";
-    public static final String ENTER_QUERY_MESSAGE = "Введите новый запрос:";
-    public static final String ENTER_AREA_MESSAGE = "Введите название региона:";
-    public static final String SELECT_EXPERIENCE_MESSAGE = "Выберите опыт работы:";
-    public static final String SELECT_EDUCATION_MESSAGE = "Выберите уровень образования:";
-    public static final String SELECT_SCHEDULE_MESSAGE = "Выберите график работы:";
+    // query update & wait config state messages
+    public static final String ENTER_CONFIG_NAME_MESSAGE_TEMPLATE = "Введите новое название для конфигурации \"%s\":";
+    public static final String ENTER_QUERY_MESSAGE_TEMPLATE = "Введите запрос для конфигурации \"%s\":";
+    public static final String ENTER_AREA_MESSAGE_TEMPLATE = "Введите название региона для конфигурации \"%s\":";
+    public static final String SELECT_EXPERIENCE_MESSAGE_TEMPLATE = "Выберите опыт работы для конфигурации \"%s\":";
+    public static final String SELECT_EDUCATION_MESSAGE_TEMPLATE = "Выберите уровень образования для конфигурации \"%s\":";
+    public static final String SELECT_SCHEDULE_MESSAGE_TEMPLATE = "Выберите график работы для конфигурации \"%s\":";
 
     // wait config name state messages
     public static final String CONFIG_EXISTS_MESSAGE_TEMPLATE = "Конфигурация с названием \"%s\" уже существует.";
-    public static final String ENTER_QUERY_MESSAGE_TEMPLATE = "Введите запрос для конфигурации \"%s\":";
-    public static final String CONFIG_NAME_UPDATED_MESSAGE = "Название конфигурации изменено.";
+    public static final String CONFIG_NAME_UPDATED_MESSAGE_TEMPLATE = "Название конфигурации \"%s\" успешно изменено на \"%s\".";
     public static final String INVALID_CONFIG_NAME_MESSAGE = "Некорректное название. Пожалуйста, проверьте введенные данные.";
 
     // wait query state messages
