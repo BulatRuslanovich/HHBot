@@ -10,12 +10,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
 import static com.bipbup.utils.CommandMessageConstants.ENTER_CONFIG_NAME_MESSAGE;
 import static com.bipbup.utils.CommandMessageConstants.ENTER_QUERY_MESSAGE;
 import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.SELECT_EXPERIENCE_MESSAGE;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_CONFIG_NAME_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.UPDATE_EXPERIENCE_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_QUERY_PREFIX;
 
 @Slf4j
@@ -53,6 +56,11 @@ public class QueryUpdateStateHandler implements StateHandler {
                     UPDATE_QUERY_PREFIX.length(),
                     WAIT_QUERY_STATE,
                     ENTER_QUERY_MESSAGE);
+        if (hasEditExperiencePrefix(input))
+            return processEditConfigCommand(user, input,
+                    UPDATE_EXPERIENCE_PREFIX.length(),
+                    WAIT_EXPERIENCE_STATE,
+                    SELECT_EXPERIENCE_MESSAGE);
         
         return "";
     }
@@ -71,6 +79,10 @@ public class QueryUpdateStateHandler implements StateHandler {
 
     private boolean hasEditConfigNamePrefix(String input) {
         return input.startsWith(UPDATE_CONFIG_NAME_PREFIX);
+    }
+
+    private boolean hasEditExperiencePrefix(String input) {
+        return input.startsWith(UPDATE_EXPERIENCE_PREFIX);
     }
 
     private String processEditConfigCommand(AppUser user,

@@ -16,6 +16,11 @@ import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_BACK;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE_CANCEL;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE_CONFIRM;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_1_3_YEARS;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_3_6_YEARS;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_MORE_6_YEARS;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_NOT_IMPORTANT;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_NO_EXP;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_AREA;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_CONFIG_NAME;
@@ -26,7 +31,12 @@ import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_SCHEDU
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CANCEL_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRM_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.EXP_1_3_YEARS_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.EXP_3_6_YEARS_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.EXP_MORE_6_YEARS_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.EXP_NOT_IMPORTANT_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
+import static com.bipbup.utils.CommandMessageConstants.NO_EXP_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_AREA_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_CONFIG_NAME_PREFIX;
@@ -92,6 +102,20 @@ public class KeyboardMarkupFactory {
                 createButton(BUTTON_TEXT_UPDATE_EDUCATION, UPDATE_EDUCATION_PREFIX + hash),
                 createButton(BUTTON_TEXT_UPDATE_SCHEDULE, UPDATE_SCHEDULE_PREFIX + hash),
                 createButton(BUTTON_TEXT_BACK, QUERY_PREFIX + hash)
+        );
+
+        return createMarkup(buttons, BUTTONS_PER_ROW);
+    }
+
+    public InlineKeyboardMarkup createExperienceSelectionKeyboard(CallbackQuery callbackQuery) {
+        var hash = extractHash(callbackQuery.getData(), UPDATE_EXPERIENCE_PREFIX);
+
+        List<InlineKeyboardButton> buttons = List.of(
+                createButton(BUTTON_TEXT_NO_EXP, NO_EXP_PREFIX + hash),
+                createButton(BUTTON_TEXT_EXP_1_3_YEARS, EXP_1_3_YEARS_PREFIX + hash),
+                createButton(BUTTON_TEXT_EXP_3_6_YEARS, EXP_3_6_YEARS_PREFIX + hash),
+                createButton(BUTTON_TEXT_EXP_MORE_6_YEARS, EXP_MORE_6_YEARS_PREFIX + hash),
+                createButton(BUTTON_TEXT_EXP_NOT_IMPORTANT, EXP_NOT_IMPORTANT_PREFIX + hash)
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
