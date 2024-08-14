@@ -1,5 +1,7 @@
 package com.bipbup.utils;
 
+import com.bipbup.enums.impl.ExperienceParam;
+
 public class CommandMessageConstants {
 
     // callback prefixes and commands
@@ -102,11 +104,11 @@ public class CommandMessageConstants {
     public static final String BUTTON_TEXT_UPDATE_SCHEDULE = "Изменить график работы";
 
     // wait experience state button texts
-    public static final String BUTTON_TEXT_EXP_NOT_IMPORTANT = "Не имеет значения";
-    public static final String BUTTON_TEXT_NO_EXP = "Нет опыта";
-    public static final String BUTTON_TEXT_EXP_1_3_YEARS = "От 1 года до 3 лет";
-    public static final String BUTTON_TEXT_EXP_3_6_YEARS = "От 3 до 6 лет";
-    public static final String BUTTON_TEXT_EXP_MORE_6_YEARS = "Более 6 лет";
+    public static final String BUTTON_TEXT_EXP_NOT_IMPORTANT = ExperienceParam.NO_MATTER.getDescription();
+    public static final String BUTTON_TEXT_NO_EXP = ExperienceParam.NO_EXPERIENCE.getDescription();
+    public static final String BUTTON_TEXT_EXP_1_3_YEARS = ExperienceParam.BETWEEN_1_AND_3.getDescription();
+    public static final String BUTTON_TEXT_EXP_3_6_YEARS = ExperienceParam.BETWEEN_3_AND_6.getDescription();
+    public static final String BUTTON_TEXT_EXP_MORE_6_YEARS = ExperienceParam.MORE_THAN_6.getDescription();
 
     private CommandMessageConstants() {
     }

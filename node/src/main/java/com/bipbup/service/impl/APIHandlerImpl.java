@@ -141,7 +141,7 @@ public class APIHandlerImpl implements APIHandler {
 
         if (!appUserConfig.getExperience().equals(ExperienceParam.NO_MATTER)) {
             builder.queryParam("experience",
-                    appUserConfig.getExperience().toString());
+                    appUserConfig.getExperience().getParam());
         }
 
         return builder.build().toUriString();
