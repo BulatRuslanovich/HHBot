@@ -2,6 +2,7 @@ package com.bipbup.service;
 
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
+import com.bipbup.enums.impl.EducationLevelParam;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,4 +23,12 @@ public interface ConfigService {
     Long getSelectedConfigId(Long telegramId);
 
     void clearConfigSelection(Long telegramId);
+
+    List<EducationLevelParam> addEducationLevelSelection(Long telegramId, EducationLevelParam param, List<EducationLevelParam> educationLevelParams);
+
+    List<EducationLevelParam> removeEducationLevelSelection(Long telegramId, EducationLevelParam param, List<EducationLevelParam> educationLevelParams);
+
+    List<EducationLevelParam> getSelectedEducationLevels(Long telegramId);
+
+    void clearEducationLevelSelections(Long telegramId);
 }

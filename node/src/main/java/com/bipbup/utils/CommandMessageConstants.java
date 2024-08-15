@@ -1,5 +1,6 @@
 package com.bipbup.utils;
 
+import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.enums.impl.ExperienceParam;
 
 public class CommandMessageConstants {
@@ -30,6 +31,11 @@ public class CommandMessageConstants {
     public static final String EXP_3_6_YEARS_PREFIX = WAIT_EXP_STATE_PREFIX + "3_6_years_";
     public static final String EXP_MORE_6_YEARS_PREFIX = WAIT_EXP_STATE_PREFIX + "more_6_years_";
 
+    public static final String WAIT_EDU_STATE_PREFIX = "edu_";
+    public static final String EDU_NOT_IMPORTANT_PREFIX = WAIT_EDU_STATE_PREFIX + "not_important_";
+    public static final String EDU_HIGHER_PREFIX = WAIT_EDU_STATE_PREFIX + "higher_";
+    public static final String EDU_SECONDARY_VOCATIONAL_PREFIX = WAIT_EDU_STATE_PREFIX + "special_secondary_";
+    public static final String EDU_SAVE_PREFIX = WAIT_EDU_STATE_PREFIX + "save_";
 
     // cancellable messages and commands
     public static final String COMMAND_CANCELLED_MESSAGE = "Команда была отменена.";
@@ -82,6 +88,11 @@ public class CommandMessageConstants {
     // wait area state messages
     public static final String AREA_SET_MESSAGE_TEMPLATE = "Регион \"%s\" успешно установлен в конфигурации \"%s\".";
 
+    // wait education state messages
+    public static final String EDU_SET_MESSAGE_TEMPLATE = "Уровень образования \"%s\" успешно установлен в конфигурации \"%s\".";
+    public static final String EDU_DELETE_MESSAGE_TEMPLATE = "Уровень образования \"%s\" успешно удален из конфигурации \"%s\".";
+    public static final String EDU_SAVE_MESSAGE_TEMPLATE = "Уровень образования успешно сохранен для конфигурации \"%s\".";
+
     // error messages
     public static final String CONFIG_NOT_FOUND_MESSAGE = "Конфигурация не найдена.";
     public static final String INVALID_INPUT_MESSAGE = "Некорректный ввод. Пожалуйста, проверьте введенные данные.";
@@ -91,7 +102,6 @@ public class CommandMessageConstants {
     // query menu state button texts
     public static final String BUTTON_TEXT_UPDATE = "Обновить";
     public static final String BUTTON_TEXT_DELETE = "Удалить";
-    public static final String BUTTON_TEXT_BACK = "Назад";
 
     // query delete state button texts
     public static final String BUTTON_TEXT_DELETE_CONFIRM = "Да, удалить";
@@ -111,6 +121,16 @@ public class CommandMessageConstants {
     public static final String BUTTON_TEXT_EXP_1_3_YEARS = ExperienceParam.BETWEEN_1_AND_3.getDescription();
     public static final String BUTTON_TEXT_EXP_3_6_YEARS = ExperienceParam.BETWEEN_3_AND_6.getDescription();
     public static final String BUTTON_TEXT_EXP_MORE_6_YEARS = ExperienceParam.MORE_THAN_6.getDescription();
+
+    // wait education state button messages
+    public static final String BUTTON_TEXT_EDU_NOT_IMPORTANT = EducationLevelParam.NOT_REQUIRED_OR_NOT_SPECIFIED.getDescription();
+    public static final String BUTTON_TEXT_EDU_HIGHER = EducationLevelParam.HIGHER.getDescription();
+    public static final String BUTTON_TEXT_EDU_SECONDARY_VOCATIONAL = EducationLevelParam.SECONDARY_VOCATIONAL.getDescription();
+
+    // common button messages
+    public static final String BUTTON_TEXT_BACK = "Назад";
+    public static final String BUTTON_TEXT_SELECTED = " \uD83D\uDD18";
+    public static final String BUTTON_TEXT_SAVE = "Сохранить";
 
     private CommandMessageConstants() {
     }

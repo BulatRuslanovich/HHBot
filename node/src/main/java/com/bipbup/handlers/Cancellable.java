@@ -56,7 +56,7 @@ public abstract class Cancellable {
         var configId = configService.getSelectedConfigId(user.getTelegramId());
         configService.clearConfigSelection(user.getTelegramId());
         userService.clearUserState(user.getTelegramId());
-        log.warn("Config with id {} not found for user {}", configId, user.getTelegramId());
+        log.warn("Config with id {} not found for user {}", configId, user.getFirstName());
         return CONFIG_NOT_FOUND_MESSAGE;
     }
 

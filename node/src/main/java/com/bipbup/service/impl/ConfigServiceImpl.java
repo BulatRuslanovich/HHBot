@@ -3,6 +3,7 @@ package com.bipbup.service.impl;
 import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
+import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.service.ConfigService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -11,6 +12,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,6 +64,36 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @CacheEvict(value = "configSelections")
     public void clearConfigSelection(Long telegramId) {
+        // clearing cache, doesn't need implementing
+    }
+
+    @Override
+    @CachePut(value = "educationSelections", key = "#telegramId")
+    public List<EducationLevelParam> addEducationLevelSelection(Long telegramId,
+                                                            EducationLevelParam param,
+                                                            List<EducationLevelParam> educationLevelParams) {
+        educationLevelParams.add(param);
+        return educationLevelParams;
+    }
+
+    @Override
+    @CachePut(value = "educationSelections", key = "#telegramId")
+    public List<EducationLevelParam> removeEducationLevelSelection(Long telegramId,
+                                                               EducationLevelParam param,
+                                                               List<EducationLevelParam> educationLevelParams) {
+        educationLevelParams.remove(param);
+        return educationLevelParams;
+    }
+
+    @Override
+    @Cacheable(value = "educationSelections")
+    public List<EducationLevelParam> getSelectedEducationLevels(Long telegramId) {
+        return new ArrayList<>(0);
+    }
+
+    @Override
+    @CacheEvict(value = "educationSelections")
+    public void clearEducationLevelSelections(Long telegramId) {
         // clearing cache, doesn't need implementing
     }
 }

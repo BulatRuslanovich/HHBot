@@ -1,7 +1,8 @@
 package com.bipbup.utils.factory;
 
-import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.entity.AppUser;
+import com.bipbup.enums.impl.EducationLevelParam;
+import com.bipbup.service.ConfigService;
 import com.bipbup.utils.Encoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -9,17 +10,24 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_BACK;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE_CANCEL;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE_CONFIRM;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EDU_HIGHER;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EDU_NOT_IMPORTANT;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EDU_SECONDARY_VOCATIONAL;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_1_3_YEARS;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_3_6_YEARS;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_MORE_6_YEARS;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_NOT_IMPORTANT;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_NO_EXP;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SAVE;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SELECTED;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_AREA;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_CONFIG_NAME;
@@ -30,6 +38,10 @@ import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_SCHEDU
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CANCEL_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRM_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.EDU_HIGHER_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.EDU_NOT_IMPORTANT_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.EDU_SAVE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.EDU_SECONDARY_VOCATIONAL_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.EXP_1_3_YEARS_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.EXP_3_6_YEARS_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.EXP_MORE_6_YEARS_PREFIX;
@@ -45,19 +57,17 @@ import static com.bipbup.utils.CommandMessageConstants.UPDATE_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_QUERY_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_SCHEDULE_PREFIX;
 
-
 @RequiredArgsConstructor
 @Component
 public class KeyboardMarkupFactory {
-
-    private final AppUserConfigDAO appUserConfigDAO;
+    private final ConfigService configService;
 
     private final Encoder encoder;
 
     private static final int BUTTONS_PER_ROW = 2;
 
     public InlineKeyboardMarkup createUserConfigListKeyboard(AppUser appUser) {
-        var userConfigs = appUserConfigDAO.findByAppUser(appUser);
+        var userConfigs = configService.getByUser(appUser);
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         userConfigs.forEach(c -> buttons.add(createButton(c.getConfigName(),
@@ -118,6 +128,35 @@ public class KeyboardMarkupFactory {
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
+    }
+
+    public InlineKeyboardMarkup createEducationLevelSelectionKeyboard(AppUser user, String callbackData) {
+        List<EducationLevelParam> selectedEducationLevels = configService.getSelectedEducationLevels(user.getTelegramId());
+
+        var prefix = callbackData.substring(0, callbackData.lastIndexOf('_') + 1);
+        var hash = extractHash(callbackData, prefix);
+
+        var buttonTexts = new HashMap<String, String>();
+        buttonTexts.put(EDU_NOT_IMPORTANT_PREFIX, BUTTON_TEXT_EDU_NOT_IMPORTANT);
+        buttonTexts.put(EDU_HIGHER_PREFIX, BUTTON_TEXT_EDU_HIGHER);
+        buttonTexts.put(EDU_SECONDARY_VOCATIONAL_PREFIX, BUTTON_TEXT_EDU_SECONDARY_VOCATIONAL);
+
+        var enumPrefixes = Map.of(
+                EducationLevelParam.NOT_REQUIRED_OR_NOT_SPECIFIED, EDU_NOT_IMPORTANT_PREFIX,
+                EducationLevelParam.HIGHER, EDU_HIGHER_PREFIX,
+                EducationLevelParam.SECONDARY_VOCATIONAL, EDU_SECONDARY_VOCATIONAL_PREFIX
+        );
+
+        selectedEducationLevels.forEach(l -> buttonTexts.put(enumPrefixes.get(l), buttonTexts.get(enumPrefixes.get(l)) + BUTTON_TEXT_SELECTED));
+
+        List<InlineKeyboardButton> buttons = List.of(
+                createButton(buttonTexts.get(EDU_NOT_IMPORTANT_PREFIX), EDU_NOT_IMPORTANT_PREFIX + hash),
+                createButton(buttonTexts.get(EDU_HIGHER_PREFIX), EDU_HIGHER_PREFIX + hash),
+                createButton(buttonTexts.get(EDU_SECONDARY_VOCATIONAL_PREFIX), EDU_SECONDARY_VOCATIONAL_PREFIX + hash),
+                createButton(BUTTON_TEXT_SAVE, EDU_SAVE_PREFIX + hash)
+        );
+
+        return createMarkup(buttons, 1);
     }
 
     private InlineKeyboardButton createButton(String text, String callbackData) {

@@ -10,6 +10,7 @@ import com.bipbup.handlers.impl.QueryMenuStateHandler;
 import com.bipbup.handlers.impl.QueryUpdateStateHandler;
 import com.bipbup.handlers.impl.WaitAreaStateHandler;
 import com.bipbup.handlers.impl.WaitConfigNameStateHandler;
+import com.bipbup.handlers.impl.WaitEducationStateHandler;
 import com.bipbup.handlers.impl.WaitExperienceStateHandler;
 import com.bipbup.handlers.impl.WaitQueryStateHandler;
 import com.bipbup.service.AnswerProducer;
@@ -34,6 +35,7 @@ import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_AREA_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_EDUCATION_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_STATE_PREFIX;
@@ -41,6 +43,7 @@ import static com.bipbup.utils.CommandMessageConstants.MENU_STATE_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_STATE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.WAIT_EDU_STATE_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.WAIT_EXP_STATE_PREFIX;
 
 
@@ -67,7 +70,8 @@ public class MainServiceImpl implements MainService {
                            final QueryDeleteStateHandler queryDeleteStateHandler,
                            final QueryUpdateStateHandler queryUpdateStateHandler,
                            final WaitExperienceStateHandler waitExperienceStateHandler,
-                           final WaitAreaStateHandler waitAreaStateHandler) {
+                           final WaitAreaStateHandler waitAreaStateHandler,
+                           final WaitEducationStateHandler waitEducationStateHandler) {
         this.userService = userService;
         this.markupFactory = markupFactory;
         this.answerProducer = answerProducer;
@@ -81,7 +85,8 @@ public class MainServiceImpl implements MainService {
                 QUERY_MENU_STATE, queryMenuStateHandler,
                 QUERY_DELETE_STATE, queryDeleteStateHandler,
                 QUERY_UPDATE_STATE, queryUpdateStateHandler,
-                WAIT_EXPERIENCE_STATE, waitExperienceStateHandler);
+                WAIT_EXPERIENCE_STATE, waitExperienceStateHandler,
+                WAIT_EDUCATION_STATE, waitEducationStateHandler);
     }
 
     @Override
@@ -120,6 +125,8 @@ public class MainServiceImpl implements MainService {
             return callbackStateHandlers.get(QUERY_DELETE_STATE);
         if (callbackData.startsWith(WAIT_EXP_STATE_PREFIX))
             return callbackStateHandlers.get(WAIT_EXPERIENCE_STATE);
+        if (callbackData.startsWith(WAIT_EDU_STATE_PREFIX))
+            return callbackStateHandlers.get(WAIT_EDUCATION_STATE);
 
         return messageStateHandlers.get(BASIC_STATE);
     }
@@ -147,8 +154,12 @@ public class MainServiceImpl implements MainService {
         var isWaitState = userState.toString().startsWith("WAIT_");
         if (isWaitState) {
             var isUpdating = callbackData.startsWith(UPDATE_STATE_PREFIX);
+            var isMultiSelecting = callbackData.startsWith(WAIT_EDU_STATE_PREFIX);
             if (isUpdating)
                 sendAnswer(output, userTelegramId, fetchKeyboard(user, callbackData));
+            else if (isMultiSelecting)
+                editAnswer(output, userTelegramId, callbackQuery.getMessage().getMessageId(),
+                        fetchKeyboard(user, callbackData));
             else
                 sendAnswer(output, userTelegramId);
         } else
@@ -200,6 +211,8 @@ public class MainServiceImpl implements MainService {
             return markupFactory.createUpdateConfigKeyboard(callbackData);
         if (userState.equals(WAIT_EXPERIENCE_STATE))
             return markupFactory.createExperienceSelectionKeyboard(callbackData);
+        if (userState.equals(WAIT_EDUCATION_STATE))
+            return markupFactory.createEducationLevelSelectionKeyboard(user, callbackData);
 
         return null;
     }
