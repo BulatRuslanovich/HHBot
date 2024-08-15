@@ -53,25 +53,20 @@ public class BasicStateHandler implements StateHandler {
     }
 
     private String processNewQueryCommand(final AppUser user) {
-        var userState = userService.getUserState(user.getTelegramId());
-        if (!WAIT_CONFIG_NAME_STATE.equals(userState)) {
-            userService.saveUserState(user.getTelegramId(), WAIT_CONFIG_NAME_STATE);
-            log.debug("User {} changed state to WAIT_CONFIG_NAME_STATE", user.getFirstName());
-        }
-
+        userService.saveUserState(user.getTelegramId(), WAIT_CONFIG_NAME_STATE);
+        log.info("State of user {} set to WAIT_CONFIG_NAME_STATE", user.getFirstName());
         return QUERY_PROMPT_MESSAGE;
     }
 
     protected String processMyQueriesCommand(final AppUser user) {
         var userConfigs = configService.getByUser(user);
-        if (userConfigs == null || userConfigs.isEmpty()) return NO_SAVED_QUERIES_MESSAGE;
-
-        var userState = userService.getUserState(user.getTelegramId());
-        if (!QUERY_LIST_STATE.equals(userState)) {
-            userService.saveUserState(user.getTelegramId(), QUERY_LIST_STATE);
-            log.debug("User {} changed state to QUERY_LIST_STATE", user.getFirstName());
+        if (userConfigs == null || userConfigs.isEmpty()) {
+            userService.clearUserState(user.getTelegramId());
+            return NO_SAVED_QUERIES_MESSAGE;
         }
 
+        userService.saveUserState(user.getTelegramId(), QUERY_LIST_STATE);
+        log.info("State of user {} set to QUERY_LIST_STATE", user.getFirstName());
         return USER_QUERIES_MESSAGE;
     }
 }

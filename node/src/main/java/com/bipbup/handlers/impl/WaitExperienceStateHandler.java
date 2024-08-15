@@ -60,19 +60,19 @@ public class WaitExperienceStateHandler implements StateHandler {
         var configId = decoder.idOf(hash);
         var configOptional = configService.getById(configId);
 
+        userService.clearUserState(user.getTelegramId());
+
         if (configOptional.isPresent()) {
             var config = configOptional.get();
             var experience = experiences.get(prefix);
             config.setExperience(experience);
-
             configService.save(config);
-            userService.clearUserState(user.getTelegramId());
 
-            log.debug("User {} selected experience level and state set to BASIC_STATE", user.getFirstName());
+            log.info("User {} selected experience level and state set to BASIC_STATE", user.getFirstName());
             return String.format(EXP_SET_MESSAGE_TEMPLATE, experience.getDescription(), config.getConfigName());
         } else {
             userService.clearUserState(user.getTelegramId());
-            log.warn("Configuration with id {} not found for user {}", configId, user.getFirstName());
+            log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return CONFIG_NOT_FOUND_MESSAGE;
         }
     }

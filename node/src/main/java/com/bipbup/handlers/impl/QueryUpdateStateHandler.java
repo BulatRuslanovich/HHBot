@@ -135,11 +135,11 @@ public class QueryUpdateStateHandler implements StateHandler {
             if (shouldSaveConfigSelection)
                 configService.saveConfigSelection(user.getTelegramId(), configId);
 
-            log.debug("User {} selected parameter to edit and state set to {}", user.getFirstName(), state);
+            log.info("User {} selected parameter to edit and state set to {}", user.getFirstName(), state);
             return String.format(messageTemplate, configName);
         } else {
             userService.clearUserState(user.getTelegramId());
-            log.warn("Configuration with id {} not found for user {}", configId, user.getFirstName());
+            log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return CONFIG_NOT_FOUND_MESSAGE;
         }
     }

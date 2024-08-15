@@ -63,11 +63,8 @@ public class UpdateProcessor {
         var message = update.getMessage();
 
         if (message.hasText()) {
-            log.info("{} write \"{}\"", message.getFrom().getFirstName(), message.getText());
-
+            log.info("User {} wrote \"{}\"", message.getFrom().getFirstName(), message.getText());
             updateProducer.produce(textUpdateTopic, update);
-        } else {
-            setUnsupportedMessageType(update);
         }
     }
 
@@ -75,17 +72,12 @@ public class UpdateProcessor {
         var callbackQuery = update.getCallbackQuery();
 
         if (callbackQuery != null) {
-            log.debug("{} sent callback query with data: {}", callbackQuery.getFrom().getFirstName(), callbackQuery.getData());
-
+            log.info("User {} sent callback query with data: {}",
+                    callbackQuery.getFrom().getFirstName(), callbackQuery.getData());
             updateProducer.produce(callbackQueryUpdateTopic, update);
         } else {
             log.error("Update has no callback query");
         }
-    }
-
-    private void setUnsupportedMessageType(final Update update) {
-        var sendMessage = update.generateSendMessage("Неподдерживаемый тип данных!");
-        setView(sendMessage);
     }
 
     public void setView(final SendMessage sendMessage) {

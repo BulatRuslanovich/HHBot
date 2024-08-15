@@ -46,20 +46,21 @@ public class QueryDeleteStateHandler implements StateHandler {
         var configId = decoder.idOf(hash);
         var optional = configService.getById(configId);
 
+        userService.clearUserState(user.getTelegramId());
+
         if (optional.isPresent()) {
             configService.delete(optional.get());
-            userService.clearUserState(user.getTelegramId());
-            log.debug("User {} deleted configuration with id {} and state set to BASIC_STATE", user.getFirstName(), configId);
+            log.info("User {} deleted configuration with id {} and state set to BASIC_STATE", user.getFirstName(), configId);
             return CONFIG_DELETED_MESSAGE;
         } else {
-            log.warn("Configuration with id {} not found for user {}", configId, user.getFirstName());
+            log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return CONFIG_NOT_FOUND_MESSAGE;
         }
     }
 
     private String processDeleteNoCommand(AppUser user) {
         userService.clearUserState(user.getTelegramId());
-        log.debug("User {} chose not to delete the configuration and state set to BASIC_STATE", user.getFirstName());
+        log.info("User {} chose not to delete the configuration and state set to BASIC_STATE", user.getFirstName());
         return CONFIG_NOT_DELETED_MESSAGE;
     }
 }

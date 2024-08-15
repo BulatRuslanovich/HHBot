@@ -63,13 +63,13 @@ public class WaitConfigNameStateHandler extends Cancellable implements StateHand
         config.setConfigName(newConfigName);
         configService.save(config);
         userService.clearUserState(user.getTelegramId());
-        log.debug("User {} updated name of config \"{}\" and state set to BASIC_STATE", user.getFirstName(), oldConfigName);
+        log.info("User {} updated name of config \"{}\" and state set to BASIC_STATE", user.getFirstName(), oldConfigName);
         return String.format(CONFIG_NAME_UPDATED_MESSAGE_TEMPLATE, oldConfigName, newConfigName);
     }
 
     private String processExistingConfig(final AppUser user, final String configName) {
         userService.clearUserState(user.getTelegramId());
-        log.debug("User {} attempted to create an existing config '{}'", user.getFirstName(), configName);
+        log.info("User {} attempted to create an existing config \"{}\" and state set to BASIC_STATE", user.getFirstName(), configName);
         return String.format(CONFIG_EXISTS_MESSAGE_TEMPLATE, configName);
     }
 
@@ -85,7 +85,7 @@ public class WaitConfigNameStateHandler extends Cancellable implements StateHand
         AppUserConfig newConfig = createConfigWithOnlyName(user, configName);
         configService.save(newConfig);
         userService.saveUserState(user.getTelegramId(), WAIT_QUERY_STATE);
-        log.debug("User {} created config \"{}\" and state set to WAIT_QUERY_STATE", user.getFirstName(), configName);
+        log.info("User {} created config \"{}\" and state set to WAIT_QUERY_STATE", user.getFirstName(), configName);
         return String.format(ENTER_QUERY_MESSAGE_TEMPLATE, configName);
     }
 }

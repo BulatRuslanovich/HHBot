@@ -98,14 +98,14 @@ public class QueryMenuStateHandler implements StateHandler {
             AppUserConfig config = optionalAppUserConfig.get();
 
             userService.saveUserState(user.getTelegramId(), state);
-            log.debug("User {} selected menu action and state set to {}", user.getFirstName(), state);
+            log.info("User {} selected menu action and state set to {}", user.getFirstName(), state);
 
             if (prefix.equals(UPDATE_PREFIX))
                 return showDetailedQueryOutput(config);
             else
                 return DELETE_CONFIRMATION_MESSAGE;
         } else {
-            log.warn("Configuration with id {} not found for user {}", configId, user.getFirstName());
+            log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return CONFIG_NOT_FOUND_MESSAGE;
         }
     }

@@ -55,7 +55,7 @@ public class QueryListStateHandler implements StateHandler {
             userService.saveUserState(user.getTelegramId(), QUERY_MENU_STATE);
         }
 
-        log.debug("User {} queried configuration with id {} and state set to QUERY_MENU_STATE", user.getFirstName(), configId);
+        log.info("User {} queried configuration with id {} and state set to QUERY_MENU_STATE", user.getFirstName(), configId);
         return answer.getFirst();
     }
 }

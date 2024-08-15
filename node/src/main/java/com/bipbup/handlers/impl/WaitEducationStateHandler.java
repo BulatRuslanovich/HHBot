@@ -66,7 +66,7 @@ public class WaitEducationStateHandler implements StateHandler {
             configService.clearEducationLevelSelections(user.getTelegramId());
             userService.clearUserState(user.getTelegramId());
 
-            log.debug("User {} saved education levels for configuration {} and state set to BASIC_STATE", user.getFirstName(), config.getConfigName());
+            log.info("User {} saved education levels for configuration {} and state set to BASIC_STATE", user.getFirstName(), config.getConfigName());
             return String.format(EDU_SAVE_MESSAGE_TEMPLATE, config.getConfigName());
         } else
             return processConfigNotFoundMessage(user, configId);
@@ -85,12 +85,12 @@ public class WaitEducationStateHandler implements StateHandler {
 
             if (selectedEducationLevels.contains(currentEducationLevel)) {
                 configService.removeEducationLevelSelection(user.getTelegramId(), currentEducationLevel, selectedEducationLevels);
-                log.debug("User {} selected education level \"{}\" for configuration \"{}\"",
+                log.info("User {} selected education level \"{}\" for configuration \"{}\"",
                         user.getFirstName(), currentEducationLevel.getDescription(), config.getConfigName());
             }
             else {
                 configService.addEducationLevelSelection(user.getTelegramId(), currentEducationLevel, selectedEducationLevels);
-                log.debug("User {} removed selection of education level \"{}\" for configuration \"{}\"",
+                log.info("User {} removed selection of education level \"{}\" for configuration \"{}\"",
                         user.getFirstName(), currentEducationLevel.getDescription(), config.getConfigName());
             }
 
@@ -102,7 +102,7 @@ public class WaitEducationStateHandler implements StateHandler {
 
     private String processConfigNotFoundMessage(final AppUser user, long configId) {
         userService.clearUserState(user.getTelegramId());
-        log.warn("Configuration with id {} not found for user {}", configId, user.getFirstName());
+        log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
         return CONFIG_NOT_FOUND_MESSAGE;
     }
 

@@ -38,7 +38,7 @@ public abstract class Cancellable {
 
     protected String processCancelCommand(final AppUser user) {
         userService.clearUserState(user.getTelegramId());
-        log.debug("User {} cancelled the command and state set to BASIC_STATE.", user.getFirstName());
+        log.info("User {} cancelled the command and state set to BASIC_STATE", user.getFirstName());
         return COMMAND_CANCELLED_MESSAGE;
     }
 
@@ -48,7 +48,7 @@ public abstract class Cancellable {
 
     protected String processInvalidInput(final AppUser user) {
         userService.clearUserState(user.getTelegramId());
-        log.debug("User {} provided an invalid input and state set to BASIC_STATE.", user.getFirstName());
+        log.info("User {} provided an invalid input and state set to BASIC_STATE", user.getFirstName());
         return INVALID_INPUT_MESSAGE;
     }
 
@@ -56,7 +56,7 @@ public abstract class Cancellable {
         var configId = configService.getSelectedConfigId(user.getTelegramId());
         configService.clearConfigSelection(user.getTelegramId());
         userService.clearUserState(user.getTelegramId());
-        log.warn("Config with id {} not found for user {}", configId, user.getFirstName());
+        log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
         return CONFIG_NOT_FOUND_MESSAGE;
     }
 
@@ -80,7 +80,7 @@ public abstract class Cancellable {
         List<AppUserConfig> configs = configService.getByUser(user);
 
         if (configs.isEmpty()) {
-            log.error("No configurations found for user.");
+            log.warn("No configurations found for user {}", user.getFirstName());
             return null;
         }
 
