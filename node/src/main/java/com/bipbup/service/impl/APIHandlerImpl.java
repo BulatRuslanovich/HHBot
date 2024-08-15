@@ -2,6 +2,7 @@ package com.bipbup.service.impl;
 
 import com.bipbup.dto.VacancyDTO;
 import com.bipbup.entity.AppUserConfig;
+import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.service.APIConnection;
 import com.bipbup.service.APIHandler;
@@ -23,6 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -130,12 +132,13 @@ public class APIHandlerImpl implements APIHandler {
     }
 
     private String generateVacancySearchUri(final int pageNumber,
-                                            final AppUserConfig appUserConfig) {
-        String areaId = AreaUtil.getAreaIdByName(appUserConfig.getArea());
+                                            final AppUserConfig config) {
+        var areaId = AreaUtil.getAreaIdByName(config.getArea());
+
         var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
                 .queryParam("page", String.valueOf(pageNumber))
                 .queryParam("per_page", COUNT_OF_VACANCIES_IN_PAGE)
-                .queryParam("text", appUserConfig.getQueryText().replace("+", "%2B"))
+                .queryParam("text", config.getQueryText().replace("+", "%2B"))
                 .queryParam("search_field", "name")
                 .queryParam("period", COUNT_OF_DAYS)
                 .queryParam("order_by", "publication_time");
@@ -143,8 +146,14 @@ public class APIHandlerImpl implements APIHandler {
         if (areaId != null)
             builder.queryParam("area", Integer.parseInt(areaId));
 
-        if (!appUserConfig.getExperience().equals(ExperienceParam.NO_MATTER))
-            builder.queryParam("experience", appUserConfig.getExperience().getParam());
+        if (!config.getExperience().equals(ExperienceParam.NO_MATTER))
+            builder.queryParam("experience", config.getExperience().getParam());
+
+        if (config.getEducationLevels() != null && config.getEducationLevels().length != 0) {
+            var educationLevels = Arrays.stream(config.getEducationLevels())
+                    .map(EducationLevelParam::getParam).toList();
+            builder.queryParam("education", educationLevels);
+        }
 
         return builder.build().toUriString();
     }
