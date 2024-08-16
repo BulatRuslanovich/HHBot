@@ -10,6 +10,9 @@ import com.bipbup.utils.AreaUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import static com.bipbup.utils.CommandMessageConstants.AREA_SET_MESSAGE_TEMPLATE;
 
 @Slf4j
@@ -36,10 +39,15 @@ public class WaitAreaStateHandler extends Cancellable implements StateHandler {
     }
 
     private String processValidAreaName(AppUser user, AppUserConfig config, String input) {
-        String area = input.substring(0, 1).toUpperCase() + input.substring(1).toLowerCase();
+        var separator = input.contains("-") ? "-" : " ";
+        var area = Arrays.stream(input.split(separator))
+                .map(p -> Character.toUpperCase(p.charAt(0)) + p.substring(1).toLowerCase())
+                .collect(Collectors.joining(separator));
+
         config.setArea(area);
         configService.save(config);
         userService.clearUserState(user.getTelegramId());
+
         log.info("User {} set area '{}' in configuration '{}'", user.getFirstName(), area, config.getConfigName());
         return String.format(AREA_SET_MESSAGE_TEMPLATE, area, config.getConfigName());
     }
