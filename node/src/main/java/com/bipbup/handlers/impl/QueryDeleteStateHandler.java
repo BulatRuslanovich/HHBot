@@ -27,23 +27,22 @@ public class QueryDeleteStateHandler implements StateHandler {
 
     @Override
     public String process(AppUser user, String input) {
-        if (hasDeleteYesPrefix(input)) return processDeleteYesCommand(user, input);
-        if (isDeleteNoCommand(input)) return processDeleteNoCommand(user);
+        if (hasDeleteConfirmPrefix(input)) return processDeleteConfirmCommand(user, input);
+        if (isDeleteCancelCommand(input)) return processDeleteCancelCommand(user);
 
         return "";
     }
 
-    private boolean isDeleteNoCommand(final String input) {
+    private boolean isDeleteCancelCommand(final String input) {
         return DELETE_CANCEL_COMMAND.equals(input);
     }
 
-    private boolean hasDeleteYesPrefix(final String input) {
+    private boolean hasDeleteConfirmPrefix(final String input) {
         return input.startsWith(DELETE_CONFIRM_PREFIX);
     }
 
-    private String processDeleteYesCommand(AppUser user, String input) {
-        var hash = input.substring(DELETE_CONFIRM_PREFIX.length());
-        var configId = decoder.idOf(hash);
+    private String processDeleteConfirmCommand(AppUser user, String input) {
+        var configId = decoder.getIdByCallback(input);
         var optional = configService.getById(configId);
 
         userService.clearUserState(user.getTelegramId());
@@ -58,7 +57,7 @@ public class QueryDeleteStateHandler implements StateHandler {
         }
     }
 
-    private String processDeleteNoCommand(AppUser user) {
+    private String processDeleteCancelCommand(AppUser user) {
         userService.clearUserState(user.getTelegramId());
         log.info("User {} chose not to delete the configuration and state set to BASIC_STATE", user.getFirstName());
         return CONFIG_NOT_DELETED_MESSAGE;

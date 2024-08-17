@@ -39,7 +39,8 @@ public class QueryListStateHandler implements StateHandler {
     private Pair<String, Boolean> generateQueryOutput(final long configId) {
         var optionalAppUserConfig = configService.getById(configId);
 
-        if (optionalAppUserConfig.isEmpty()) return Pair.of(CONFIG_NOT_FOUND_MESSAGE, false);
+        if (optionalAppUserConfig.isEmpty())
+            return Pair.of(CONFIG_NOT_FOUND_MESSAGE, false);
 
         var config = optionalAppUserConfig.get();
         var answer = String.format(QUERY_OUTPUT_MESSAGE_TEMPLATE, config.getConfigName(), config.getQueryText());
@@ -47,13 +48,11 @@ public class QueryListStateHandler implements StateHandler {
     }
 
     private String processQueryCommand(AppUser user, String input) {
-        var hash = input.substring(QUERY_PREFIX.length());
-        var configId = decoder.idOf(hash);
+        var configId = decoder.getIdByCallback(input);
         var answer = generateQueryOutput(configId);
 
-        if (Boolean.TRUE.equals(answer.getSecond())) {
+        if (answer.getSecond())
             userService.saveUserState(user.getTelegramId(), QUERY_MENU_STATE);
-        }
 
         log.info("User {} queried configuration with id {} and state set to QUERY_MENU_STATE", user.getFirstName(), configId);
         return answer.getFirst();

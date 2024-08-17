@@ -7,15 +7,18 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 public class Decoder {
-
     private final Hashids hashids;
 
-    public Long idOf(String hash) {
+    public Long getIdByCallback(String callback) {
+        var hash = callback.substring(callback.lastIndexOf('_') + 1);
+        return idOf(hash);
+    }
+
+    private Long idOf(String hash) {
         var decode = hashids.decode(hash);
 
-        if (decode != null && decode.length > 0) {
+        if (decode != null && decode.length > 0)
             return decode[0];
-        }
 
         return 0L;
     }

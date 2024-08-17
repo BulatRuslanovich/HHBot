@@ -66,31 +66,26 @@ public class QueryUpdateStateHandler implements StateHandler {
     private String processUpdateConfigCommand(AppUser user, String input) {
         if (hasUpdateConfigNamePrefix(input))
             return updateConfigSelectionAndUserState(user, input,
-                    UPDATE_CONFIG_NAME_PREFIX,
                     WAIT_CONFIG_NAME_STATE,
                     ENTER_CONFIG_NAME_MESSAGE_TEMPLATE,
                     true);
         if (hasUpdateQueryPrefix(input))
             return updateConfigSelectionAndUserState(user, input,
-                    UPDATE_QUERY_PREFIX,
                     WAIT_QUERY_STATE,
                     ENTER_QUERY_MESSAGE_TEMPLATE,
                     true);
         if (hasUpdateExperiencePrefix(input))
             return updateConfigSelectionAndUserState(user, input,
-                    UPDATE_EXPERIENCE_PREFIX,
                     WAIT_EXPERIENCE_STATE,
                     SELECT_EXPERIENCE_MESSAGE_TEMPLATE,
                     false);
         if (hasUpdateAreaPrefix(input))
             return updateConfigSelectionAndUserState(user, input,
-                    UPDATE_AREA_PREFIX,
                     WAIT_AREA_STATE,
                     ENTER_AREA_MESSAGE_TEMPLATE,
                     true);
         if (hasUpdateEducationLevelPrefix(input))
             return updateConfigSelectionAndUserState(user, input,
-                    UPDATE_EDUCATION_PREFIX,
                     WAIT_EDUCATION_STATE,
                     SELECT_EDUCATION_MESSAGE_TEMPLATE,
                     false);
@@ -120,23 +115,20 @@ public class QueryUpdateStateHandler implements StateHandler {
 
     private String updateConfigSelectionAndUserState(AppUser user,
                                                      String input,
-                                                     String prefix,
                                                      AppUserState state,
                                                      String messageTemplate,
                                                      boolean shouldSaveConfigSelection) {
-        var hash = input.substring(prefix.length());
-        var configId = decoder.idOf(hash);
+        var configId = decoder.getIdByCallback(input);
         var configOptional = configService.getById(configId);
 
         if (configOptional.isPresent()) {
-            var configName = configOptional.get().getConfigName();
-
             userService.saveUserState(user.getTelegramId(), state);
+
             if (shouldSaveConfigSelection)
                 configService.saveConfigSelection(user.getTelegramId(), configId);
 
             log.info("User {} selected parameter to edit and state set to {}", user.getFirstName(), state);
-            return String.format(messageTemplate, configName);
+            return String.format(messageTemplate, configOptional.get().getConfigName());
         } else {
             userService.clearUserState(user.getTelegramId());
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());

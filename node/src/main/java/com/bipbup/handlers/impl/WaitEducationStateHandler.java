@@ -54,9 +54,9 @@ public class WaitEducationStateHandler implements StateHandler {
     }
 
     private String processSaveEducationLevelsCommand(AppUser user, String input) {
-        var hash = input.substring(EDU_SAVE_PREFIX.length());
-        var configId = decoder.idOf(hash);
+        var configId = decoder.getIdByCallback(input);
         var configOptional = configService.getById(configId);
+
         if (configOptional.isPresent()) {
             var config = configOptional.get();
             var selectedEducationLevels = configService.getSelectedEducationLevels(user.getTelegramId());
@@ -74,8 +74,7 @@ public class WaitEducationStateHandler implements StateHandler {
 
     private String processSetEducationLevelCommand(AppUser user, String input) {
         var prefix = input.substring(0, input.lastIndexOf('_') + 1);
-        var hash = input.substring(prefix.length());
-        var configId = decoder.idOf(hash);
+        var configId = decoder.getIdByCallback(input);
         var configOptional = configService.getById(configId);
 
         if (configOptional.isPresent()) {
@@ -87,15 +86,13 @@ public class WaitEducationStateHandler implements StateHandler {
                 configService.removeEducationLevelSelection(user.getTelegramId(), currentEducationLevel, selectedEducationLevels);
                 log.info("User {} selected education level \"{}\" for configuration \"{}\"",
                         user.getFirstName(), currentEducationLevel.getDescription(), config.getConfigName());
-            }
-            else {
+            } else {
                 configService.addEducationLevelSelection(user.getTelegramId(), currentEducationLevel, selectedEducationLevels);
                 log.info("User {} removed selection of education level \"{}\" for configuration \"{}\"",
                         user.getFirstName(), currentEducationLevel.getDescription(), config.getConfigName());
             }
 
             return String.format(SELECT_EDUCATION_MESSAGE_TEMPLATE, config.getConfigName());
-
         } else
             return processConfigNotFoundMessage(user, configId);
     }

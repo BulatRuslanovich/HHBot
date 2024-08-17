@@ -56,8 +56,7 @@ public class WaitExperienceStateHandler implements StateHandler {
 
     private String processSetExperienceCommand(AppUser user, String input) {
         var prefix = input.substring(0, input.lastIndexOf('_') + 1);
-        var hash = input.substring(prefix.length());
-        var configId = decoder.idOf(hash);
+        var configId = decoder.getIdByCallback(input);
         var configOptional = configService.getById(configId);
 
         userService.clearUserState(user.getTelegramId());

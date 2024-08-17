@@ -35,8 +35,8 @@ public class QueryMenuStateHandler implements StateHandler {
     @Override
     public String process(AppUser user, String input) {
         if (isBackToQueryListCommand(input)) return processBackToQueryListCommand(user);
-        if (hasDeletePrefix(input)) return processDeleteCommand(user, input);
-        if (hasUpdatePrefix(input)) return processUpdateCommand(user, input);
+        if (hasDeletePrefix(input)) return processConfigActionCommand(user, input, QUERY_DELETE_STATE);
+        if (hasUpdatePrefix(input)) return processConfigActionCommand(user, input, QUERY_UPDATE_STATE);
 
         return "";
     }
@@ -60,9 +60,10 @@ public class QueryMenuStateHandler implements StateHandler {
     private void appendEnumParams(StringBuilder output, EnumParam[] values, String prefix) {
         if (values != null && values.length > 0) {
             output.append(prefix);
-            for (EnumParam value : values) {
+
+            for (EnumParam value : values)
                 output.append(value.getDescription()).append(", ");
-            }
+
             output.setLength(output.length() - " ,".length());
         }
     }
@@ -80,28 +81,16 @@ public class QueryMenuStateHandler implements StateHandler {
         return output.toString();
     }
 
-    private String processDeleteCommand(AppUser user, String input) {
-        return processConfigActionCommand(user, input, DELETE_PREFIX, QUERY_DELETE_STATE);
-    }
-
-    private String processUpdateCommand(AppUser user, String input) {
-        return processConfigActionCommand(user, input, UPDATE_PREFIX, QUERY_UPDATE_STATE);
-    }
-
-    private String processConfigActionCommand(AppUser user, String input,
-                                              String prefix, AppUserState state) {
-        var hash = input.substring(prefix.length());
-        var configId = decoder.idOf(hash);
+    private String processConfigActionCommand(AppUser user, String input, AppUserState state) {
+        var configId = decoder.getIdByCallback(input);
         var optionalAppUserConfig = configService.getById(configId);
 
         if (optionalAppUserConfig.isPresent()) {
-            AppUserConfig config = optionalAppUserConfig.get();
-
             userService.saveUserState(user.getTelegramId(), state);
             log.info("User {} selected menu action and state set to {}", user.getFirstName(), state);
 
-            if (prefix.equals(UPDATE_PREFIX))
-                return showDetailedQueryOutput(config);
+            if (state == QUERY_UPDATE_STATE)
+                return showDetailedQueryOutput(optionalAppUserConfig.get());
             else
                 return DELETE_CONFIRMATION_MESSAGE;
         } else {
