@@ -19,7 +19,7 @@ import static com.bipbup.utils.CommandMessageConstants.NEWQUERY_COMMAND;
 
 @Slf4j
 @RequiredArgsConstructor
-public abstract class Cancellable {
+public abstract class CancellableStateHandler implements StateHandler {
 
     protected final UserService userService;
 

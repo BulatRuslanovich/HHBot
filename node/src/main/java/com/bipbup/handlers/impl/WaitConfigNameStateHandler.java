@@ -2,8 +2,7 @@ package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
-import com.bipbup.handlers.Cancellable;
-import com.bipbup.handlers.StateHandler;
+import com.bipbup.handlers.CancellableStateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +15,7 @@ import static com.bipbup.utils.CommandMessageConstants.ENTER_QUERY_MESSAGE_TEMPL
 
 @Slf4j
 @Component
-public class WaitConfigNameStateHandler extends Cancellable implements StateHandler {
+public class WaitConfigNameStateHandler extends CancellableStateHandler {
 
     protected static final int MAX_CONFIG_NAME_LENGTH = 50;
 
