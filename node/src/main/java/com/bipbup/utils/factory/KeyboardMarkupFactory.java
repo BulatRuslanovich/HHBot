@@ -78,7 +78,7 @@ public class KeyboardMarkupFactory {
     }
 
     public InlineKeyboardMarkup createConfigManagementKeyboard(String callbackData) {
-        var hash = extractHash(callbackData, QUERY_PREFIX);
+        var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
                 createButton(BUTTON_TEXT_UPDATE, UPDATE_PREFIX + hash),
@@ -90,7 +90,7 @@ public class KeyboardMarkupFactory {
     }
 
     public InlineKeyboardMarkup createDeleteConfirmationKeyboard(String callbackData) {
-        var hash = extractHash(callbackData, DELETE_PREFIX);
+        var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
                 createButton(BUTTON_TEXT_DELETE_CONFIRM, DELETE_CONFIRM_PREFIX + hash),
@@ -101,7 +101,7 @@ public class KeyboardMarkupFactory {
     }
 
     public InlineKeyboardMarkup createUpdateConfigKeyboard(String callbackData) {
-        var hash = extractHash(callbackData, UPDATE_PREFIX);
+        var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
                 createButton(BUTTON_TEXT_UPDATE_CONFIG_NAME, UPDATE_CONFIG_NAME_PREFIX + hash),
@@ -117,7 +117,7 @@ public class KeyboardMarkupFactory {
     }
 
     public InlineKeyboardMarkup createExperienceSelectionKeyboard(String callbackData) {
-        var hash = extractHash(callbackData, UPDATE_EXPERIENCE_PREFIX);
+        var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
                 createButton(BUTTON_TEXT_NO_EXP, NO_EXP_PREFIX + hash),
@@ -133,8 +133,7 @@ public class KeyboardMarkupFactory {
     public InlineKeyboardMarkup createEducationLevelSelectionKeyboard(AppUser user, String callbackData) {
         List<EducationLevelParam> selectedEducationLevels = configService.getSelectedEducationLevels(user.getTelegramId());
 
-        var prefix = callbackData.substring(0, callbackData.lastIndexOf('_') + 1);
-        var hash = extractHash(callbackData, prefix);
+        var hash = extractHash(callbackData);
 
         var buttonTexts = new HashMap<String, String>();
         buttonTexts.put(EDU_NOT_IMPORTANT_PREFIX, BUTTON_TEXT_EDU_NOT_IMPORTANT);
@@ -176,7 +175,7 @@ public class KeyboardMarkupFactory {
         return markup;
     }
 
-    private String extractHash(String data, String prefix) {
-        return data.substring(prefix.length());
+    private String extractHash(String data) {
+        return data.substring(data.lastIndexOf("_") + 1);
     }
 }
