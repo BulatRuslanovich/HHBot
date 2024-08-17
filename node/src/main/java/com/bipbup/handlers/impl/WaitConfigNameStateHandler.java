@@ -83,6 +83,7 @@ public class WaitConfigNameStateHandler extends CancellableStateHandler {
     private String processNewConfig(final AppUser user, final String configName) {
         AppUserConfig newConfig = createConfigWithOnlyName(user, configName);
         configService.save(newConfig);
+        configService.clearConfigSelection(user.getTelegramId());
         userService.saveUserState(user.getTelegramId(), WAIT_QUERY_STATE);
         log.info("User {} created config \"{}\" and state set to WAIT_QUERY_STATE", user.getFirstName(), configName);
         return String.format(ENTER_QUERY_MESSAGE_TEMPLATE, configName);
