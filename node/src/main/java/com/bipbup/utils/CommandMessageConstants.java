@@ -2,6 +2,7 @@ package com.bipbup.utils;
 
 import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.enums.impl.ExperienceParam;
+import com.bipbup.enums.impl.ScheduleTypeParam;
 
 public class CommandMessageConstants {
 
@@ -36,6 +37,13 @@ public class CommandMessageConstants {
     public static final String EDU_HIGHER_PREFIX = WAIT_EDU_STATE_PREFIX + "higher_";
     public static final String EDU_SECONDARY_VOCATIONAL_PREFIX = WAIT_EDU_STATE_PREFIX + "special_secondary_";
     public static final String EDU_SAVE_PREFIX = WAIT_EDU_STATE_PREFIX + "save_";
+
+    public static final String WAIT_SCHEDULE_STATE_PREFIX = "schedule_";
+    public static final String SCHEDULE_FULL_DAY_PREFIX = WAIT_SCHEDULE_STATE_PREFIX + "full_day_";
+    public static final String SCHEDULE_REMOTE_PREFIX = WAIT_SCHEDULE_STATE_PREFIX + "remote_";
+    public static final String SCHEDULE_FLEXIBLE_PREFIX = WAIT_SCHEDULE_STATE_PREFIX + "flexible_";
+    public static final String SCHEDULE_SHIFT_PREFIX = WAIT_SCHEDULE_STATE_PREFIX + "shift_";
+    public static final String SCHEDULE_SAVE_PREFIX = WAIT_SCHEDULE_STATE_PREFIX + "save_";
 
     // cancellable messages and commands
     public static final String COMMAND_CANCELLED_MESSAGE = "Команда была отменена.";
@@ -89,9 +97,10 @@ public class CommandMessageConstants {
     public static final String AREA_SET_MESSAGE_TEMPLATE = "Регион \"%s\" успешно установлен в конфигурации \"%s\".";
 
     // wait education state messages
-    public static final String EDU_SET_MESSAGE_TEMPLATE = "Уровень образования \"%s\" успешно установлен в конфигурации \"%s\".";
-    public static final String EDU_DELETE_MESSAGE_TEMPLATE = "Уровень образования \"%s\" успешно удален из конфигурации \"%s\".";
     public static final String EDU_SAVE_MESSAGE_TEMPLATE = "Уровень образования успешно сохранен для конфигурации \"%s\".";
+
+    // wait schedule state messages
+    public static final String SCHEDULE_SAVE_MESSAGE_TEMPLATE = "График работы успешно сохранен для конфигурации \"%s\".";
 
     // error messages
     public static final String CONFIG_NOT_FOUND_MESSAGE = "Конфигурация не найдена.";
@@ -122,12 +131,18 @@ public class CommandMessageConstants {
     public static final String BUTTON_TEXT_EXP_3_6_YEARS = ExperienceParam.BETWEEN_3_AND_6.getDescription();
     public static final String BUTTON_TEXT_EXP_MORE_6_YEARS = ExperienceParam.MORE_THAN_6.getDescription();
 
-    // wait education state button messages
+    // wait education state button texts
     public static final String BUTTON_TEXT_EDU_NOT_IMPORTANT = EducationLevelParam.NOT_REQUIRED_OR_NOT_SPECIFIED.getDescription();
     public static final String BUTTON_TEXT_EDU_HIGHER = EducationLevelParam.HIGHER.getDescription();
     public static final String BUTTON_TEXT_EDU_SECONDARY_VOCATIONAL = EducationLevelParam.SECONDARY_VOCATIONAL.getDescription();
 
-    // common button messages
+    // wait schedule state button texts
+    public static final String BUTTON_TEXT_SCHEDULE_FULL_DAY = ScheduleTypeParam.FULL_DAY.getDescription();
+    public static final String BUTTON_TEXT_SCHEDULE_REMOTE = ScheduleTypeParam.REMOTE_WORKING.getDescription();
+    public static final String BUTTON_TEXT_SCHEDULE_FLEXIBLE = ScheduleTypeParam.FLEXIBLE_SCHEDULE.getDescription();
+    public static final String BUTTON_TEXT_SCHEDULE_SHIFT = ScheduleTypeParam.SHIFT_SCHEDULE.getDescription();
+
+    // common button texts
     public static final String BUTTON_TEXT_BACK = "Назад";
     public static final String BUTTON_TEXT_SELECTED = " \uD83D\uDD18";
     public static final String BUTTON_TEXT_SAVE = "Сохранить";

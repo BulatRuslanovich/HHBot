@@ -4,6 +4,7 @@ import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.impl.EducationLevelParam;
+import com.bipbup.enums.impl.ScheduleTypeParam;
 import com.bipbup.service.ConfigService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -94,6 +95,36 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @CacheEvict(value = "educationSelections")
     public void clearEducationLevelSelections(Long telegramId) {
+        // clearing cache, doesn't need implementing
+    }
+
+    @Override
+    @CachePut(value = "scheduleSelections", key = "#telegramId")
+    public List<ScheduleTypeParam> addScheduleTypeSelection(Long telegramId,
+                                                            ScheduleTypeParam param,
+                                                            List<ScheduleTypeParam> scheduleTypeParams) {
+        scheduleTypeParams.add(param);
+        return scheduleTypeParams;
+    }
+
+    @Override
+    @CachePut(value = "scheduleSelections", key = "#telegramId")
+    public List<ScheduleTypeParam> removeScheduleTypeSelection(Long telegramId,
+                                                               ScheduleTypeParam param,
+                                                               List<ScheduleTypeParam> scheduleTypeParams) {
+        scheduleTypeParams.remove(param);
+        return scheduleTypeParams;
+    }
+
+    @Override
+    @Cacheable(value = "scheduleSelections")
+    public List<ScheduleTypeParam> getSelectedScheduleTypes(Long telegramId) {
+        return new ArrayList<>(0);
+    }
+
+    @Override
+    @CacheEvict(value = "scheduleSelections")
+    public void clearScheduleTypeSelections(Long telegramId) {
         // clearing cache, doesn't need implementing
     }
 }

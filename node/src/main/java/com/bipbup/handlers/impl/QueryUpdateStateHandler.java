@@ -10,24 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import static com.bipbup.enums.AppUserState.WAIT_AREA_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_EDUCATION_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.ENTER_AREA_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.ENTER_CONFIG_NAME_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.ENTER_QUERY_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.SELECT_EDUCATION_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.SELECT_EXPERIENCE_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_AREA_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_CONFIG_NAME_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_EDUCATION_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_EXPERIENCE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_QUERY_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_STATE_PREFIX;
+import static com.bipbup.enums.AppUserState.*;
+import static com.bipbup.utils.CommandMessageConstants.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -89,8 +73,17 @@ public class QueryUpdateStateHandler implements StateHandler {
                     WAIT_EDUCATION_STATE,
                     SELECT_EDUCATION_MESSAGE_TEMPLATE,
                     false);
+        if (hasUpdateScheduleTypePrefix(input))
+            return updateConfigSelectionAndUserState(user, input,
+                    WAIT_SCHEDULE_STATE,
+                    SELECT_SCHEDULE_MESSAGE_TEMPLATE,
+                    false);
 
         return "";
+    }
+
+    private boolean hasUpdateScheduleTypePrefix(String input) {
+        return input.startsWith(UPDATE_SCHEDULE_PREFIX);
     }
 
     private boolean hasUpdateEducationLevelPrefix(String input) {

@@ -3,6 +3,7 @@ package com.bipbup.service;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.impl.EducationLevelParam;
+import com.bipbup.enums.impl.ScheduleTypeParam;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,4 +32,12 @@ public interface ConfigService {
     List<EducationLevelParam> getSelectedEducationLevels(Long telegramId);
 
     void clearEducationLevelSelections(Long telegramId);
+
+    List<ScheduleTypeParam> addScheduleTypeSelection(Long telegramId, ScheduleTypeParam param, List<ScheduleTypeParam> scheduleTypeParams);
+
+    List<ScheduleTypeParam> removeScheduleTypeSelection(Long telegramId, ScheduleTypeParam param, List<ScheduleTypeParam> scheduleTypeParams);
+
+    List<ScheduleTypeParam> getSelectedScheduleTypes(Long telegramId);
+
+    void clearScheduleTypeSelections(Long telegramId);
 }

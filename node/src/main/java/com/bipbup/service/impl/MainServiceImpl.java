@@ -3,16 +3,7 @@ package com.bipbup.service.impl;
 import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
 import com.bipbup.handlers.StateHandler;
-import com.bipbup.handlers.impl.BasicStateHandler;
-import com.bipbup.handlers.impl.QueryDeleteStateHandler;
-import com.bipbup.handlers.impl.QueryListStateHandler;
-import com.bipbup.handlers.impl.QueryMenuStateHandler;
-import com.bipbup.handlers.impl.QueryUpdateStateHandler;
-import com.bipbup.handlers.impl.WaitAreaStateHandler;
-import com.bipbup.handlers.impl.WaitConfigNameStateHandler;
-import com.bipbup.handlers.impl.WaitEducationStateHandler;
-import com.bipbup.handlers.impl.WaitExperienceStateHandler;
-import com.bipbup.handlers.impl.WaitQueryStateHandler;
+import com.bipbup.handlers.impl.*;
 import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.MainService;
 import com.bipbup.service.UserService;
@@ -28,23 +19,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 
 import java.util.Map;
 
-import static com.bipbup.enums.AppUserState.BASIC_STATE;
-import static com.bipbup.enums.AppUserState.QUERY_DELETE_STATE;
-import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
-import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
-import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_AREA_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_EDUCATION_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
-import static com.bipbup.utils.CommandMessageConstants.DELETE_STATE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.MENU_STATE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
-import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_STATE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.WAIT_EDU_STATE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.WAIT_EXP_STATE_PREFIX;
+import static com.bipbup.enums.AppUserState.*;
+import static com.bipbup.utils.CommandMessageConstants.*;
 
 
 @Service
@@ -71,7 +47,8 @@ public class MainServiceImpl implements MainService {
                            final QueryUpdateStateHandler queryUpdateStateHandler,
                            final WaitExperienceStateHandler waitExperienceStateHandler,
                            final WaitAreaStateHandler waitAreaStateHandler,
-                           final WaitEducationStateHandler waitEducationStateHandler) {
+                           final WaitEducationStateHandler waitEducationStateHandler,
+                           final WaitScheduleStateHandler waitScheduleStateHandler) {
         this.userService = userService;
         this.markupFactory = markupFactory;
         this.answerProducer = answerProducer;
@@ -86,7 +63,8 @@ public class MainServiceImpl implements MainService {
                 QUERY_DELETE_STATE, queryDeleteStateHandler,
                 QUERY_UPDATE_STATE, queryUpdateStateHandler,
                 WAIT_EXPERIENCE_STATE, waitExperienceStateHandler,
-                WAIT_EDUCATION_STATE, waitEducationStateHandler);
+                WAIT_EDUCATION_STATE, waitEducationStateHandler,
+                WAIT_SCHEDULE_STATE, waitScheduleStateHandler);
     }
 
     @Override
@@ -127,6 +105,8 @@ public class MainServiceImpl implements MainService {
             return callbackStateHandlers.get(WAIT_EXPERIENCE_STATE);
         if (callbackData.startsWith(WAIT_EDU_STATE_PREFIX))
             return callbackStateHandlers.get(WAIT_EDUCATION_STATE);
+        if (callbackData.startsWith(WAIT_SCHEDULE_STATE_PREFIX))
+            return callbackStateHandlers.get(WAIT_SCHEDULE_STATE);
 
         return messageStateHandlers.get(BASIC_STATE);
     }
@@ -151,13 +131,10 @@ public class MainServiceImpl implements MainService {
         var userTelegramId = user.getTelegramId();
 
         var userState = userService.getUserState(userTelegramId);
-        var isWaitState = userState.toString().startsWith("WAIT_");
-        if (isWaitState) {
-            var isUpdating = callbackData.startsWith(UPDATE_STATE_PREFIX);
-            var isMultiSelecting = callbackData.startsWith(WAIT_EDU_STATE_PREFIX);
-            if (isUpdating)
+        if (isWaitState(userState)) {
+            if (isUpdating(callbackData))
                 sendAnswer(output, userTelegramId, fetchKeyboard(user, callbackData));
-            else if (isMultiSelecting)
+            else if (isMultiSelecting(callbackData))
                 editAnswer(output, userTelegramId, callbackQuery.getMessage().getMessageId(),
                         fetchKeyboard(user, callbackData));
             else
@@ -165,6 +142,19 @@ public class MainServiceImpl implements MainService {
         } else
             editAnswer(output, userTelegramId, callbackQuery.getMessage().getMessageId(),
                     fetchKeyboard(user, callbackData));
+    }
+
+    private static boolean isMultiSelecting(String callbackData) {
+        return callbackData.startsWith(WAIT_EDU_STATE_PREFIX)
+                || callbackData.startsWith(WAIT_SCHEDULE_STATE_PREFIX);
+    }
+
+    private static boolean isUpdating(String callbackData) {
+        return callbackData.startsWith(UPDATE_STATE_PREFIX);
+    }
+
+    private static boolean isWaitState(AppUserState userState) {
+        return userState.toString().startsWith("WAIT_");
     }
 
     private void sendAnswer(final String text,
@@ -213,6 +203,8 @@ public class MainServiceImpl implements MainService {
             return markupFactory.createExperienceSelectionKeyboard(callbackData);
         if (userState.equals(WAIT_EDUCATION_STATE))
             return markupFactory.createEducationLevelSelectionKeyboard(user, callbackData);
+        if (userState.equals(WAIT_SCHEDULE_STATE))
+            return markupFactory.createScheduleTypeSelectionKeyboard(user, callbackData);
 
         return null;
     }

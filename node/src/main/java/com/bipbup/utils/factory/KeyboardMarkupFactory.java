@@ -2,6 +2,7 @@ package com.bipbup.utils.factory;
 
 import com.bipbup.entity.AppUser;
 import com.bipbup.enums.impl.EducationLevelParam;
+import com.bipbup.enums.impl.ScheduleTypeParam;
 import com.bipbup.service.ConfigService;
 import com.bipbup.utils.Encoder;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,10 @@ import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_MORE_6_YE
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_NOT_IMPORTANT;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_NO_EXP;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SAVE;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SCHEDULE_FLEXIBLE;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SCHEDULE_FULL_DAY;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SCHEDULE_REMOTE;
+import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SCHEDULE_SHIFT;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SELECTED;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_AREA;
@@ -49,6 +54,11 @@ import static com.bipbup.utils.CommandMessageConstants.EXP_NOT_IMPORTANT_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.NO_EXP_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_FLEXIBLE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_FULL_DAY_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_REMOTE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SAVE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SHIFT_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_AREA_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_CONFIG_NAME_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_EDUCATION_PREFIX;
@@ -153,6 +163,37 @@ public class KeyboardMarkupFactory {
                 createButton(buttonTexts.get(EDU_HIGHER_PREFIX), EDU_HIGHER_PREFIX + hash),
                 createButton(buttonTexts.get(EDU_SECONDARY_VOCATIONAL_PREFIX), EDU_SECONDARY_VOCATIONAL_PREFIX + hash),
                 createButton(BUTTON_TEXT_SAVE, EDU_SAVE_PREFIX + hash)
+        );
+
+        return createMarkup(buttons, 1);
+    }
+
+    public InlineKeyboardMarkup createScheduleTypeSelectionKeyboard(AppUser user, String callbackData) {
+        List<ScheduleTypeParam> selectedScheduleTypes = configService.getSelectedScheduleTypes(user.getTelegramId());
+
+        var hash = extractHash(callbackData);
+
+        var buttonTexts = new HashMap<String, String>();
+        buttonTexts.put(SCHEDULE_FULL_DAY_PREFIX, BUTTON_TEXT_SCHEDULE_FULL_DAY);
+        buttonTexts.put(SCHEDULE_REMOTE_PREFIX, BUTTON_TEXT_SCHEDULE_REMOTE);
+        buttonTexts.put(SCHEDULE_FLEXIBLE_PREFIX, BUTTON_TEXT_SCHEDULE_FLEXIBLE);
+        buttonTexts.put(SCHEDULE_SHIFT_PREFIX, BUTTON_TEXT_SCHEDULE_SHIFT);
+
+        var enumPrefixes = Map.of(
+                ScheduleTypeParam.FULL_DAY, SCHEDULE_FULL_DAY_PREFIX,
+                ScheduleTypeParam.REMOTE_WORKING, SCHEDULE_REMOTE_PREFIX,
+                ScheduleTypeParam.FLEXIBLE_SCHEDULE, SCHEDULE_FLEXIBLE_PREFIX,
+                ScheduleTypeParam.SHIFT_SCHEDULE, SCHEDULE_SHIFT_PREFIX
+        );
+
+        selectedScheduleTypes.forEach(t -> buttonTexts.put(enumPrefixes.get(t), buttonTexts.get(enumPrefixes.get(t)) + BUTTON_TEXT_SELECTED));
+
+        List<InlineKeyboardButton> buttons = List.of(
+                createButton(buttonTexts.get(SCHEDULE_FULL_DAY_PREFIX), SCHEDULE_FULL_DAY_PREFIX + hash),
+                createButton(buttonTexts.get(SCHEDULE_REMOTE_PREFIX), SCHEDULE_REMOTE_PREFIX + hash),
+                createButton(buttonTexts.get(SCHEDULE_FLEXIBLE_PREFIX), SCHEDULE_FLEXIBLE_PREFIX + hash),
+                createButton(buttonTexts.get(SCHEDULE_SHIFT_PREFIX), SCHEDULE_SHIFT_PREFIX + hash),
+                createButton(BUTTON_TEXT_SAVE, SCHEDULE_SAVE_PREFIX + hash)
         );
 
         return createMarkup(buttons, 1);
