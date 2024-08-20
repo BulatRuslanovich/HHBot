@@ -6,102 +6,109 @@ import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import com.bipbup.utils.Decoder;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import static com.bipbup.utils.CommandMessageConstants.*;
+import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_FLEXIBLE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_FULL_DAY_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_REMOTE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SAVE_MESSAGE_TEMPLATE;
+import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SAVE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SHIFT_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.SELECT_SCHEDULE_MESSAGE_TEMPLATE;
+import static com.bipbup.utils.CommandMessageConstants.WAIT_SCHEDULE_STATE_PREFIX;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class WaitScheduleStateHandler implements StateHandler {
-    ConfigService configService;
 
-    UserService userService;
+    private final ConfigService configService;
 
-    Decoder decoder;
+    private final UserService userService;
 
-    private final Map<String, ScheduleTypeParam> scheduleTypes;
+    private final Decoder decoder;
 
-    public WaitScheduleStateHandler(final ConfigService configService,
-                                     UserService userService,
-                                     final Decoder decoder) {
-        this.configService = configService;
-        this.userService = userService;
-        this.decoder = decoder;
-
-        this.scheduleTypes = Map.of(
-                SCHEDULE_FULL_DAY_PREFIX, ScheduleTypeParam.FULL_DAY,
-                SCHEDULE_REMOTE_PREFIX, ScheduleTypeParam.REMOTE_WORKING,
-                SCHEDULE_FLEXIBLE_PREFIX, ScheduleTypeParam.FLEXIBLE_SCHEDULE,
-                SCHEDULE_SHIFT_PREFIX, ScheduleTypeParam.SHIFT_SCHEDULE
-        );
-    }
+    private static final Map<String, ScheduleTypeParam> scheduleTypes = Map.of(
+            SCHEDULE_FULL_DAY_PREFIX, ScheduleTypeParam.FULL_DAY,
+            SCHEDULE_REMOTE_PREFIX, ScheduleTypeParam.REMOTE_WORKING,
+            SCHEDULE_FLEXIBLE_PREFIX, ScheduleTypeParam.FLEXIBLE_SCHEDULE,
+            SCHEDULE_SHIFT_PREFIX, ScheduleTypeParam.SHIFT_SCHEDULE
+    );
 
     @Override
-    public String process(AppUser user, String input) {
-        if (hasSavePrefix(input)) return processSaveScheduleTypesCommand(user, input);
-        if (hasSchedulePrefix(input)) return processSetScheduleTypeCommand(user, input);
+    public String process(final AppUser user, final String input) {
+        if (hasSavePrefix(input))
+            return processSaveScheduleTypesCommand(user, input);
+        if (hasSchedulePrefix(input))
+            return processSetScheduleTypeCommand(user, input);
 
         return "";
     }
 
-    private String processSaveScheduleTypesCommand(AppUser user, String input) {
-        var configId = decoder.getIdByCallback(input);
-        var configOptional = configService.getById(configId);
+    private String processSaveScheduleTypesCommand(final AppUser user, final String input) {
+        var configId = decoder.parseIdFromCallback(input);
+        var optionalConfig = configService.getById(configId);
 
-        if (configOptional.isPresent()) {
-            var config = configOptional.get();
-            var selectedScheduleTypes = configService.getSelectedScheduleTypes(user.getTelegramId());
+        if (optionalConfig.isPresent()) {
+            var telegramId = user.getTelegramId();
+            var config = optionalConfig.get();
+            var selectedScheduleTypes = configService.getSelectedScheduleTypes(telegramId);
             config.setScheduleTypes(selectedScheduleTypes.toArray(new ScheduleTypeParam[0]));
 
             configService.save(config);
-            configService.clearScheduleTypeSelections(user.getTelegramId());
-            userService.clearUserState(user.getTelegramId());
+            configService.clearScheduleTypeSelections(telegramId);
+            userService.clearUserState(telegramId);
 
             log.info("User {} saved schedule types for configuration {} and state set to BASIC_STATE", user.getFirstName(), config.getConfigName());
             return String.format(SCHEDULE_SAVE_MESSAGE_TEMPLATE, config.getConfigName());
-        } else
+        } else {
             return processConfigNotFoundMessage(user, configId);
+        }
     }
 
-    private String processSetScheduleTypeCommand(AppUser user, String input) {
+    private String processSetScheduleTypeCommand(final AppUser user, final String input) {
         var prefix = input.substring(0, input.lastIndexOf('_') + 1);
-        var configId = decoder.getIdByCallback(input);
-        var configOptional = configService.getById(configId);
+        var configId = decoder.parseIdFromCallback(input);
+        var optionalConfig = configService.getById(configId);
 
-        if (configOptional.isPresent()) {
-            var config = configOptional.get();
+        if (optionalConfig.isPresent()) {
+            var telegramId = user.getTelegramId();
+            var config = optionalConfig.get();
             var currentScheduleType = scheduleTypes.get(prefix);
-            var selectedScheduleTypes = configService.getSelectedScheduleTypes(user.getTelegramId());
+            var selectedScheduleTypes = configService.getSelectedScheduleTypes(telegramId);
 
             if (selectedScheduleTypes.contains(currentScheduleType)) {
-                configService.removeScheduleTypeSelection(user.getTelegramId(), currentScheduleType, selectedScheduleTypes);
+                configService.removeScheduleTypeSelection(telegramId, currentScheduleType, selectedScheduleTypes);
                 log.info("User {} selected schedule type \"{}\" for configuration \"{}\"",
                         user.getFirstName(), currentScheduleType.getDescription(), config.getConfigName());
             } else {
-                configService.addScheduleTypeSelection(user.getTelegramId(), currentScheduleType, selectedScheduleTypes);
+                configService.addScheduleTypeSelection(telegramId, currentScheduleType, selectedScheduleTypes);
                 log.info("User {} removed selection of schedule type \"{}\" for configuration \"{}\"",
                         user.getFirstName(), currentScheduleType.getDescription(), config.getConfigName());
             }
 
             return String.format(SELECT_SCHEDULE_MESSAGE_TEMPLATE, config.getConfigName());
-        } else
+        } else {
             return processConfigNotFoundMessage(user, configId);
+        }
     }
 
-    private String processConfigNotFoundMessage(final AppUser user, long configId) {
+    private String processConfigNotFoundMessage(final AppUser user, final long configId) {
         userService.clearUserState(user.getTelegramId());
         log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
         return CONFIG_NOT_FOUND_MESSAGE;
     }
 
-    private boolean hasSavePrefix(String input) {
+    private boolean hasSavePrefix(final String input) {
         return input.startsWith(SCHEDULE_SAVE_PREFIX);
     }
 
-    private boolean hasSchedulePrefix(String input) {
+    private boolean hasSchedulePrefix(final String input) {
         return input.startsWith(WAIT_SCHEDULE_STATE_PREFIX);
     }
 }

@@ -29,9 +29,12 @@ public class BasicStateHandler implements StateHandler {
 
     @Override
     public String process(final AppUser user, final String input) {
-        if (isStartCommand(input)) return processStartCommand(user);
-        if (isNewQueryCommand(input)) return processNewQueryCommand(user);
-        if (isMyQueriesCommand(input)) return processMyQueriesCommand(user);
+        if (isStartCommand(input))
+            return processStartCommand(user);
+        if (isNewQueryCommand(input))
+            return processNewQueryCommand(user);
+        if (isMyQueriesCommand(input))
+            return processMyQueriesCommand(user);
         return "";
     }
 
@@ -48,8 +51,7 @@ public class BasicStateHandler implements StateHandler {
     }
 
     private String processStartCommand(final AppUser user) {
-        var firstName = user.getFirstName();
-        return String.format(WELCOME_MESSAGE, firstName);
+        return String.format(WELCOME_MESSAGE, user.getFirstName());
     }
 
     private String processNewQueryCommand(final AppUser user) {
@@ -59,14 +61,14 @@ public class BasicStateHandler implements StateHandler {
     }
 
     protected String processMyQueriesCommand(final AppUser user) {
-        var userConfigs = configService.getByUser(user);
-        if (userConfigs == null || userConfigs.isEmpty()) {
+        var configs = configService.getByUser(user);
+        if (configs == null || configs.isEmpty()) {
             userService.clearUserState(user.getTelegramId());
             return NO_SAVED_QUERIES_MESSAGE;
         }
 
         userService.saveUserState(user.getTelegramId(), QUERY_LIST_STATE);
-        log.info("State of user {} set to QUERY_LIST_STATE", user.getFirstName());
+        log.debug("State of user {} set to QUERY_LIST_STATE", user.getFirstName());
         return USER_QUERIES_MESSAGE;
     }
 }

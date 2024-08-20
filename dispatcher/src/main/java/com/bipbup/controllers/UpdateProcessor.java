@@ -1,9 +1,7 @@
 package com.bipbup.controllers;
 
 import com.bipbup.service.UpdateProducer;
-import com.bipbup.utils.MessageUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.ExtensionMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -12,7 +10,6 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-@ExtensionMethod(MessageUtil.class)
 @Slf4j
 @RequiredArgsConstructor
 @Component

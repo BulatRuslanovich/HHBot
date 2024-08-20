@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import static com.bipbup.enums.AppUserState.QUERY_DELETE_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
 import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
@@ -24,6 +27,7 @@ import static com.bipbup.utils.CommandMessageConstants.UPDATE_PREFIX;
 @RequiredArgsConstructor
 @Component
 public class QueryMenuStateHandler implements StateHandler {
+
     private final UserService userService;
 
     private final ConfigService configService;
@@ -34,9 +38,12 @@ public class QueryMenuStateHandler implements StateHandler {
 
     @Override
     public String process(AppUser user, String input) {
-        if (isBackToQueryListCommand(input)) return processBackToQueryListCommand(user);
-        if (hasDeletePrefix(input)) return processConfigActionCommand(user, input, QUERY_DELETE_STATE);
-        if (hasUpdatePrefix(input)) return processConfigActionCommand(user, input, QUERY_UPDATE_STATE);
+        if (isBackToQueryListCommand(input))
+            return processBackToQueryListCommand(user);
+        if (hasDeletePrefix(input))
+            return processConfigActionCommand(user, input, QUERY_DELETE_STATE);
+        if (hasUpdatePrefix(input))
+            return processConfigActionCommand(user, input, QUERY_UPDATE_STATE);
 
         return "";
     }
@@ -61,13 +68,15 @@ public class QueryMenuStateHandler implements StateHandler {
         if (values != null && values.length > 0) {
             output.append(prefix);
 
-            for (EnumParam value : values)
-                output.append(value.getDescription()).append(", ");
+            String paramNames = Arrays.stream(values)
+                    .map(EnumParam::getDescription)
+                    .collect(Collectors.joining(", "));
 
-            output.setLength(output.length() - " ,".length());
+            output.append(paramNames);
         }
     }
 
+    //TODO: сделать по красоте
     private String showDetailedQueryOutput(AppUserConfig config) {
         StringBuilder output = new StringBuilder()
                 .append(config.getConfigName())
@@ -82,17 +91,18 @@ public class QueryMenuStateHandler implements StateHandler {
     }
 
     private String processConfigActionCommand(AppUser user, String input, AppUserState state) {
-        var configId = decoder.getIdByCallback(input);
-        var optionalAppUserConfig = configService.getById(configId);
+        var configId = decoder.parseIdFromCallback(input);
+        var optionalConfig = configService.getById(configId);
 
-        if (optionalAppUserConfig.isPresent()) {
+        if (optionalConfig.isPresent()) {
+            var config = optionalConfig.get();
             userService.saveUserState(user.getTelegramId(), state);
             log.info("User {} selected menu action and state set to {}", user.getFirstName(), state);
 
             if (state == QUERY_UPDATE_STATE)
-                return showDetailedQueryOutput(optionalAppUserConfig.get());
-            else
-                return DELETE_CONFIRMATION_MESSAGE;
+                return showDetailedQueryOutput(config);
+
+            return DELETE_CONFIRMATION_MESSAGE;
         } else {
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return CONFIG_NOT_FOUND_MESSAGE;

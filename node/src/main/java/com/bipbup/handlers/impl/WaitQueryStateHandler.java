@@ -24,12 +24,16 @@ public class WaitQueryStateHandler extends CancellableStateHandler {
 
     @Override
     public String process(final AppUser user, final String input) {
-        if (isCancelCommand(input)) return processCancelCommand(user);
-        if (isBasicCommand(input)) return processBasicCommand(user, input);
-        if (isInvalidQueryText(input)) return processInvalidInput(user);
+        if (isCancelCommand(input))
+            return processCancelCommand(user);
+        if (isBasicCommand(input))
+            return processBasicCommand(user, input);
+        if (isInvalidQueryText(input))
+            return processInvalidInput(user);
 
         AppUserConfig config = fetchConfig(user);
-        if (config == null) return processConfigNotFoundMessage(user);
+        if (config == null)
+            return processConfigNotFoundMessage(user);
 
         return processValidQuery(user, config, input);
     }

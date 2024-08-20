@@ -11,27 +11,19 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_BACK;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE_CANCEL;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE_CONFIRM;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EDU_HIGHER;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EDU_NOT_IMPORTANT;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EDU_SECONDARY_VOCATIONAL;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_1_3_YEARS;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_3_6_YEARS;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_MORE_6_YEARS;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_NOT_IMPORTANT;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_NO_EXP;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SAVE;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SCHEDULE_FLEXIBLE;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SCHEDULE_FULL_DAY;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SCHEDULE_REMOTE;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SCHEDULE_SHIFT;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SELECTED;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_AREA;
@@ -43,10 +35,7 @@ import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_SCHEDU
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CANCEL_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRM_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.EDU_HIGHER_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.EDU_NOT_IMPORTANT_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.EDU_SAVE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.EDU_SECONDARY_VOCATIONAL_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.EXP_1_3_YEARS_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.EXP_3_6_YEARS_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.EXP_MORE_6_YEARS_PREFIX;
@@ -54,11 +43,7 @@ import static com.bipbup.utils.CommandMessageConstants.EXP_NOT_IMPORTANT_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.NO_EXP_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_FLEXIBLE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_FULL_DAY_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_REMOTE_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SAVE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SHIFT_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_AREA_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_CONFIG_NAME_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_EDUCATION_PREFIX;
@@ -70,24 +55,23 @@ import static com.bipbup.utils.CommandMessageConstants.UPDATE_SCHEDULE_PREFIX;
 @RequiredArgsConstructor
 @Component
 public class KeyboardMarkupFactory {
-    private final ConfigService configService;
-
-    private final Encoder encoder;
 
     private static final int BUTTONS_PER_ROW = 2;
+    private final ConfigService configService;
+    private final Encoder encoder;
 
-    public InlineKeyboardMarkup createUserConfigListKeyboard(AppUser appUser) {
-        var userConfigs = configService.getByUser(appUser);
+    public InlineKeyboardMarkup createUserConfigListKeyboard(final AppUser appUser) {
+        var configs = configService.getByUser(appUser);
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
-        userConfigs.forEach(c -> buttons.add(createButton(c.getConfigName(),
+        configs.forEach(c -> buttons.add(createButton(c.getConfigName(),
                 String.format("%s%s", QUERY_PREFIX, encoder.hashOf(c.getUserConfigId())))
         ));
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    public InlineKeyboardMarkup createConfigManagementKeyboard(String callbackData) {
+    public InlineKeyboardMarkup createConfigManagementKeyboard(final String callbackData) {
         var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
@@ -99,7 +83,7 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    public InlineKeyboardMarkup createDeleteConfirmationKeyboard(String callbackData) {
+    public InlineKeyboardMarkup createDeleteConfirmationKeyboard(final String callbackData) {
         var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
@@ -110,7 +94,7 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    public InlineKeyboardMarkup createUpdateConfigKeyboard(String callbackData) {
+    public InlineKeyboardMarkup createUpdateConfigKeyboard(final String callbackData) {
         var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
@@ -126,7 +110,7 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    public InlineKeyboardMarkup createExperienceSelectionKeyboard(String callbackData) {
+    public InlineKeyboardMarkup createExperienceSelectionKeyboard(final String callbackData) {
         var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
@@ -140,77 +124,52 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    public InlineKeyboardMarkup createEducationLevelSelectionKeyboard(AppUser user, String callbackData) {
+    public InlineKeyboardMarkup createEducationLevelSelectionKeyboard(final AppUser user, final String callbackData) {
         List<EducationLevelParam> selectedEducationLevels = configService.getSelectedEducationLevels(user.getTelegramId());
-
         var hash = extractHash(callbackData);
 
-        var buttonTexts = new HashMap<String, String>();
-        buttonTexts.put(EDU_NOT_IMPORTANT_PREFIX, BUTTON_TEXT_EDU_NOT_IMPORTANT);
-        buttonTexts.put(EDU_HIGHER_PREFIX, BUTTON_TEXT_EDU_HIGHER);
-        buttonTexts.put(EDU_SECONDARY_VOCATIONAL_PREFIX, BUTTON_TEXT_EDU_SECONDARY_VOCATIONAL);
+        var buttons = new ArrayList<>(Arrays.stream(EducationLevelParam.values())
+                .map(v -> createButton(
+                        v.getDescription() + (selectedEducationLevels.contains(v) ? BUTTON_TEXT_SELECTED : ""),
+                        v.getPrefix() + hash
+                ))
+                .toList());
 
-        var enumPrefixes = Map.of(
-                EducationLevelParam.NOT_REQUIRED_OR_NOT_SPECIFIED, EDU_NOT_IMPORTANT_PREFIX,
-                EducationLevelParam.HIGHER, EDU_HIGHER_PREFIX,
-                EducationLevelParam.SECONDARY_VOCATIONAL, EDU_SECONDARY_VOCATIONAL_PREFIX
-        );
-
-        selectedEducationLevels.forEach(l -> buttonTexts.put(enumPrefixes.get(l), buttonTexts.get(enumPrefixes.get(l)) + BUTTON_TEXT_SELECTED));
-
-        List<InlineKeyboardButton> buttons = List.of(
-                createButton(buttonTexts.get(EDU_NOT_IMPORTANT_PREFIX), EDU_NOT_IMPORTANT_PREFIX + hash),
-                createButton(buttonTexts.get(EDU_HIGHER_PREFIX), EDU_HIGHER_PREFIX + hash),
-                createButton(buttonTexts.get(EDU_SECONDARY_VOCATIONAL_PREFIX), EDU_SECONDARY_VOCATIONAL_PREFIX + hash),
-                createButton(BUTTON_TEXT_SAVE, EDU_SAVE_PREFIX + hash)
-        );
+        buttons.add(createButton(BUTTON_TEXT_SAVE, EDU_SAVE_PREFIX + hash));
 
         return createMarkup(buttons, 1);
     }
 
-    public InlineKeyboardMarkup createScheduleTypeSelectionKeyboard(AppUser user, String callbackData) {
-        List<ScheduleTypeParam> selectedScheduleTypes = configService.getSelectedScheduleTypes(user.getTelegramId());
-
+    public InlineKeyboardMarkup createScheduleTypeSelectionKeyboard(final AppUser user, final String callbackData) {
+        var selectedScheduleTypes = configService.getSelectedScheduleTypes(user.getTelegramId());
         var hash = extractHash(callbackData);
 
-        var buttonTexts = new HashMap<String, String>();
-        buttonTexts.put(SCHEDULE_FULL_DAY_PREFIX, BUTTON_TEXT_SCHEDULE_FULL_DAY);
-        buttonTexts.put(SCHEDULE_REMOTE_PREFIX, BUTTON_TEXT_SCHEDULE_REMOTE);
-        buttonTexts.put(SCHEDULE_FLEXIBLE_PREFIX, BUTTON_TEXT_SCHEDULE_FLEXIBLE);
-        buttonTexts.put(SCHEDULE_SHIFT_PREFIX, BUTTON_TEXT_SCHEDULE_SHIFT);
+        var buttons = new ArrayList<>(Arrays.stream(ScheduleTypeParam.values())
+                .map(v -> createButton(
+                        v.getDescription() + (selectedScheduleTypes.contains(v) ? BUTTON_TEXT_SELECTED : ""),
+                        v.getPrefix() + hash
+                ))
+                .toList());
 
-        var enumPrefixes = Map.of(
-                ScheduleTypeParam.FULL_DAY, SCHEDULE_FULL_DAY_PREFIX,
-                ScheduleTypeParam.REMOTE_WORKING, SCHEDULE_REMOTE_PREFIX,
-                ScheduleTypeParam.FLEXIBLE_SCHEDULE, SCHEDULE_FLEXIBLE_PREFIX,
-                ScheduleTypeParam.SHIFT_SCHEDULE, SCHEDULE_SHIFT_PREFIX
-        );
-
-        selectedScheduleTypes.forEach(t -> buttonTexts.put(enumPrefixes.get(t), buttonTexts.get(enumPrefixes.get(t)) + BUTTON_TEXT_SELECTED));
-
-        List<InlineKeyboardButton> buttons = List.of(
-                createButton(buttonTexts.get(SCHEDULE_FULL_DAY_PREFIX), SCHEDULE_FULL_DAY_PREFIX + hash),
-                createButton(buttonTexts.get(SCHEDULE_REMOTE_PREFIX), SCHEDULE_REMOTE_PREFIX + hash),
-                createButton(buttonTexts.get(SCHEDULE_FLEXIBLE_PREFIX), SCHEDULE_FLEXIBLE_PREFIX + hash),
-                createButton(buttonTexts.get(SCHEDULE_SHIFT_PREFIX), SCHEDULE_SHIFT_PREFIX + hash),
-                createButton(BUTTON_TEXT_SAVE, SCHEDULE_SAVE_PREFIX + hash)
-        );
+        buttons.add(createButton(BUTTON_TEXT_SAVE, SCHEDULE_SAVE_PREFIX + hash));
 
         return createMarkup(buttons, 1);
     }
 
-    private InlineKeyboardButton createButton(String text, String callbackData) {
+    private InlineKeyboardButton createButton(final String text, final String callbackData) {
         return InlineKeyboardButton.builder()
                 .text(text)
                 .callbackData(callbackData)
                 .build();
     }
 
-    private InlineKeyboardMarkup createMarkup(List<InlineKeyboardButton> buttons, int buttonsPerRow) {
+    private InlineKeyboardMarkup createMarkup(final List<InlineKeyboardButton> buttons, final int buttonsPerRow) {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
         for (int i = 0; i < buttons.size(); i += buttonsPerRow) {
             rows.add(buttons.subList(i, Math.min(i + buttonsPerRow, buttons.size())));
         }
+
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         markup.setKeyboard(rows);
         return markup;

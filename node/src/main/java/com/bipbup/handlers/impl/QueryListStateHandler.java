@@ -14,11 +14,13 @@ import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
 import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
 import static com.bipbup.utils.CommandMessageConstants.QUERY_OUTPUT_MESSAGE_TEMPLATE;
 import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
+import static java.lang.Boolean.TRUE;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class QueryListStateHandler implements StateHandler {
+
     private final UserService userService;
 
     private final ConfigService configService;
@@ -36,25 +38,26 @@ public class QueryListStateHandler implements StateHandler {
         return input.startsWith(QUERY_PREFIX);
     }
     
-    private Pair<String, Boolean> generateQueryOutput(final long configId) {
-        var optionalAppUserConfig = configService.getById(configId);
+    private Pair<Boolean, String> generateQueryOutput(final long configId) {
+        var optionalConfig = configService.getById(configId);
 
-        if (optionalAppUserConfig.isEmpty())
-            return Pair.of(CONFIG_NOT_FOUND_MESSAGE, false);
+        if (optionalConfig.isEmpty())
+            return Pair.of(false, CONFIG_NOT_FOUND_MESSAGE);
 
-        var config = optionalAppUserConfig.get();
+        var config = optionalConfig.get();
         var answer = String.format(QUERY_OUTPUT_MESSAGE_TEMPLATE, config.getConfigName(), config.getQueryText());
-        return Pair.of(answer, true);
+        return Pair.of(true, answer);
     }
 
     private String processQueryCommand(AppUser user, String input) {
-        var configId = decoder.getIdByCallback(input);
+        var configId = decoder.parseIdFromCallback(input);
         var answer = generateQueryOutput(configId);
 
-        if (answer.getSecond())
+        if (TRUE.equals(answer.getFirst())) {
             userService.saveUserState(user.getTelegramId(), QUERY_MENU_STATE);
+            log.info("User {} queried configuration with id {} and state set to QUERY_MENU_STATE", user.getFirstName(), configId);
+        }
 
-        log.info("User {} queried configuration with id {} and state set to QUERY_MENU_STATE", user.getFirstName(), configId);
-        return answer.getFirst();
+        return answer.getSecond();
     }
 }

@@ -1,6 +1,7 @@
 package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
+import com.bipbup.entity.AppUserConfig;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
@@ -19,6 +20,7 @@ import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRM_PREFIX;
 @RequiredArgsConstructor
 @Component
 public class QueryDeleteStateHandler implements StateHandler {
+
     private final UserService userService;
 
     private final ConfigService configService;
@@ -27,8 +29,10 @@ public class QueryDeleteStateHandler implements StateHandler {
 
     @Override
     public String process(AppUser user, String input) {
-        if (hasDeleteConfirmPrefix(input)) return processDeleteConfirmCommand(user, input);
-        if (isDeleteCancelCommand(input)) return processDeleteCancelCommand(user);
+        if (hasDeleteConfirmPrefix(input))
+            return processDeleteConfirmCommand(user, input);
+        if (isDeleteCancelCommand(input))
+            return processDeleteCancelCommand(user);
 
         return "";
     }
@@ -42,13 +46,14 @@ public class QueryDeleteStateHandler implements StateHandler {
     }
 
     private String processDeleteConfirmCommand(AppUser user, String input) {
-        var configId = decoder.getIdByCallback(input);
-        var optional = configService.getById(configId);
+        var configId = decoder.parseIdFromCallback(input);
+        var optionalConfig = configService.getById(configId);
 
         userService.clearUserState(user.getTelegramId());
 
-        if (optional.isPresent()) {
-            configService.delete(optional.get());
+        if (optionalConfig.isPresent()) {
+            var config = optionalConfig.get();
+            configService.delete(config);
             log.info("User {} deleted configuration with id {} and state set to BASIC_STATE", user.getFirstName(), configId);
             return CONFIG_DELETED_MESSAGE;
         } else {

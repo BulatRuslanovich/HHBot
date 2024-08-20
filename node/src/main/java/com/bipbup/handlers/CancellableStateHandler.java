@@ -31,7 +31,7 @@ public abstract class CancellableStateHandler implements StateHandler {
         return CANCEL_COMMAND.equals(input);
     }
 
-    protected boolean isBasicCommand(String input) {
+    protected boolean isBasicCommand(final String input) {
         return MYQUERIES_COMMAND.equals(input)
                 || NEWQUERY_COMMAND.equals(input);
     }
@@ -42,7 +42,7 @@ public abstract class CancellableStateHandler implements StateHandler {
         return COMMAND_CANCELLED_MESSAGE;
     }
 
-    protected String processBasicCommand(AppUser user, String input) {
+    protected String processBasicCommand(final AppUser user, final String input) {
         return basicStateHandler.process(user, input);
     }
 
@@ -61,15 +61,15 @@ public abstract class CancellableStateHandler implements StateHandler {
     }
 
     protected AppUserConfig fetchConfig(final AppUser user) {
-        if (!isConfigUpdating(user)) {
+        var telegramId = user.getTelegramId();
+        if (!isConfigUpdating(user))
             return fetchLastConfig(user);
-        }
 
-        var configId = configService.getSelectedConfigId(user.getTelegramId());
+        var configId = configService.getSelectedConfigId(telegramId);
         var optionalConfig = configService.getById(configId);
 
         if (optionalConfig.isPresent()) {
-            configService.clearConfigSelection(user.getTelegramId());
+            configService.clearConfigSelection(telegramId);
             return optionalConfig.get();
         }
 

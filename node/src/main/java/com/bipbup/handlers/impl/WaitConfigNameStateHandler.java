@@ -28,11 +28,16 @@ public class WaitConfigNameStateHandler extends CancellableStateHandler {
 
     @Override
     public String process(final AppUser user, final String input) {
-        if (isCancelCommand(input)) return processCancelCommand(user);
-        if (isBasicCommand(input)) return processBasicCommand(user, input);
-        if (isInvalidConfigName(input)) return processInvalidInput(user);
-        if (isConfigExist(user, input)) return processExistingConfig(user, input);
-        if (isConfigUpdating(user)) return processUpdatingConfig(user, input);
+        if (isCancelCommand(input))
+            return processCancelCommand(user);
+        if (isBasicCommand(input))
+            return processBasicCommand(user, input);
+        if (isInvalidConfigName(input))
+            return processInvalidInput(user);
+        if (isConfigExist(user, input))
+            return processExistingConfig(user, input);
+        if (isConfigUpdating(user))
+            return processUpdatingConfig(user, input);
 
         return processNewConfig(user, input);
     }
@@ -73,18 +78,20 @@ public class WaitConfigNameStateHandler extends CancellableStateHandler {
     }
 
     private String processUpdatingConfig(final AppUser user, final String configName) {
-        var configId = configService.getSelectedConfigId(user.getTelegramId());
-        configService.clearConfigSelection(user.getTelegramId());
+        var telegramId = user.getTelegramId();
+        var configId = configService.getSelectedConfigId(telegramId);
+        configService.clearConfigSelection(telegramId);
         return configService.getById(configId)
                 .map(c -> updateConfigName(user, c, configName))
                 .orElse(processConfigNotFoundMessage(user));
     }
 
     private String processNewConfig(final AppUser user, final String configName) {
-        AppUserConfig newConfig = createConfigWithOnlyName(user, configName);
+        var telegramId = user.getTelegramId();
+        var newConfig = createConfigWithOnlyName(user, configName);
         configService.save(newConfig);
-        configService.clearConfigSelection(user.getTelegramId());
-        userService.saveUserState(user.getTelegramId(), WAIT_QUERY_STATE);
+        configService.clearConfigSelection(telegramId);
+        userService.saveUserState(telegramId, WAIT_QUERY_STATE);
         log.info("User {} created config \"{}\" and state set to WAIT_QUERY_STATE", user.getFirstName(), configName);
         return String.format(ENTER_QUERY_MESSAGE_TEMPLATE, configName);
     }

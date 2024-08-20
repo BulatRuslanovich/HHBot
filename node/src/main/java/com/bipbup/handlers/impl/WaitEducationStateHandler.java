@@ -6,6 +6,7 @@ import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import com.bipbup.utils.Decoder;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -21,44 +22,36 @@ import static com.bipbup.utils.CommandMessageConstants.SELECT_EDUCATION_MESSAGE_
 import static com.bipbup.utils.CommandMessageConstants.WAIT_EDU_STATE_PREFIX;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class WaitEducationStateHandler implements StateHandler {
-    ConfigService configService;
 
-    UserService userService;
+    private final ConfigService configService;
 
-    Decoder decoder;
+    private final UserService userService;
 
-    private final Map<String, EducationLevelParam> educationLevels;
+    private final Decoder decoder;
 
-    public WaitEducationStateHandler(final ConfigService configService,
-                                     UserService userService,
-                                     final Decoder decoder) {
-        this.configService = configService;
-        this.userService = userService;
-        this.decoder = decoder;
-
-        this.educationLevels = Map.of(
-                EDU_NOT_IMPORTANT_PREFIX, EducationLevelParam.NOT_REQUIRED_OR_NOT_SPECIFIED,
-                EDU_HIGHER_PREFIX, EducationLevelParam.HIGHER,
-                EDU_SECONDARY_VOCATIONAL_PREFIX, EducationLevelParam.SECONDARY_VOCATIONAL
-        );
-    }
+    private static final Map<String, EducationLevelParam> educationLevels = Map.of(
+            EDU_NOT_IMPORTANT_PREFIX, EducationLevelParam.NOT_REQUIRED_OR_NOT_SPECIFIED,
+            EDU_HIGHER_PREFIX, EducationLevelParam.HIGHER,
+            EDU_SECONDARY_VOCATIONAL_PREFIX, EducationLevelParam.SECONDARY_VOCATIONAL
+    );
 
     @Override
-    public String process(AppUser user, String input) {
+    public String process(final AppUser user, final String input) {
         if (hasSavePrefix(input)) return processSaveEducationLevelsCommand(user, input);
         if (hasEducationPrefix(input)) return processSetEducationLevelCommand(user, input);
 
         return "";
     }
 
-    private String processSaveEducationLevelsCommand(AppUser user, String input) {
-        var configId = decoder.getIdByCallback(input);
-        var configOptional = configService.getById(configId);
+    private String processSaveEducationLevelsCommand(final AppUser user, final String input) {
+        var configId = decoder.parseIdFromCallback(input);
+        var optionalConfig = configService.getById(configId);
 
-        if (configOptional.isPresent()) {
-            var config = configOptional.get();
+        if (optionalConfig.isPresent()) {
+            var config = optionalConfig.get();
             var selectedEducationLevels = configService.getSelectedEducationLevels(user.getTelegramId());
             config.setEducationLevels(selectedEducationLevels.toArray(new EducationLevelParam[0]));
 
@@ -68,17 +61,18 @@ public class WaitEducationStateHandler implements StateHandler {
 
             log.info("User {} saved education levels for configuration {} and state set to BASIC_STATE", user.getFirstName(), config.getConfigName());
             return String.format(EDU_SAVE_MESSAGE_TEMPLATE, config.getConfigName());
-        } else
+        } else {
             return processConfigNotFoundMessage(user, configId);
+        }
     }
 
-    private String processSetEducationLevelCommand(AppUser user, String input) {
+    private String processSetEducationLevelCommand(final AppUser user, final String input) {
         var prefix = input.substring(0, input.lastIndexOf('_') + 1);
-        var configId = decoder.getIdByCallback(input);
-        var configOptional = configService.getById(configId);
+        var configId = decoder.parseIdFromCallback(input);
+        var optionalConfig = configService.getById(configId);
 
-        if (configOptional.isPresent()) {
-            var config = configOptional.get();
+        if (optionalConfig.isPresent()) {
+            var config = optionalConfig.get();
             var currentEducationLevel = educationLevels.get(prefix);
             var selectedEducationLevels = configService.getSelectedEducationLevels(user.getTelegramId());
 
@@ -97,17 +91,17 @@ public class WaitEducationStateHandler implements StateHandler {
             return processConfigNotFoundMessage(user, configId);
     }
 
-    private String processConfigNotFoundMessage(final AppUser user, long configId) {
+    private String processConfigNotFoundMessage(final AppUser user, final long configId) {
         userService.clearUserState(user.getTelegramId());
         log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
         return CONFIG_NOT_FOUND_MESSAGE;
     }
 
-    private boolean hasSavePrefix(String input) {
+    private boolean hasSavePrefix(final String input) {
         return input.startsWith(EDU_SAVE_PREFIX);
     }
 
-    private boolean hasEducationPrefix(String input) {
+    private boolean hasEducationPrefix(final String input) {
         return input.startsWith(WAIT_EDU_STATE_PREFIX);
     }
 }
