@@ -1,9 +1,9 @@
 package com.bipbup.service;
 
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import com.bipbup.wrapper.impl.EditMessageWrapper;
+import com.bipbup.wrapper.impl.SendMessageWrapper;
 
 public interface AnswerConsumer {
-    void consumeSendMessage(SendMessage sendMessage);
-    void consumeEditMessage(EditMessageText editMessage);
+    void consumeSendMessage(SendMessageWrapper sendMessage);
+    void consumeEditMessage(EditMessageWrapper editMessage);
 }
