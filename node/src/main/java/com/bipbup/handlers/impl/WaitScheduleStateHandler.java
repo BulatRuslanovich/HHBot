@@ -10,15 +10,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
 import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_FLEXIBLE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_FULL_DAY_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_REMOTE_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SAVE_MESSAGE_TEMPLATE;
 import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SAVE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SHIFT_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.SELECT_SCHEDULE_MESSAGE_TEMPLATE;
 import static com.bipbup.utils.CommandMessageConstants.WAIT_SCHEDULE_STATE_PREFIX;
 
@@ -32,13 +26,6 @@ public class WaitScheduleStateHandler implements StateHandler {
     private final UserService userService;
 
     private final Decoder decoder;
-
-    private static final Map<String, ScheduleTypeParam> scheduleTypes = Map.of(
-            SCHEDULE_FULL_DAY_PREFIX, ScheduleTypeParam.FULL_DAY,
-            SCHEDULE_REMOTE_PREFIX, ScheduleTypeParam.REMOTE_WORKING,
-            SCHEDULE_FLEXIBLE_PREFIX, ScheduleTypeParam.FLEXIBLE_SCHEDULE,
-            SCHEDULE_SHIFT_PREFIX, ScheduleTypeParam.SHIFT_SCHEDULE
-    );
 
     @Override
     public String process(final AppUser user, final String input) {
@@ -79,7 +66,7 @@ public class WaitScheduleStateHandler implements StateHandler {
         if (optionalConfig.isPresent()) {
             var telegramId = user.getTelegramId();
             var config = optionalConfig.get();
-            var currentScheduleType = scheduleTypes.get(prefix);
+            var currentScheduleType = ScheduleTypeParam.valueOfPrefix(prefix);
             var selectedScheduleTypes = configService.getSelectedScheduleTypes(telegramId);
 
             if (selectedScheduleTypes.contains(currentScheduleType)) {

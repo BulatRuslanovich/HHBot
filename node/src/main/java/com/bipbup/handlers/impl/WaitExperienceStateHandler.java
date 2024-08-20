@@ -10,15 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
 import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.EXP_1_3_YEARS_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.EXP_3_6_YEARS_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.EXP_MORE_6_YEARS_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.EXP_NOT_IMPORTANT_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.EXP_SET_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.NO_EXP_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.WAIT_EXP_STATE_PREFIX;
 
 @Slf4j
@@ -31,14 +24,6 @@ public class WaitExperienceStateHandler implements StateHandler {
     private final UserService userService;
 
     private final Decoder decoder;
-
-    private static final Map<String, ExperienceParam> experiences = Map.of(
-            EXP_NOT_IMPORTANT_PREFIX, ExperienceParam.NO_MATTER,
-            NO_EXP_PREFIX, ExperienceParam.NO_EXPERIENCE,
-            EXP_1_3_YEARS_PREFIX, ExperienceParam.BETWEEN_1_AND_3,
-            EXP_3_6_YEARS_PREFIX, ExperienceParam.BETWEEN_3_AND_6,
-            EXP_MORE_6_YEARS_PREFIX, ExperienceParam.MORE_THAN_6
-    );
 
     @Override
     public String process(final AppUser user, final String input) {
@@ -56,7 +41,7 @@ public class WaitExperienceStateHandler implements StateHandler {
 
         if (optionalConfig.isPresent()) {
             var config = optionalConfig.get();
-            var experience = experiences.get(prefix);
+            var experience = ExperienceParam.valueOfPrefix(prefix);
             config.setExperience(experience);
             configService.save(config);
 

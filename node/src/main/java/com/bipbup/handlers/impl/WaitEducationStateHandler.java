@@ -10,14 +10,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
 import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.EDU_HIGHER_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.EDU_NOT_IMPORTANT_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.EDU_SAVE_MESSAGE_TEMPLATE;
 import static com.bipbup.utils.CommandMessageConstants.EDU_SAVE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.EDU_SECONDARY_VOCATIONAL_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.SELECT_EDUCATION_MESSAGE_TEMPLATE;
 import static com.bipbup.utils.CommandMessageConstants.WAIT_EDU_STATE_PREFIX;
 
@@ -32,16 +27,12 @@ public class WaitEducationStateHandler implements StateHandler {
 
     private final Decoder decoder;
 
-    private static final Map<String, EducationLevelParam> educationLevels = Map.of(
-            EDU_NOT_IMPORTANT_PREFIX, EducationLevelParam.NOT_REQUIRED_OR_NOT_SPECIFIED,
-            EDU_HIGHER_PREFIX, EducationLevelParam.HIGHER,
-            EDU_SECONDARY_VOCATIONAL_PREFIX, EducationLevelParam.SECONDARY_VOCATIONAL
-    );
-
     @Override
     public String process(final AppUser user, final String input) {
-        if (hasSavePrefix(input)) return processSaveEducationLevelsCommand(user, input);
-        if (hasEducationPrefix(input)) return processSetEducationLevelCommand(user, input);
+        if (hasSavePrefix(input))
+            return processSaveEducationLevelsCommand(user, input);
+        if (hasEducationPrefix(input))
+            return processSetEducationLevelCommand(user, input);
 
         return "";
     }
@@ -73,7 +64,7 @@ public class WaitEducationStateHandler implements StateHandler {
 
         if (optionalConfig.isPresent()) {
             var config = optionalConfig.get();
-            var currentEducationLevel = educationLevels.get(prefix);
+            var currentEducationLevel = EducationLevelParam.valueOfPrefix(prefix);
             var selectedEducationLevels = configService.getSelectedEducationLevels(user.getTelegramId());
 
             if (selectedEducationLevels.contains(currentEducationLevel)) {

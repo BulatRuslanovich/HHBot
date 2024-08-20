@@ -4,6 +4,8 @@ import com.bipbup.enums.EnumParam;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Arrays;
+
 @Getter
 @RequiredArgsConstructor
 public enum ScheduleTypeParam implements EnumParam {
@@ -15,4 +17,10 @@ public enum ScheduleTypeParam implements EnumParam {
     private final String param;
     private final String description;
     private final String prefix;
+
+    public static ScheduleTypeParam valueOfPrefix(final String prefix) {
+        return Arrays.stream(values())
+                .filter(e -> e.prefix.equals(prefix))
+                .findFirst().orElseThrow();
+    }
 }

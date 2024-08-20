@@ -1,7 +1,10 @@
 package com.bipbup.utils.factory;
 
 import com.bipbup.entity.AppUser;
+import com.bipbup.entity.AppUserConfig;
+import com.bipbup.enums.EnumParam;
 import com.bipbup.enums.impl.EducationLevelParam;
+import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.enums.impl.ScheduleTypeParam;
 import com.bipbup.service.ConfigService;
 import com.bipbup.utils.Encoder;
@@ -18,11 +21,6 @@ import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_BACK;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE_CANCEL;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE_CONFIRM;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_1_3_YEARS;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_3_6_YEARS;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_MORE_6_YEARS;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_EXP_NOT_IMPORTANT;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_NO_EXP;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SAVE;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SELECTED;
 import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE;
@@ -36,12 +34,7 @@ import static com.bipbup.utils.CommandMessageConstants.DELETE_CANCEL_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRM_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.EDU_SAVE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.EXP_1_3_YEARS_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.EXP_3_6_YEARS_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.EXP_MORE_6_YEARS_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.EXP_NOT_IMPORTANT_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
-import static com.bipbup.utils.CommandMessageConstants.NO_EXP_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SAVE_PREFIX;
 import static com.bipbup.utils.CommandMessageConstants.UPDATE_AREA_PREFIX;
@@ -57,18 +50,23 @@ import static com.bipbup.utils.CommandMessageConstants.UPDATE_SCHEDULE_PREFIX;
 public class KeyboardMarkupFactory {
 
     private static final int BUTTONS_PER_ROW = 2;
+
     private final ConfigService configService;
+
     private final Encoder encoder;
 
     public InlineKeyboardMarkup createUserConfigListKeyboard(final AppUser appUser) {
         var configs = configService.getByUser(appUser);
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
-        configs.forEach(c -> buttons.add(createButton(c.getConfigName(),
-                String.format("%s%s", QUERY_PREFIX, encoder.hashOf(c.getUserConfigId())))
-        ));
+        configs.forEach(c -> buttons.add(createButtonFromConfig(c)));
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
+    }
+
+    private InlineKeyboardButton createButtonFromConfig(final AppUserConfig config) {
+        var callback = QUERY_PREFIX + encoder.hashOf(config.getUserConfigId());
+        return createButton(config.getConfigName(), callback);
     }
 
     public InlineKeyboardMarkup createConfigManagementKeyboard(final String callbackData) {
@@ -113,26 +111,19 @@ public class KeyboardMarkupFactory {
     public InlineKeyboardMarkup createExperienceSelectionKeyboard(final String callbackData) {
         var hash = extractHash(callbackData);
 
-        List<InlineKeyboardButton> buttons = List.of(
-                createButton(BUTTON_TEXT_NO_EXP, NO_EXP_PREFIX + hash),
-                createButton(BUTTON_TEXT_EXP_1_3_YEARS, EXP_1_3_YEARS_PREFIX + hash),
-                createButton(BUTTON_TEXT_EXP_3_6_YEARS, EXP_3_6_YEARS_PREFIX + hash),
-                createButton(BUTTON_TEXT_EXP_MORE_6_YEARS, EXP_MORE_6_YEARS_PREFIX + hash),
-                createButton(BUTTON_TEXT_EXP_NOT_IMPORTANT, EXP_NOT_IMPORTANT_PREFIX + hash)
-        );
+        var buttons = Arrays.stream(ExperienceParam.values())
+                .map(p -> createButton(p.getDescription(), p.getPrefix() + hash))
+                .toList();
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
     public InlineKeyboardMarkup createEducationLevelSelectionKeyboard(final AppUser user, final String callbackData) {
-        List<EducationLevelParam> selectedEducationLevels = configService.getSelectedEducationLevels(user.getTelegramId());
+        var selectedLevels = configService.getSelectedEducationLevels(user.getTelegramId());
         var hash = extractHash(callbackData);
 
         var buttons = new ArrayList<>(Arrays.stream(EducationLevelParam.values())
-                .map(v -> createButton(
-                        v.getDescription() + (selectedEducationLevels.contains(v) ? BUTTON_TEXT_SELECTED : ""),
-                        v.getPrefix() + hash
-                ))
+                .map(p -> createButtonFromEnum(p, selectedLevels, hash))
                 .toList());
 
         buttons.add(createButton(BUTTON_TEXT_SAVE, EDU_SAVE_PREFIX + hash));
@@ -141,19 +132,26 @@ public class KeyboardMarkupFactory {
     }
 
     public InlineKeyboardMarkup createScheduleTypeSelectionKeyboard(final AppUser user, final String callbackData) {
-        var selectedScheduleTypes = configService.getSelectedScheduleTypes(user.getTelegramId());
+        var selectedTypes = configService.getSelectedScheduleTypes(user.getTelegramId());
         var hash = extractHash(callbackData);
 
         var buttons = new ArrayList<>(Arrays.stream(ScheduleTypeParam.values())
-                .map(v -> createButton(
-                        v.getDescription() + (selectedScheduleTypes.contains(v) ? BUTTON_TEXT_SELECTED : ""),
-                        v.getPrefix() + hash
-                ))
+                .map(v -> createButtonFromEnum(v, selectedTypes, hash))
                 .toList());
 
         buttons.add(createButton(BUTTON_TEXT_SAVE, SCHEDULE_SAVE_PREFIX + hash));
 
         return createMarkup(buttons, 1);
+    }
+
+    private InlineKeyboardButton createButtonFromEnum(final EnumParam enumParam, final List<? extends EnumParam> params, final String hash) {
+        String text = enumParam.getDescription();
+
+        if (params.contains(enumParam))
+            text += BUTTON_TEXT_SELECTED;
+
+        String callback = enumParam.getPrefix() + hash;
+        return createButton(text, callback);
     }
 
     private InlineKeyboardButton createButton(final String text, final String callbackData) {

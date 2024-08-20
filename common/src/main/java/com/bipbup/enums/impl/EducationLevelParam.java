@@ -4,6 +4,8 @@ import com.bipbup.enums.EnumParam;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Arrays;
+
 @Getter
 @RequiredArgsConstructor
 public enum EducationLevelParam implements EnumParam {
@@ -14,4 +16,10 @@ public enum EducationLevelParam implements EnumParam {
     private final String param;
     private final String description;
     private final String prefix;
+
+    public static EducationLevelParam valueOfPrefix(final String prefix) {
+        return Arrays.stream(values())
+                .filter(e -> e.prefix.equals(prefix))
+                .findFirst().orElseThrow();
+    }
 }
