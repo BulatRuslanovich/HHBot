@@ -16,7 +16,9 @@ public enum ExperienceParam implements EnumParam {
     MORE_THAN_6("moreThan6", "Более 6 лет", "exp_more_6_years_");
 
     private final String param;
+
     private final String description;
+
     private final String prefix;
 
     public static ExperienceParam valueOfPrefix(final String prefix) {

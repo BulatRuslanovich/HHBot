@@ -10,5 +10,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 @NoArgsConstructor
 @AllArgsConstructor(staticName = "of")
 public class SendMessageWrapper implements MessageWrapper {
+
     private SendMessage message;
 }

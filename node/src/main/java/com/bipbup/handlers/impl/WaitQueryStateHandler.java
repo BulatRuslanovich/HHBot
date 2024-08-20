@@ -44,7 +44,9 @@ public class WaitQueryStateHandler extends CancellableStateHandler {
                 && input.length() <= MAX_QUERY_LENGTH);
     }
 
-    private String processValidQuery(final AppUser user, final AppUserConfig config, final String input) {
+    private String processValidQuery(final AppUser user,
+                                     final AppUserConfig config,
+                                     final String input) {
         config.setQueryText(input);
         configService.save(config);
         userService.clearUserState(user.getTelegramId());

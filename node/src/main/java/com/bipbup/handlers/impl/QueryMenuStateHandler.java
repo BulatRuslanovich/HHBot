@@ -37,7 +37,7 @@ public class QueryMenuStateHandler implements StateHandler {
     private final BasicStateHandler basicStateHandler;
 
     @Override
-    public String process(AppUser user, String input) {
+    public String process(final AppUser user, final String input) {
         if (isBackToQueryListCommand(input))
             return processBackToQueryListCommand(user);
         if (hasDeletePrefix(input))
@@ -48,23 +48,23 @@ public class QueryMenuStateHandler implements StateHandler {
         return "";
     }
 
-    private String processBackToQueryListCommand(AppUser user) {
+    private String processBackToQueryListCommand(final AppUser user) {
         return basicStateHandler.process(user, MYQUERIES_COMMAND);
     }
 
-    private boolean isBackToQueryListCommand(String input) {
+    private boolean isBackToQueryListCommand(final String input) {
         return MYQUERIES_COMMAND.equals(input);
     }
 
-    private boolean hasUpdatePrefix(String input) {
+    private boolean hasUpdatePrefix(final String input) {
         return input.startsWith(UPDATE_PREFIX);
     }
 
-    private boolean hasDeletePrefix(String input) {
+    private boolean hasDeletePrefix(final String input) {
         return input.startsWith(DELETE_PREFIX);
     }
 
-    private void appendEnumParams(StringBuilder output, EnumParam[] values, String prefix) {
+    private void appendEnumParams(StringBuilder output, final EnumParam[] values, final String prefix) {
         if (values != null && values.length > 0) {
             output.append(prefix);
 
@@ -77,7 +77,7 @@ public class QueryMenuStateHandler implements StateHandler {
     }
 
     //TODO: сделать по красоте
-    private String showDetailedQueryOutput(AppUserConfig config) {
+    private String showDetailedQueryOutput(final AppUserConfig config) {
         StringBuilder output = new StringBuilder()
                 .append(config.getConfigName())
                 .append("\nТекст запроса: ").append(config.getQueryText())
@@ -90,7 +90,7 @@ public class QueryMenuStateHandler implements StateHandler {
         return output.toString();
     }
 
-    private String processConfigActionCommand(AppUser user, String input, AppUserState state) {
+    private String processConfigActionCommand(final AppUser user, final String input, final AppUserState state) {
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);
 

@@ -28,7 +28,7 @@ public class WaitAreaStateHandler extends CancellableStateHandler {
     }
 
     @Override
-    public String process(AppUser user, String input) {
+    public String process(final AppUser user, final String input) {
         if (isCancelCommand(input))
             return processCancelCommand(user);
         if (isBasicCommand(input))

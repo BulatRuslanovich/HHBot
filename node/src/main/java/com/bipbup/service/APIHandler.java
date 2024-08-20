@@ -6,5 +6,6 @@ import com.bipbup.entity.AppUserConfig;
 import java.util.List;
 
 public interface APIHandler {
-    List<VacancyDTO> getNewVacancies(AppUserConfig appUserConfig);
+
+    List<VacancyDTO> getNewVacancies(final AppUserConfig config);
 }

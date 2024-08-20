@@ -14,7 +14,9 @@ public enum EducationLevelParam implements EnumParam {
     SECONDARY_VOCATIONAL("special_secondary", "Среднее специальное", "edu_special_secondary_");
 
     private final String param;
+
     private final String description;
+
     private final String prefix;
 
     public static EducationLevelParam valueOfPrefix(final String prefix) {

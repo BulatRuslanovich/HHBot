@@ -38,15 +38,15 @@ public class BasicStateHandler implements StateHandler {
         return "";
     }
 
-    private boolean isStartCommand(String input) {
+    private boolean isStartCommand(final String input) {
         return START_COMMAND.equals(input);
     }
 
-    private boolean isNewQueryCommand(String input) {
+    private boolean isNewQueryCommand(final String input) {
         return NEWQUERY_COMMAND.equals(input);
     }
 
-    private boolean isMyQueriesCommand(String input) {
+    private boolean isMyQueriesCommand(final String input) {
         return MYQUERIES_COMMAND.equals(input);
     }
 

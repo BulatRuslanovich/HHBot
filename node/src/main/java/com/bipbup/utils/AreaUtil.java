@@ -2,7 +2,6 @@ package com.bipbup.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -16,6 +15,7 @@ import static java.net.http.HttpResponse.BodyHandlers.ofString;
 @Slf4j
 @Component
 public class AreaUtil {
+
     private static final String URL = "https://api.hh.ru/areas";
     private static final int HTTP_STATUS_OK = 200;
 

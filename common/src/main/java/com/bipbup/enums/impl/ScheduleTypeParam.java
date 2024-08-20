@@ -15,7 +15,9 @@ public enum ScheduleTypeParam implements EnumParam {
     SHIFT_SCHEDULE("shift", "Сменный график", "schedule_shift_");
 
     private final String param;
+
     private final String description;
+
     private final String prefix;
 
     public static ScheduleTypeParam valueOfPrefix(final String prefix) {

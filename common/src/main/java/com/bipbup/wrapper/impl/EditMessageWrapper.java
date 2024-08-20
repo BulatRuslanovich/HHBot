@@ -10,5 +10,6 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 @NoArgsConstructor
 @AllArgsConstructor(staticName = "of")
 public class EditMessageWrapper implements MessageWrapper {
+
     private EditMessageText message;
 }

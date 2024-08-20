@@ -48,13 +48,13 @@ public class APIHandlerImpl implements APIHandler {
     private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
 
     @Override
-    public List<VacancyDTO> getNewVacancies(final AppUserConfig appUserConfig) {
+    public List<VacancyDTO> getNewVacancies(final AppUserConfig config) {
         var request = apiConnection.createRequestWithHeaders();
-        var pageCount = getPageCount(request, appUserConfig);
+        var pageCount = getPageCount(request, config);
         List<VacancyDTO> vacancyDTOList = new ArrayList<>();
 
         for (int i = 0; i <= pageCount; i++) {
-            processVacancyPage(appUserConfig, request, i, vacancyDTOList);
+            processVacancyPage(config, request, i, vacancyDTOList);
         }
 
         return vacancyDTOList;
@@ -68,9 +68,7 @@ public class APIHandlerImpl implements APIHandler {
 
         if (!isEmptyJson(jsonNode)) {
             var vacanciesOnCurrentPage = jsonNode.get("items");
-            addVacanciesFromPage(appUserConfig,
-                    vacancyDTOList,
-                    vacanciesOnCurrentPage);
+            addVacanciesFromPage(appUserConfig, vacancyDTOList, vacanciesOnCurrentPage);
         }
     }
 
@@ -81,9 +79,8 @@ public class APIHandlerImpl implements APIHandler {
             var vacancy = vacanciesOnCurrentPage.get(j);
             var publishedAt = getPublishedAtFromJson(vacancy);
 
-            if (publishedAt.isBefore(appUserConfig.getLastNotificationTime())) {
+            if (publishedAt.isBefore(appUserConfig.getLastNotificationTime()))
                 return;
-            }
 
             vacancyDTOList.add(VacancyFactory.createVacancyDTO(vacancy, publishedAt));
         }
@@ -96,9 +93,8 @@ public class APIHandlerImpl implements APIHandler {
     private static LocalDateTime getPublishedAtFromJson(final JsonNode vacancy) {
         var timestamp = vacancy.get("published_at").asText();
 
-        if (timestamp.length() == TIMESTAMP_FULL_LENGTH) {
+        if (timestamp.length() == TIMESTAMP_FULL_LENGTH)
             timestamp = timestamp.substring(0, TIMESTAMP_TRIMMED_LENGTH);
-        }
 
         return LocalDateTime.parse(timestamp,
                 DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN));
@@ -114,12 +110,8 @@ public class APIHandlerImpl implements APIHandler {
     private JsonNode getVacancyPage(final HttpEntity<HttpHeaders> request,
                                     final int pageNumber,
                                     final AppUserConfig appUserConfig) {
-        var vacancySearchUri =
-                generateVacancySearchUri(pageNumber, appUserConfig);
-        var response = restTemplate.exchange(vacancySearchUri,
-                HttpMethod.GET,
-                request,
-                String.class).getBody();
+        var vacancySearchUri = generateVacancySearchUri(pageNumber, appUserConfig);
+        var response = restTemplate.exchange(vacancySearchUri, HttpMethod.GET, request, String.class).getBody();
         JsonNode jsonNode = null;
 
         try {
@@ -131,8 +123,7 @@ public class APIHandlerImpl implements APIHandler {
         return jsonNode;
     }
 
-    private String generateVacancySearchUri(final int pageNumber,
-                                            final AppUserConfig config) {
+    private String generateVacancySearchUri(final int pageNumber, final AppUserConfig config) {
         var areaId = AreaUtil.getAreaIdByName(config.getArea());
 
         var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
@@ -154,6 +145,8 @@ public class APIHandlerImpl implements APIHandler {
                     .map(EducationLevelParam::getParam).toList();
             builder.queryParam("education", educationLevels);
         }
+
+        // TODO: add ScheduleType as param
 
         return builder.build().toUriString();
     }
