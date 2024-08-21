@@ -1,7 +1,6 @@
 package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
-import com.bipbup.enums.AppUserState;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
@@ -100,5 +99,3 @@ public class QueryUpdateStateHandler implements StateHandler {
         }
     }
 }
-
-record ActionProperties(AppUserState state, String output, boolean saveSelection) {}

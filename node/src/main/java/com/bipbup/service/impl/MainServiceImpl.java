@@ -214,5 +214,4 @@ public class MainServiceImpl implements MainService {
     }
 }
 
-record CallbackHandlerProperties(AppUserState state, StateHandler handler, String prefix) {}
 
