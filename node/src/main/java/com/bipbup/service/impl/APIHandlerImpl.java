@@ -8,7 +8,6 @@ import com.bipbup.enums.impl.ScheduleTypeParam;
 import com.bipbup.service.APIConnection;
 import com.bipbup.service.APIHandler;
 import com.bipbup.service.AreaService;
-import com.bipbup.utils.factory.VacancyFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,70 +26,43 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+import static com.bipbup.utils.factory.VacancyFactory.createVacancyDTO;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class APIHandlerImpl implements APIHandler {
 
-    @Value("${headhunter.endpoint.searchForVacancy}")
-    private String searchForVacancyURI;
-
-    private final APIConnection apiConnection;
-
-    private final ObjectMapper objectMapper;
-
-    private final RestTemplate restTemplate;
-
-    private final AreaService areaService;
-
+    public static final int COUNT_OF_DAYS = 2;
     private static final int COUNT_OF_VACANCIES_IN_PAGE = 100;
-    public static final int COUNT_OF_DAYS = 4;
     private static final int TIMESTAMP_FULL_LENGTH = 24;
     private static final int TIMESTAMP_TRIMMED_LENGTH = 19;
     private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
+    private final APIConnection apiConnection;
+    private final ObjectMapper objectMapper;
+    private final RestTemplate restTemplate;
+    private final AreaService areaService;
+    @Value("${headhunter.endpoint.searchForVacancy}")
+    private String searchForVacancyURI;
 
-    @Override
-    public List<VacancyDTO> getNewVacancies(final AppUserConfig config) {
-        var request = apiConnection.createRequestWithHeaders();
-        var pageCount = getPageCount(request, config);
-        List<VacancyDTO> vacancyDTOList = new ArrayList<>();
+    private static void addVacanciesFromPage(final AppUserConfig config,
+                                             final List<VacancyDTO> vacancyList,
+                                             final JsonNode vacanciesOnPage) {
+        vacanciesOnPage.forEach(v -> {
+            var publishedAt = getPublishedAtFromJson(v);
 
-        for (int i = 0; i <= pageCount; i++) {
-            processVacancyPage(config, request, i, vacancyDTOList);
-        }
-
-        return vacancyDTOList;
-    }
-
-    private void processVacancyPage(final AppUserConfig appUserConfig,
-                                    final HttpEntity<HttpHeaders> request,
-                                    final int pageNum,
-                                    final List<VacancyDTO> vacancyDTOList) {
-        var jsonNode = getVacancyPage(request, pageNum, appUserConfig);
-
-        if (!isEmptyJson(jsonNode)) {
-            var vacanciesOnCurrentPage = jsonNode.get("items");
-            addVacanciesFromPage(appUserConfig, vacancyDTOList, vacanciesOnCurrentPage);
-        }
-    }
-
-    private static void addVacanciesFromPage(final AppUserConfig appUserConfig,
-                                             final List<VacancyDTO> vacancyDTOList,
-                                             final JsonNode vacanciesOnCurrentPage) {
-        for (int j = 0; j < vacanciesOnCurrentPage.size(); j++) {
-            var vacancy = vacanciesOnCurrentPage.get(j);
-            var publishedAt = getPublishedAtFromJson(vacancy);
-
-            if (publishedAt.isBefore(appUserConfig.getLastNotificationTime()))
+            if (publishedAt.isBefore(config.getLastNotificationTime()))
                 return;
 
-            vacancyDTOList.add(VacancyFactory.createVacancyDTO(vacancy, publishedAt));
-        }
+            vacancyList.add(createVacancyDTO(v, publishedAt));
+        });
     }
 
-    private static boolean isEmptyJson(final JsonNode jsonNode) {
-        return jsonNode == null || jsonNode.get("items").isEmpty();
+    private static boolean isPresentJson(final JsonNode jsonNode) {
+        return jsonNode != null && !jsonNode.isEmpty();
     }
 
     private static LocalDateTime getPublishedAtFromJson(final JsonNode vacancy) {
@@ -103,58 +75,110 @@ public class APIHandlerImpl implements APIHandler {
                 DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN));
     }
 
-    private int getPageCount(final HttpEntity<HttpHeaders> request,
-                             final AppUserConfig appUserConfig) {
-        var firstPage = getVacancyPage(request, 0, appUserConfig);
-        var count = firstPage.get("found").asText();
-        return Integer.parseInt(count) / COUNT_OF_VACANCIES_IN_PAGE;
-    }
+    @Override
+    public List<VacancyDTO> getNewVacancies(final AppUserConfig config) {
+        var request = apiConnection.createRequestWithHeaders();
+        var pageCount = getPageCount(request, config);
+        List<VacancyDTO> vacancyList = new ArrayList<>();
 
-    private JsonNode getVacancyPage(final HttpEntity<HttpHeaders> request,
-                                    final int pageNumber,
-                                    final AppUserConfig appUserConfig) {
-        var vacancySearchUri = generateVacancySearchUri(pageNumber, appUserConfig);
-        var response = restTemplate.exchange(vacancySearchUri, HttpMethod.GET, request, String.class).getBody();
-        JsonNode jsonNode = null;
-
-        try {
-            jsonNode = objectMapper.readTree(response);
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
+        for (int i = 0; i <= pageCount; i++) {
+            processVacancyPage(config, request, i, vacancyList);
         }
 
-        return jsonNode;
+        return vacancyList;
+    }
+
+    private void processVacancyPage(final AppUserConfig config,
+                                    final HttpEntity<HttpHeaders> request,
+                                    final int pageNum,
+                                    final List<VacancyDTO> vacancyList) {
+        var jsonPage = fetchVacancyPage(request, pageNum, config);
+
+        if (isPresentJson(jsonPage))
+            addVacanciesFromPage(config, vacancyList, jsonPage.get("items"));
+    }
+
+    private int getPageCount(final HttpEntity<HttpHeaders> request,
+                             final AppUserConfig config) {
+        var firstPage = fetchVacancyPage(request, 0, config);
+
+        if (isPresentJson(firstPage)) {
+            var totalCount = firstPage.get("found").asInt(0);
+            return (int) Math.ceil((double) totalCount / COUNT_OF_VACANCIES_IN_PAGE);
+        }
+
+        return 0;
+    }
+
+    private JsonNode fetchVacancyPage(final HttpEntity<HttpHeaders> request,
+                                      final int pageNumber,
+                                      final AppUserConfig config) {
+        var vacancySearchUri = generateVacancySearchUri(pageNumber, config);
+        var response = restTemplate.exchange(vacancySearchUri, HttpMethod.GET, request, String.class).getBody();
+
+        try {
+            return objectMapper.readTree(response);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+            return objectMapper.createObjectNode();
+        }
     }
 
     private String generateVacancySearchUri(final int pageNumber, final AppUserConfig config) {
-        var areaId = areaService.getAreaIdByName(config.getArea());
-
         var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
                 .queryParam("page", pageNumber)
                 .queryParam("per_page", COUNT_OF_VACANCIES_IN_PAGE)
-                .queryParam("text", config.getQueryText().replace("+", "%2B"))
+                .queryParam("text", encodeQueryText(config.getQueryText()))
                 .queryParam("search_field", "name")
                 .queryParam("period", COUNT_OF_DAYS)
                 .queryParam("order_by", "publication_time");
 
-        if (areaId != null)
-            builder.queryParam("area", Integer.parseInt(areaId));
-
-        if (!config.getExperience().equals(ExperienceParam.NO_MATTER))
-            builder.queryParam("experience", config.getExperience().getParam());
-
-        if (config.getEducationLevels() != null && config.getEducationLevels().length != 0) {
-            var levels = Arrays.stream(config.getEducationLevels())
-                    .map(EducationLevelParam::getParam).toList();
-            builder.queryParam("education", levels);
-        }
-
-        if (config.getScheduleTypes() != null && config.getScheduleTypes().length != 0) {
-            var types = Arrays.stream(config.getScheduleTypes())
-                    .map(ScheduleTypeParam::getParam).toList();
-            builder.queryParam("schedule", types);
-        }
+        addAreaParam(builder, config);
+        addExperienceParam(builder, config);
+        addEducationParam(builder, config);
+        addScheduleParam(builder, config);
 
         return builder.build().toUriString();
+    }
+
+    private void addAreaParam(UriComponentsBuilder builder, AppUserConfig config) {
+        Optional.ofNullable(areaService.getAreaIdByName(config.getArea()))
+                .map(Integer::parseInt)
+                .ifPresent(areaId -> builder.queryParam("area", areaId));
+    }
+
+    private void addExperienceParam(UriComponentsBuilder builder, AppUserConfig config) {
+        var experience = config.getExperience();
+
+        if (ExperienceParam.NO_MATTER != experience)
+            builder.queryParam("experience", experience.getParam());
+    }
+
+    private void addEducationParam(UriComponentsBuilder builder, AppUserConfig config) {
+        var levels = Optional.ofNullable(config.getEducationLevels())
+                .stream()
+                .flatMap(Arrays::stream)
+                .map(EducationLevelParam::getParam)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (!levels.isEmpty())
+            builder.queryParam("education", levels);
+    }
+
+    private void addScheduleParam(UriComponentsBuilder builder, AppUserConfig config) {
+        var types = Optional.ofNullable(config.getScheduleTypes())
+                .stream()
+                .flatMap(Arrays::stream)
+                .map(ScheduleTypeParam::getParam)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (!types.isEmpty())
+            builder.queryParam("schedule", types);
+    }
+
+    private String encodeQueryText(String queryText) {
+        return queryText.replace("+", "%2B");
     }
 }

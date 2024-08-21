@@ -21,6 +21,9 @@ public class AreaUtil {
     }
 
     public static String getAreaIdFromApi(final String areaName) {
+        if (areaName == null)
+            return null;
+
         var client = HttpClient.newHttpClient();
         var uri = URI.create(URL);
         var request = HttpRequest.newBuilder().uri(uri).build();
