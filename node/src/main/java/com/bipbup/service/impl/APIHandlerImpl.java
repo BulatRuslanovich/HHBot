@@ -4,6 +4,7 @@ import com.bipbup.dto.VacancyDTO;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.enums.impl.ExperienceParam;
+import com.bipbup.enums.impl.ScheduleTypeParam;
 import com.bipbup.service.APIConnection;
 import com.bipbup.service.APIHandler;
 import com.bipbup.utils.AreaUtil;
@@ -127,7 +128,7 @@ public class APIHandlerImpl implements APIHandler {
         var areaId = AreaUtil.getAreaIdByName(config.getArea());
 
         var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
-                .queryParam("page", String.valueOf(pageNumber))
+                .queryParam("page", pageNumber)
                 .queryParam("per_page", COUNT_OF_VACANCIES_IN_PAGE)
                 .queryParam("text", config.getQueryText().replace("+", "%2B"))
                 .queryParam("search_field", "name")
@@ -141,12 +142,16 @@ public class APIHandlerImpl implements APIHandler {
             builder.queryParam("experience", config.getExperience().getParam());
 
         if (config.getEducationLevels() != null && config.getEducationLevels().length != 0) {
-            var educationLevels = Arrays.stream(config.getEducationLevels())
+            var levels = Arrays.stream(config.getEducationLevels())
                     .map(EducationLevelParam::getParam).toList();
-            builder.queryParam("education", educationLevels);
+            builder.queryParam("education", levels);
         }
 
-        // TODO: add ScheduleType as param
+        if (config.getScheduleTypes() != null && config.getScheduleTypes().length != 0) {
+            var types = Arrays.stream(config.getScheduleTypes())
+                    .map(ScheduleTypeParam::getParam).toList();
+            builder.queryParam("schedule", types);
+        }
 
         return builder.build().toUriString();
     }
