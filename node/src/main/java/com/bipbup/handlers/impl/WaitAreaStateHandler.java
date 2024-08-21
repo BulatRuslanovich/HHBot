@@ -3,9 +3,9 @@ package com.bipbup.handlers.impl;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.handlers.CancellableStateHandler;
+import com.bipbup.service.AreaService;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
-import com.bipbup.utils.AreaUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -21,10 +21,14 @@ public class WaitAreaStateHandler extends CancellableStateHandler {
 
     protected static final int MAX_AREA_NAME_LENGTH = 30;
 
+    private final AreaService areaService;
+
     public WaitAreaStateHandler(final UserService userService,
                                 final ConfigService configService,
-                                final BasicStateHandler basicStateHandler) {
+                                final BasicStateHandler basicStateHandler,
+                                final AreaService areaService) {
         super(userService, configService, basicStateHandler);
+        this.areaService = areaService;
     }
 
     @Override
@@ -64,6 +68,6 @@ public class WaitAreaStateHandler extends CancellableStateHandler {
         return !(input != null
                 && !input.trim().isEmpty()
                 && input.length() <= MAX_AREA_NAME_LENGTH
-                && AreaUtil.getAreaIdByName(input) != null);
+                && areaService.getAreaIdByName(input) != null);
     }
 }

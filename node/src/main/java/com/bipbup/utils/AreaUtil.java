@@ -22,7 +22,7 @@ public class AreaUtil {
     private AreaUtil() {
     }
 
-    public static String getAreaIdByName(final String areaName) {
+    public static String getAreaIdFromApi(final String areaName) {
         var client = HttpClient.newHttpClient();
         var uri = URI.create(URL);
         var request = HttpRequest.newBuilder().uri(uri).build();
@@ -48,8 +48,7 @@ public class AreaUtil {
         }
     }
 
-    private static String findAreaId(final JSONArray areas,
-                                     final String name) {
+    private static String findAreaId(final JSONArray areas, final String name) {
         for (int i = 0; i < areas.length(); i++) {
             var area = areas.getJSONObject(i);
 

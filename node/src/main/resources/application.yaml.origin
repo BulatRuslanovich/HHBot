@@ -32,4 +32,6 @@ headhunter:
     searchForVacancy: https://api.hh.ru/vacancies
 notifier:
   period: 600000
+area:
+  update-period: 864000000 # for update area ids every 10 days
 salt:

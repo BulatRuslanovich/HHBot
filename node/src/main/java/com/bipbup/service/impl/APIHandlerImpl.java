@@ -7,7 +7,7 @@ import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.enums.impl.ScheduleTypeParam;
 import com.bipbup.service.APIConnection;
 import com.bipbup.service.APIHandler;
-import com.bipbup.utils.AreaUtil;
+import com.bipbup.service.AreaService;
 import com.bipbup.utils.factory.VacancyFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,6 +41,8 @@ public class APIHandlerImpl implements APIHandler {
     private final ObjectMapper objectMapper;
 
     private final RestTemplate restTemplate;
+
+    private final AreaService areaService;
 
     private static final int COUNT_OF_VACANCIES_IN_PAGE = 100;
     public static final int COUNT_OF_DAYS = 4;
@@ -125,7 +127,7 @@ public class APIHandlerImpl implements APIHandler {
     }
 
     private String generateVacancySearchUri(final int pageNumber, final AppUserConfig config) {
-        var areaId = AreaUtil.getAreaIdByName(config.getArea());
+        var areaId = areaService.getAreaIdByName(config.getArea());
 
         var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
                 .queryParam("page", pageNumber)
