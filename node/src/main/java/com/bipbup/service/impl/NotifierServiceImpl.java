@@ -12,7 +12,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Locale;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,6 +26,8 @@ public class NotifierServiceImpl implements NotifierService {
     private final AnswerProducer answerProducer;
 
     private final ConfigService configService;
+
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("ru"));
 
     @Override
     @Scheduled(fixedRateString = "${notifier.period}")
@@ -68,19 +72,20 @@ public class NotifierServiceImpl implements NotifierService {
 
     private void sendVacancyMessage(final VacancyDTO vacancy,
                                     final AppUserConfig config) {
+
         var message = String.format("""
-                        *Название запроса:* %s
-                        *Вакансия:* %s
-                        *Работодатель:* %s
-                        *Город:* %s
-                        *Дата публикации:* %s
-                        *Ссылка:* %s
-                        """,
+                    *🔍 Название запроса:* %s
+                    *💼 Вакансия:* %s
+                    *👔 Работодатель:* %s
+                    *🏙️ Регион:* %s
+                    *🗓 Дата публикации:* %s
+                    *🔗 Ссылка:* [Открыть вакансию](%s)
+                    """,
                 config.getConfigName(),
                 vacancy.getNameVacancy(),
                 vacancy.getNameEmployer(),
                 vacancy.getNameArea(),
-                vacancy.getPublishedAt().toLocalDate(),
+                vacancy.getPublishedAt().toLocalDate().format(formatter),
                 vacancy.getUrl());
 
         var telegramId = config.getAppUser().getTelegramId();

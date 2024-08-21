@@ -68,23 +68,23 @@ public class QueryMenuStateHandler implements StateHandler {
             output.append(prefix);
 
             String paramNames = Arrays.stream(values)
-                    .map(EnumParam::getDescription)
-                    .collect(Collectors.joining(", "));
+                    .map(param -> "• " + param.getDescription())
+                    .collect(Collectors.joining("\n"));
 
             output.append(paramNames);
         }
     }
 
-    //TODO: сделать по красоте
+
     private String showDetailedQueryOutput(final AppUserConfig config) {
         StringBuilder output = new StringBuilder()
-                .append(config.getConfigName())
-                .append("\nТекст запроса: ").append(config.getQueryText())
-                .append("\nРегион: ").append(config.getArea() == null ? "Любой" : config.getArea())
-                .append("\nОпыт работы: ").append(config.getExperience().getDescription());
+                .append("*Название запроса:* ").append(config.getConfigName())
+                .append("\n*Текст запроса:* ").append(config.getQueryText())
+                .append("\n*Регион:* ").append(config.getArea() == null ? "Любой" : config.getArea())
+                .append("\n*Опыт работы:* ").append(config.getExperience().getDescription());
 
-        appendEnumParams(output, config.getEducationLevels(), "\nУровень образования: ");
-        appendEnumParams(output, config.getScheduleTypes(), "\nТип графика: ");
+        appendEnumParams(output, config.getEducationLevels(), "\n*Уровень образования:* \n");
+        appendEnumParams(output, config.getScheduleTypes(), "\n*Тип графика:* \n");
 
         return output.toString();
     }
