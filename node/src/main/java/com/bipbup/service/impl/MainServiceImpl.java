@@ -41,13 +41,7 @@ import static com.bipbup.enums.AppUserState.WAIT_EDUCATION_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_SCHEDULE_STATE;
-import static com.bipbup.utils.CommandMessageConstants.DELETE_STATE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.MENU_STATE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_STATE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.WAIT_EDU_STATE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.WAIT_EXP_STATE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.WAIT_SCHEDULE_STATE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 
 @Service
@@ -89,13 +83,13 @@ public class MainServiceImpl implements MainService {
         );
 
         this.callbackHandlerProperties = Set.of(
-                new CallbackHandlerProperties(QUERY_LIST_STATE, queryListStateHandler, QUERY_PREFIX),
-                new CallbackHandlerProperties(QUERY_MENU_STATE, queryMenuStateHandler, MENU_STATE_PREFIX),
-                new CallbackHandlerProperties(QUERY_DELETE_STATE, queryDeleteStateHandler, DELETE_STATE_PREFIX),
-                new CallbackHandlerProperties(QUERY_UPDATE_STATE, queryUpdateStateHandler, UPDATE_STATE_PREFIX),
-                new CallbackHandlerProperties(WAIT_EXPERIENCE_STATE, waitExperienceStateHandler, WAIT_EXP_STATE_PREFIX),
-                new CallbackHandlerProperties(WAIT_EDUCATION_STATE, waitEducationStateHandler, WAIT_EDU_STATE_PREFIX),
-                new CallbackHandlerProperties(WAIT_SCHEDULE_STATE, waitScheduleStateHandler, WAIT_SCHEDULE_STATE_PREFIX)
+                new CallbackHandlerProperties(QUERY_LIST_STATE, queryListStateHandler, Prefix.QUERY),
+                new CallbackHandlerProperties(QUERY_MENU_STATE, queryMenuStateHandler, Prefix.MENU_STATE),
+                new CallbackHandlerProperties(QUERY_DELETE_STATE, queryDeleteStateHandler, Prefix.DELETE_STATE),
+                new CallbackHandlerProperties(QUERY_UPDATE_STATE, queryUpdateStateHandler, Prefix.UPDATE_STATE),
+                new CallbackHandlerProperties(WAIT_EXPERIENCE_STATE, waitExperienceStateHandler, Prefix.WAIT_EXP_STATE),
+                new CallbackHandlerProperties(WAIT_EDUCATION_STATE, waitEducationStateHandler, Prefix.WAIT_EDU_STATE),
+                new CallbackHandlerProperties(WAIT_SCHEDULE_STATE, waitScheduleStateHandler, Prefix.WAIT_SCHEDULE_STATE)
         );
     }
 
@@ -173,8 +167,8 @@ public class MainServiceImpl implements MainService {
     }
 
     private static boolean isMultiSelecting(final String callbackData) {
-        return callbackData.startsWith(WAIT_EDU_STATE_PREFIX)
-                || callbackData.startsWith(WAIT_SCHEDULE_STATE_PREFIX);
+        return callbackData.startsWith(Prefix.WAIT_EDU_STATE)
+                || callbackData.startsWith(Prefix.WAIT_SCHEDULE_STATE);
     }
 
     private void sendAnswer(final String text,

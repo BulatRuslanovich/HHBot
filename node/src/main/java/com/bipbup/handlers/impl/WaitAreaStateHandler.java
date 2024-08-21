@@ -13,7 +13,7 @@ import org.springframework.util.StringUtils;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static com.bipbup.utils.CommandMessageConstants.AREA_SET_MESSAGE_TEMPLATE;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.AREA_SET;
 
 @Slf4j
 @Component
@@ -57,7 +57,7 @@ public class WaitAreaStateHandler extends CancellableStateHandler {
         userService.clearUserState(user.getTelegramId());
 
         log.info("User {} set area '{}' in configuration '{}'", user.getFirstName(), area, config.getConfigName());
-        return String.format(AREA_SET_MESSAGE_TEMPLATE, area, config.getConfigName());
+        return String.format(AREA_SET.getTemplate(), area, config.getConfigName());
     }
 
     private boolean isInvalidAreaName(final String input) {

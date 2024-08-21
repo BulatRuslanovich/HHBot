@@ -17,33 +17,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_BACK;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE_CANCEL;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_DELETE_CONFIRM;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SAVE;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_SELECTED;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_AREA;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_CONFIG_NAME;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_EDUCATION;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_EXPERIENCE;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_QUERY;
-import static com.bipbup.utils.CommandMessageConstants.BUTTON_TEXT_UPDATE_SCHEDULE;
+import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
+import static com.bipbup.utils.CommandMessageConstants.ButtonText;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CANCEL_COMMAND;
-import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRM_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.DELETE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.EDU_SAVE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
-import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SAVE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_AREA_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_CONFIG_NAME_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_EDUCATION_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_EXPERIENCE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_QUERY_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_SCHEDULE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @RequiredArgsConstructor
 @Component
@@ -65,7 +42,7 @@ public class KeyboardMarkupFactory {
     }
 
     private InlineKeyboardButton createButtonFromConfig(final AppUserConfig config) {
-        var callback = QUERY_PREFIX + encoder.hashOf(config.getUserConfigId());
+        var callback = Prefix.QUERY + encoder.hashOf(config.getUserConfigId());
         return createButton(config.getConfigName(), callback);
     }
 
@@ -73,9 +50,9 @@ public class KeyboardMarkupFactory {
         var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
-                createButton(BUTTON_TEXT_UPDATE, UPDATE_PREFIX + hash),
-                createButton(BUTTON_TEXT_DELETE, DELETE_PREFIX + hash),
-                createButton(BUTTON_TEXT_BACK, MYQUERIES_COMMAND)
+                createButton(ButtonText.UPDATE, Prefix.UPDATE + hash),
+                createButton(ButtonText.DELETE, Prefix.DELETE + hash),
+                createButton(ButtonText.BACK, MYQUERIES.getCommand())
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
@@ -85,8 +62,8 @@ public class KeyboardMarkupFactory {
         var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
-                createButton(BUTTON_TEXT_DELETE_CONFIRM, DELETE_CONFIRM_PREFIX + hash),
-                createButton(BUTTON_TEXT_DELETE_CANCEL, DELETE_CANCEL_COMMAND)
+                createButton(ButtonText.DELETE_CONFIRM, Prefix.DELETE_CONFIRM + hash),
+                createButton(ButtonText.DELETE_CANCEL, DELETE_CANCEL_COMMAND)
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
@@ -96,13 +73,13 @@ public class KeyboardMarkupFactory {
         var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
-                createButton(BUTTON_TEXT_UPDATE_CONFIG_NAME, UPDATE_CONFIG_NAME_PREFIX + hash),
-                createButton(BUTTON_TEXT_UPDATE_QUERY, UPDATE_QUERY_PREFIX + hash),
-                createButton(BUTTON_TEXT_UPDATE_AREA, UPDATE_AREA_PREFIX + hash),
-                createButton(BUTTON_TEXT_UPDATE_EXPERIENCE, UPDATE_EXPERIENCE_PREFIX + hash),
-                createButton(BUTTON_TEXT_UPDATE_EDUCATION, UPDATE_EDUCATION_PREFIX + hash),
-                createButton(BUTTON_TEXT_UPDATE_SCHEDULE, UPDATE_SCHEDULE_PREFIX + hash),
-                createButton(BUTTON_TEXT_BACK, QUERY_PREFIX + hash)
+                createButton(ButtonText.UPDATE_CONFIG_NAME, Prefix.UPDATE_CONFIG_NAME + hash),
+                createButton(ButtonText.UPDATE_QUERY, Prefix.UPDATE_QUERY + hash),
+                createButton(ButtonText.UPDATE_AREA, Prefix.UPDATE_AREA + hash),
+                createButton(ButtonText.UPDATE_EXPERIENCE, Prefix.UPDATE_EXPERIENCE + hash),
+                createButton(ButtonText.UPDATE_EDUCATION, Prefix.UPDATE_EDUCATION + hash),
+                createButton(ButtonText.UPDATE_SCHEDULE, Prefix.UPDATE_SCHEDULE + hash),
+                createButton(ButtonText.BACK, Prefix.QUERY + hash)
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
@@ -126,7 +103,7 @@ public class KeyboardMarkupFactory {
                 .map(p -> createButtonFromEnum(p, selectedLevels, hash))
                 .toList());
 
-        buttons.add(createButton(BUTTON_TEXT_SAVE, EDU_SAVE_PREFIX + hash));
+        buttons.add(createButton(ButtonText.SAVE, Prefix.EDU_SAVE + hash));
 
         return createMarkup(buttons, 1);
     }
@@ -139,7 +116,7 @@ public class KeyboardMarkupFactory {
                 .map(v -> createButtonFromEnum(v, selectedTypes, hash))
                 .toList());
 
-        buttons.add(createButton(BUTTON_TEXT_SAVE, SCHEDULE_SAVE_PREFIX + hash));
+        buttons.add(createButton(ButtonText.SAVE, Prefix.SCHEDULE_SAVE + hash));
 
         return createMarkup(buttons, 1);
     }
@@ -148,7 +125,7 @@ public class KeyboardMarkupFactory {
         String text = enumParam.getDescription();
 
         if (params.contains(enumParam))
-            text += BUTTON_TEXT_SELECTED;
+            text += ButtonText.SELECTED;
 
         String callback = enumParam.getPrefix() + hash;
         return createButton(text, callback);

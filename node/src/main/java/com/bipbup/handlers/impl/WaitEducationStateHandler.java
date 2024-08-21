@@ -10,11 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.EDU_SAVE_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.EDU_SAVE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.SELECT_EDUCATION_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.WAIT_EDU_STATE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.EDU_SAVE;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.SELECT_EDUCATION;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -51,7 +50,7 @@ public class WaitEducationStateHandler implements StateHandler {
             userService.clearUserState(user.getTelegramId());
 
             log.info("User {} saved education levels for configuration {} and state set to BASIC_STATE", user.getFirstName(), config.getConfigName());
-            return String.format(EDU_SAVE_MESSAGE_TEMPLATE, config.getConfigName());
+            return String.format(EDU_SAVE.getTemplate(), config.getConfigName());
         } else {
             return processConfigNotFoundMessage(user, configId);
         }
@@ -77,7 +76,7 @@ public class WaitEducationStateHandler implements StateHandler {
                         user.getFirstName(), currentEducationLevel.getDescription(), config.getConfigName());
             }
 
-            return String.format(SELECT_EDUCATION_MESSAGE_TEMPLATE, config.getConfigName());
+            return String.format(SELECT_EDUCATION.getTemplate(), config.getConfigName());
         } else
             return processConfigNotFoundMessage(user, configId);
     }
@@ -85,14 +84,14 @@ public class WaitEducationStateHandler implements StateHandler {
     private String processConfigNotFoundMessage(final AppUser user, final long configId) {
         userService.clearUserState(user.getTelegramId());
         log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-        return CONFIG_NOT_FOUND_MESSAGE;
+        return CONFIG_NOT_FOUND.getTemplate();
     }
 
     private boolean hasSavePrefix(final String input) {
-        return input.startsWith(EDU_SAVE_PREFIX);
+        return input.startsWith(Prefix.EDU_SAVE);
     }
 
     private boolean hasEducationPrefix(final String input) {
-        return input.startsWith(WAIT_EDU_STATE_PREFIX);
+        return input.startsWith(Prefix.WAIT_EDU_STATE);
     }
 }

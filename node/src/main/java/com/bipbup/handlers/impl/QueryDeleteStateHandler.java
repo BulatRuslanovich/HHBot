@@ -9,11 +9,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_DELETED_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_DELETED_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CANCEL_COMMAND;
-import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRM_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_DELETED;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_DELETED;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -41,7 +41,7 @@ public class QueryDeleteStateHandler implements StateHandler {
     }
 
     private boolean hasDeleteConfirmPrefix(final String input) {
-        return input.startsWith(DELETE_CONFIRM_PREFIX);
+        return input.startsWith(Prefix.DELETE_CONFIRM);
     }
 
     private String processDeleteConfirmCommand(final AppUser user, final String input) {
@@ -54,16 +54,16 @@ public class QueryDeleteStateHandler implements StateHandler {
             var config = optionalConfig.get();
             configService.delete(config);
             log.info("User {} deleted configuration with id {} and state set to BASIC_STATE", user.getFirstName(), configId);
-            return CONFIG_DELETED_MESSAGE;
+            return CONFIG_DELETED.getTemplate();
         } else {
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-            return CONFIG_NOT_FOUND_MESSAGE;
+            return CONFIG_NOT_FOUND.getTemplate();
         }
     }
 
     private String processDeleteCancelCommand(final AppUser user) {
         userService.clearUserState(user.getTelegramId());
         log.info("User {} chose not to delete the configuration and state set to BASIC_STATE", user.getFirstName());
-        return CONFIG_NOT_DELETED_MESSAGE;
+        return CONFIG_NOT_DELETED.getTemplate();
     }
 }

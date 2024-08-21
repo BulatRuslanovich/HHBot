@@ -10,11 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SAVE_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.SCHEDULE_SAVE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.SELECT_SCHEDULE_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.WAIT_SCHEDULE_STATE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.SCHEDULE_SAVE;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.SELECT_SCHEDULE;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -52,7 +51,7 @@ public class WaitScheduleStateHandler implements StateHandler {
             userService.clearUserState(telegramId);
 
             log.info("User {} saved schedule types for configuration {} and state set to BASIC_STATE", user.getFirstName(), config.getConfigName());
-            return String.format(SCHEDULE_SAVE_MESSAGE_TEMPLATE, config.getConfigName());
+            return String.format(SCHEDULE_SAVE.getTemplate(), config.getConfigName());
         } else {
             return processConfigNotFoundMessage(user, configId);
         }
@@ -79,7 +78,7 @@ public class WaitScheduleStateHandler implements StateHandler {
                         user.getFirstName(), currentScheduleType.getDescription(), config.getConfigName());
             }
 
-            return String.format(SELECT_SCHEDULE_MESSAGE_TEMPLATE, config.getConfigName());
+            return String.format(SELECT_SCHEDULE.getTemplate(), config.getConfigName());
         } else {
             return processConfigNotFoundMessage(user, configId);
         }
@@ -88,14 +87,14 @@ public class WaitScheduleStateHandler implements StateHandler {
     private String processConfigNotFoundMessage(final AppUser user, final long configId) {
         userService.clearUserState(user.getTelegramId());
         log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-        return CONFIG_NOT_FOUND_MESSAGE;
+        return CONFIG_NOT_FOUND.getTemplate();
     }
 
     private boolean hasSavePrefix(final String input) {
-        return input.startsWith(SCHEDULE_SAVE_PREFIX);
+        return input.startsWith(Prefix.SCHEDULE_SAVE);
     }
 
     private boolean hasSchedulePrefix(final String input) {
-        return input.startsWith(WAIT_SCHEDULE_STATE_PREFIX);
+        return input.startsWith(Prefix.WAIT_SCHEDULE_STATE);
     }
 }

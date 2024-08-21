@@ -8,7 +8,7 @@ import com.bipbup.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import static com.bipbup.utils.CommandMessageConstants.QUERY_SET_MESSAGE_TEMPLATE;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.QUERY_SET;
 
 @Slf4j
 @Component
@@ -51,6 +51,6 @@ public class WaitQueryStateHandler extends CancellableStateHandler {
         configService.save(config);
         userService.clearUserState(user.getTelegramId());
         log.info("User {} set query '{}' in configuration '{}'", user.getFirstName(), input, config.getConfigName());
-        return String.format(QUERY_SET_MESSAGE_TEMPLATE, input, config.getConfigName());
+        return String.format(QUERY_SET.getTemplate(), input, config.getConfigName());
     }
 }

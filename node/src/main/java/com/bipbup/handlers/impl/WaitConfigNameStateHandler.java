@@ -9,9 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_EXISTS_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NAME_UPDATED_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.ENTER_QUERY_MESSAGE_TEMPLATE;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_EXISTS;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NAME_UPDATED;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ENTER_QUERY;
 
 @Slf4j
 @Component
@@ -68,13 +68,13 @@ public class WaitConfigNameStateHandler extends CancellableStateHandler {
         configService.save(config);
         userService.clearUserState(user.getTelegramId());
         log.info("User {} updated name of config \"{}\" and state set to BASIC_STATE", user.getFirstName(), oldConfigName);
-        return String.format(CONFIG_NAME_UPDATED_MESSAGE_TEMPLATE, oldConfigName, newConfigName);
+        return String.format(CONFIG_NAME_UPDATED.getTemplate(), oldConfigName, newConfigName);
     }
 
     private String processExistingConfig(final AppUser user, final String configName) {
         userService.clearUserState(user.getTelegramId());
         log.info("User {} attempted to create an existing config \"{}\" and state set to BASIC_STATE", user.getFirstName(), configName);
-        return String.format(CONFIG_EXISTS_MESSAGE_TEMPLATE, configName);
+        return String.format(CONFIG_EXISTS.getTemplate(), configName);
     }
 
     private String processUpdatingConfig(final AppUser user, final String configName) {
@@ -93,6 +93,6 @@ public class WaitConfigNameStateHandler extends CancellableStateHandler {
         configService.clearConfigSelection(telegramId);
         userService.saveUserState(telegramId, WAIT_QUERY_STATE);
         log.info("User {} created config \"{}\" and state set to WAIT_QUERY_STATE", user.getFirstName(), configName);
-        return String.format(ENTER_QUERY_MESSAGE_TEMPLATE, configName);
+        return String.format(ENTER_QUERY.getTemplate(), configName);
     }
 }

@@ -17,11 +17,10 @@ import java.util.stream.Collectors;
 
 import static com.bipbup.enums.AppUserState.QUERY_DELETE_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRMATION_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.DELETE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.DELETE_CONFIRMATION;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -49,19 +48,19 @@ public class QueryMenuStateHandler implements StateHandler {
     }
 
     private String processBackToQueryListCommand(final AppUser user) {
-        return basicStateHandler.process(user, MYQUERIES_COMMAND);
+        return basicStateHandler.process(user, MYQUERIES.getCommand());
     }
 
     private boolean isBackToQueryListCommand(final String input) {
-        return MYQUERIES_COMMAND.equals(input);
+        return MYQUERIES.getCommand().equals(input);
     }
 
     private boolean hasUpdatePrefix(final String input) {
-        return input.startsWith(UPDATE_PREFIX);
+        return input.startsWith(Prefix.UPDATE);
     }
 
     private boolean hasDeletePrefix(final String input) {
-        return input.startsWith(DELETE_PREFIX);
+        return input.startsWith(Prefix.DELETE);
     }
 
     private void appendEnumParams(StringBuilder output, final EnumParam[] values, final String prefix) {
@@ -102,10 +101,10 @@ public class QueryMenuStateHandler implements StateHandler {
             if (state == QUERY_UPDATE_STATE)
                 return showDetailedQueryOutput(config);
 
-            return DELETE_CONFIRMATION_MESSAGE;
+            return DELETE_CONFIRMATION.getTemplate();
         } else {
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-            return CONFIG_NOT_FOUND_MESSAGE;
+            return CONFIG_NOT_FOUND.getTemplate();
         }
     }
 }

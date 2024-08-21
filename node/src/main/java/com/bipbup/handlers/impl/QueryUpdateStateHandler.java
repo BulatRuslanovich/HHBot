@@ -18,21 +18,14 @@ import static com.bipbup.enums.AppUserState.WAIT_EDUCATION_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_SCHEDULE_STATE;
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.ENTER_AREA_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.ENTER_CONFIG_NAME_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.ENTER_QUERY_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.SELECT_EDUCATION_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.SELECT_EXPERIENCE_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.SELECT_SCHEDULE_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_AREA_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_CONFIG_NAME_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_EDUCATION_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_EXPERIENCE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_QUERY_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_SCHEDULE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_STATE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ENTER_AREA;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ENTER_CONFIG_NAME;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ENTER_QUERY;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.SELECT_EDUCATION;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.SELECT_EXPERIENCE;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.SELECT_SCHEDULE;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -48,12 +41,12 @@ public class QueryUpdateStateHandler implements StateHandler {
     private final QueryListStateHandler queryListStateHandler;
 
     private static final Map<String, ActionProperties> actionPropertiesMap = Map.of(
-            UPDATE_CONFIG_NAME_PREFIX, new ActionProperties(WAIT_CONFIG_NAME_STATE, ENTER_CONFIG_NAME_MESSAGE_TEMPLATE, true),
-            UPDATE_QUERY_PREFIX, new ActionProperties(WAIT_QUERY_STATE, ENTER_QUERY_MESSAGE_TEMPLATE, true),
-            UPDATE_EXPERIENCE_PREFIX, new ActionProperties(WAIT_EXPERIENCE_STATE, SELECT_EXPERIENCE_MESSAGE_TEMPLATE, false),
-            UPDATE_AREA_PREFIX, new ActionProperties(WAIT_AREA_STATE, ENTER_AREA_MESSAGE_TEMPLATE, true),
-            UPDATE_EDUCATION_PREFIX, new ActionProperties(WAIT_EDUCATION_STATE, SELECT_EDUCATION_MESSAGE_TEMPLATE, false),
-            UPDATE_SCHEDULE_PREFIX, new ActionProperties(WAIT_SCHEDULE_STATE, SELECT_SCHEDULE_MESSAGE_TEMPLATE, false)
+            Prefix.UPDATE_CONFIG_NAME, new ActionProperties(WAIT_CONFIG_NAME_STATE, ENTER_CONFIG_NAME.getTemplate(), true),
+            Prefix.UPDATE_QUERY, new ActionProperties(WAIT_QUERY_STATE, ENTER_QUERY.getTemplate(), true),
+            Prefix.UPDATE_EXPERIENCE, new ActionProperties(WAIT_EXPERIENCE_STATE, SELECT_EXPERIENCE.getTemplate(), false),
+            Prefix.UPDATE_AREA, new ActionProperties(WAIT_AREA_STATE, ENTER_AREA.getTemplate(), true),
+            Prefix.UPDATE_EDUCATION, new ActionProperties(WAIT_EDUCATION_STATE, SELECT_EDUCATION.getTemplate(), false),
+            Prefix.UPDATE_SCHEDULE, new ActionProperties(WAIT_SCHEDULE_STATE, SELECT_SCHEDULE.getTemplate(), false)
     );
 
     @Override
@@ -67,7 +60,7 @@ public class QueryUpdateStateHandler implements StateHandler {
     }
 
     private boolean hasUpdatePrefix(final String input) {
-        return input.startsWith(UPDATE_STATE_PREFIX);
+        return input.startsWith(Prefix.UPDATE_STATE);
     }
 
     private String processBackToQueryMenuCommand(final AppUser user, final String input) {
@@ -75,7 +68,7 @@ public class QueryUpdateStateHandler implements StateHandler {
     }
 
     private boolean isBackToQueryMenuCommand(final String input) {
-        return input.startsWith(QUERY_PREFIX);
+        return input.startsWith(Prefix.QUERY);
     }
 
     private String processUpdateConfigCommand(final AppUser user, final String input) {
@@ -103,7 +96,7 @@ public class QueryUpdateStateHandler implements StateHandler {
         } else {
             userService.clearUserState(user.getTelegramId());
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-            return CONFIG_NOT_FOUND_MESSAGE;
+            return CONFIG_NOT_FOUND.getTemplate();
         }
     }
 }

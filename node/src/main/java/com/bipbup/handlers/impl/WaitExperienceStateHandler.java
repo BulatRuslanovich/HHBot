@@ -10,9 +10,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.EXP_SET_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.WAIT_EXP_STATE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.EXP_SET;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -46,15 +46,15 @@ public class WaitExperienceStateHandler implements StateHandler {
             configService.save(config);
 
             log.info("User {} selected experience level and state set to BASIC_STATE", user.getFirstName());
-            return String.format(EXP_SET_MESSAGE_TEMPLATE, experience.getDescription(), config.getConfigName());
+            return String.format(EXP_SET.getTemplate(), experience.getDescription(), config.getConfigName());
         } else {
             userService.clearUserState(user.getTelegramId());
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-            return CONFIG_NOT_FOUND_MESSAGE;
+            return CONFIG_NOT_FOUND.getTemplate();
         }
     }
 
     private boolean hasExperiencePrefix(String input) {
-        return input.startsWith(WAIT_EXP_STATE_PREFIX);
+        return input.startsWith(Prefix.WAIT_EXP_STATE);
     }
 }

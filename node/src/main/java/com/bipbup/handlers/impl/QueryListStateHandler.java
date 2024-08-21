@@ -11,9 +11,9 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.QUERY_OUTPUT_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.QUERY_OUTPUT;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 import static java.lang.Boolean.TRUE;
 
 @Slf4j
@@ -35,17 +35,17 @@ public class QueryListStateHandler implements StateHandler {
     }
 
     private boolean hasQueryPrefix(final String input) {
-        return input.startsWith(QUERY_PREFIX);
+        return input.startsWith(Prefix.QUERY);
     }
     
     private Pair<Boolean, String> generateQueryOutput(final long configId) {
         var optionalConfig = configService.getById(configId);
 
         if (optionalConfig.isEmpty())
-            return Pair.of(false, CONFIG_NOT_FOUND_MESSAGE);
+            return Pair.of(false, CONFIG_NOT_FOUND.getTemplate());
 
         var config = optionalConfig.get();
-        var answer = String.format(QUERY_OUTPUT_MESSAGE_TEMPLATE, config.getConfigName(), config.getQueryText());
+        var answer = String.format(QUERY_OUTPUT.getTemplate(), config.getConfigName(), config.getQueryText());
         return Pair.of(true, answer);
     }
 
