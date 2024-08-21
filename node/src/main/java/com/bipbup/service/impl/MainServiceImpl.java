@@ -178,6 +178,7 @@ public class MainServiceImpl implements MainService {
                 .chatId(chatId)
                 .text(text)
                 .replyMarkup(keyboard != null ? keyboard : new ReplyKeyboardRemove(true))
+                .parseMode("Markdown")
                 .build();
 
         answerProducer.produceAnswer(sendMessage);
@@ -192,6 +193,7 @@ public class MainServiceImpl implements MainService {
                 .chatId(chatId)
                 .messageId(messageId)
                 .replyMarkup(markup)
+                .parseMode("Markdown")
                 .build();
 
         answerProducer.produceEdit(messageText);

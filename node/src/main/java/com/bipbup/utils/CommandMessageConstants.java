@@ -37,13 +37,14 @@ public class CommandMessageConstants {
         QUERY_SET("Запрос \"%s\" успешно установлен в конфигурации \"%s\"."),
         EXP_SET("Опыт работы \"%s\" успешно установлен в конфигурации \"%s\"."),
         AREA_SET("Регион \"%s\" успешно установлен в конфигурации \"%s\"."),
+        ANY_AREA_SET("Регион не будет учитываться в конфигурации \"%s\"."),
         EDU_SAVE("Уровень образования успешно сохранен для конфигурации \"%s\"."),
         SCHEDULE_SAVE("График работы успешно сохранен для конфигурации \"%s\"."),
         CONFIG_NOT_FOUND("Конфигурация не найдена."),
         INVALID_INPUT("Некорректный ввод. Пожалуйста, проверьте введенные данные."),
         ENTER_CONFIG_NAME("Введите новое название для конфигурации \"%s\":"),
         ENTER_QUERY("Введите запрос для конфигурации \"%s\":"),
-        ENTER_AREA("Введите название региона для конфигурации \"%s\":"),
+        ENTER_AREA("Введите название региона или _Любой_ для конфигурации \"%s\":"),
         SELECT_EXPERIENCE("Выберите опыт работы для конфигурации \"%s\":"),
         SELECT_EDUCATION("Выберите уровень образования для конфигурации \"%s\":"),
         SELECT_SCHEDULE("Выберите график работы для конфигурации \"%s\":"),
@@ -84,6 +85,7 @@ public class CommandMessageConstants {
     }
 
     public static final String DELETE_CANCEL_COMMAND = Prefix.DELETE_STATE + "cancel";
+    public static final String ANY = "Любой";
 
     public static class ButtonText {
         private ButtonText() {

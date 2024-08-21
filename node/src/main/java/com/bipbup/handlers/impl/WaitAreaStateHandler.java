@@ -13,13 +13,13 @@ import org.springframework.util.StringUtils;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import static com.bipbup.utils.CommandMessageConstants.ANY;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ANY_AREA_SET;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.AREA_SET;
 
 @Slf4j
 @Component
 public class WaitAreaStateHandler extends CancellableStateHandler {
-
-    protected static final int MAX_AREA_NAME_LENGTH = 30;
 
     private final AreaService areaService;
 
@@ -29,6 +29,29 @@ public class WaitAreaStateHandler extends CancellableStateHandler {
                                 final AreaService areaService) {
         super(userService, configService, basicStateHandler);
         this.areaService = areaService;
+    }
+
+    private static String getOutputSetArea(AppUserConfig config, String input, String area) {
+        String output;
+
+        if (!input.equalsIgnoreCase(ANY)) {
+            config.setArea(area);
+            output = String.format(AREA_SET.getTemplate(), area, config.getConfigName());
+        } else {
+            config.setArea(null);
+            output = String.format(ANY_AREA_SET.getTemplate(), config.getConfigName());
+        }
+
+        return output;
+    }
+
+    private static String normalizeAreaName(final String input) {
+        if (input.equalsIgnoreCase(ANY)) return input;
+        var separator = input.contains("-") ? "-" : " ";
+        return Arrays.stream(input.split(separator))
+                .map(String::toLowerCase)
+                .map(StringUtils::capitalize)
+                .collect(Collectors.joining(separator));
     }
 
     @Override
@@ -50,24 +73,20 @@ public class WaitAreaStateHandler extends CancellableStateHandler {
     private String processValidAreaName(final AppUser user,
                                         final AppUserConfig config,
                                         final String input) {
-        var separator = input.contains("-") ? "-" : " ";
-        var area = Arrays.stream(input.split(separator))
-                .map(String::toLowerCase)
-                .map(StringUtils::capitalize)
-                .collect(Collectors.joining(separator));
+        var area = normalizeAreaName(input);
+        var output = getOutputSetArea(config, input, area);
 
-        config.setArea(area);
         configService.save(config);
         userService.clearUserState(user.getTelegramId());
 
         log.info("User {} set area '{}' in configuration '{}'", user.getFirstName(), area, config.getConfigName());
-        return String.format(AREA_SET.getTemplate(), area, config.getConfigName());
+        return output;
     }
 
     private boolean isInvalidAreaName(final String input) {
         return !(input != null
                 && !input.trim().isEmpty()
-                && input.length() <= MAX_AREA_NAME_LENGTH
-                && areaService.getAreaIdByName(input) != null);
+                && (input.equalsIgnoreCase(ANY)
+                || areaService.getAreaIdByName(input) != null));
     }
 }
