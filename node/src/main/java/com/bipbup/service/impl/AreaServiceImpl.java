@@ -5,9 +5,9 @@ import com.bipbup.utils.AreaUtil;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class AreaServiceImpl implements AreaService {
 
     @Override

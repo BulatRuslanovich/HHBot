@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -16,7 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
 
 @RequiredArgsConstructor
-@Component
+@Service
 public class UserServiceImpl implements UserService {
 
     private final AppUserDAO appUserDAO;

@@ -8,8 +8,6 @@ import com.bipbup.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.CANCEL;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.NEWQUERY;
@@ -62,10 +60,10 @@ public abstract class CancellableStateHandler implements StateHandler {
     }
 
     protected AppUserConfig fetchConfig(final AppUser user) {
-        var telegramId = user.getTelegramId();
         if (!isConfigUpdating(user))
             return fetchLastConfig(user);
 
+        var telegramId = user.getTelegramId();
         var configId = configService.getSelectedConfigId(telegramId);
         var optionalConfig = configService.getById(configId);
 
@@ -78,7 +76,7 @@ public abstract class CancellableStateHandler implements StateHandler {
     }
 
     protected AppUserConfig fetchLastConfig(final AppUser user) {
-        List<AppUserConfig> configs = configService.getByUser(user);
+        var configs = configService.getByUser(user);
 
         if (configs.isEmpty()) {
             log.warn("No configurations found for user {}", user.getFirstName());
@@ -89,7 +87,7 @@ public abstract class CancellableStateHandler implements StateHandler {
     }
 
     protected boolean isConfigUpdating(final AppUser user) {
-        Long configId = configService.getSelectedConfigId(user.getTelegramId());
+        var configId = configService.getSelectedConfigId(user.getTelegramId());
         return configId != null;
     }
 }
