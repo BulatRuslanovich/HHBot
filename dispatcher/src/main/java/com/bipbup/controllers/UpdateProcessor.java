@@ -41,10 +41,10 @@ public class UpdateProcessor {
         this.myTelegramBot = myTelegramBot;
     }
 
-    public void processUpdate(final Update update) {
+    public boolean processUpdate(final Update update) {
         if (update == null) {
             log.error("Update is null");
-            return;
+            return false;
         }
 
         if (update.hasMessage()) {
@@ -54,6 +54,8 @@ public class UpdateProcessor {
         } else {
             logEmptyMessageUpdate(update);
         }
+
+        return true;
     }
 
     private void processMessage(Update update) {
