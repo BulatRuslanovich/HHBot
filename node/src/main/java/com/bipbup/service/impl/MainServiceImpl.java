@@ -149,7 +149,7 @@ public class MainServiceImpl implements MainService {
         if (update.hasCallbackQuery())
             processCallbackQueryOutput(user, update.getCallbackQuery(), output);
         else
-            sendAnswer(output, telegramId, fetchKeyboard(user, null));
+            sendAnswer(output, telegramId, fetchKeyboardWithoutCallback(user));
     }
 
     private void processCallbackQueryOutput(final AppUser user,
@@ -161,9 +161,9 @@ public class MainServiceImpl implements MainService {
         var state = userService.getUserState(telegramId);
 
         if (!state.isWait() || isMultiSelecting(callbackData))
-            editAnswer(output, telegramId, messageId, fetchKeyboard(user, callbackData));
+            editAnswer(output, telegramId, messageId, fetchKeyboardWithCallback(user, callbackData));
         else
-            sendAnswer(output, telegramId, fetchKeyboard(user, callbackData));
+            sendAnswer(output, telegramId, fetchKeyboardWithCallback(user, callbackData));
     }
 
     private static boolean isMultiSelecting(final String callbackData) {
@@ -199,12 +199,10 @@ public class MainServiceImpl implements MainService {
         answerProducer.produceEdit(messageText);
     }
 
-    private InlineKeyboardMarkup fetchKeyboard(final AppUser user,
-                                               final String callbackData) {
+    private InlineKeyboardMarkup fetchKeyboardWithCallback(final AppUser user, final String callbackData) {
         var userState = userService.getUserState(user.getTelegramId());
 
         return switch (userState) {
-            case QUERY_LIST_STATE -> markupFactory.createUserConfigListKeyboard(user);
             case QUERY_MENU_STATE -> markupFactory.createConfigManagementKeyboard(callbackData);
             case QUERY_DELETE_STATE -> markupFactory.createDeleteConfirmationKeyboard(callbackData);
             case QUERY_UPDATE_STATE -> markupFactory.createUpdateConfigKeyboard(callbackData);
@@ -213,6 +211,15 @@ public class MainServiceImpl implements MainService {
             case WAIT_SCHEDULE_STATE -> markupFactory.createScheduleTypeSelectionKeyboard(user, callbackData);
             default -> null;
         };
+    }
+
+    private InlineKeyboardMarkup fetchKeyboardWithoutCallback(final AppUser user) {
+        var userState = userService.getUserState(user.getTelegramId());
+
+        if (userState.equals(QUERY_LIST_STATE))
+            return markupFactory.createUserConfigListKeyboard(user);
+
+        return null;
     }
 }
 
