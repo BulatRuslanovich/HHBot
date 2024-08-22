@@ -13,7 +13,7 @@ ADD ./settings.xml /usr/share/maven/ref/
 ADD ./common ${HOME}/common
 RUN mvn -f ${HOME}/common/pom.xml -s ${MVN_SETTINGS} clean package
 
-RUN mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file \
+RUN mvn org.apache.maven.plugins:maven-install-plugin:3.0.0:install-file \
     -Dfile=${HOME}/common/target/common-0.0.1.jar \
     -DgroupId=com.bipbup \
     -DartifactId=common \
@@ -24,4 +24,4 @@ RUN mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file \
 ADD ./dispatcher ${HOME}/dispatcher
 RUN mvn -f ${HOME}/dispatcher/pom.xml -s ${MVN_SETTINGS} clean package
 
-CMD ["java", "-jar", "${HOME}/node/target/dispatcher-0.0.1.jar"]
+CMD ["java", "-jar", "/home/app/dispatcher/target/dispatcher-0.0.1.jar"]

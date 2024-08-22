@@ -5,6 +5,8 @@ volumes:
     driver: local
   kafka-data:
     driver: local
+  redis-data:
+    driver: local
 
 services:
   dispatcher:
@@ -40,8 +42,6 @@ services:
     build:
       context: ./
       dockerfile: ./node/Dockerfile
-    ports:
-      - ${NODE_PORT}:${NODE_PORT}
     environment:
       NODE_PORT: ${NODE_PORT}
       BOOTSTRAP_SERVERS: ${BOOTSTRAP_SERVERS}
@@ -65,38 +65,25 @@ services:
         max-size: '100m'
         max-file: '3'
     depends_on:
-      kafka:
-        condition: service_healthy
       postgres:
         condition: service_healthy
-
-  kafka:
-    container_name: kafka
-    hostname: kafka
-    image: apache/kafka:3.7.1
-    ports:
-      - ${KAFKA_PORT_MAPPING}
-    volumes:
-      - kafka-data:/var/lib/kafka
-    healthcheck:
-      test: [ "CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list" ]
-      interval: 10s
-      timeout: 10s
-      retries: 6
-      start_period: 30s
-    restart: unless-stopped
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
 
   postgres:
     container_name: postgres-db
+    hostname: postgres
     image: postgres:14.5
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - ${POSTGRES_PORT_MAPPING}
     environment:
-      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME} -d ${POSTGRES_DATABASE} -h 127.0.0.1" ]
       interval: 10s
@@ -105,4 +92,56 @@ services:
       start_period: 60s
     restart: unless-stopped
 
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:latest
+    volumes:
+      - redis-data:/var/lib/redis/data
+    ports:
+      - ${REDIS_PORT_MAPPING}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
 
+  zookeeper:
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"
+
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: [ "CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092" ]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+    restart: unless-stopped
