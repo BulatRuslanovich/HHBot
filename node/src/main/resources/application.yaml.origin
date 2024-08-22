@@ -1,24 +1,23 @@
 server:
-  port:
-
+  port: ${NODE_PORT:8091}
 spring:
   cache:
     type: redis
-    host:
-    port:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
     redis:
-      time-to-live: -1 # data will stay in the cache indefinitely
+      time-to-live: -1
   kafka:
-    bootstrap-servers:
+    bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:9092}
     topics:
-      answer-topic: ANSWER_TOPIC
-      edit-topic: EDIT_TOPIC
-      text-update-topic: TEXT_UPDATE_TOPIC
-      callback-query-update-topic: CALLBACK_QUERY_UPDATE_TOPIC
+      answer-topic: ${ANSWER_TOPIC}
+      edit-topic: ${EDIT_TOPIC}
+      text-update-topic: ${TEXT_UPDATE_TOPIC}
+      callback-query-update-topic: ${CALLBACK_QUERY_UPDATE_TOPIC}
   datasource:
-    url:
-    username:
-    password:
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: none
@@ -27,11 +26,11 @@ spring:
   liquibase:
     enabled: true
 headhunter:
-  user-agent:
+  user-agent: ${HH_USER_AGENT}
   endpoint:
-    searchForVacancy: https://api.hh.ru/vacancies
+    searchForVacancy: ${HH_SEARCH_FOR_VACANCY}
 notifier:
-  period: 600000
+  period: ${NOTIFIER_PERIOD}
 area:
-  update-period: 864000000 # for update area ids every 10 days
-salt:
+  update-period: ${AREA_PERIOD}
+salt: ${SALT}

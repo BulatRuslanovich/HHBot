@@ -75,7 +75,6 @@ public class QueryMenuStateHandler implements StateHandler {
         }
     }
 
-
     private String showDetailedQueryOutput(final AppUserConfig config) {
         StringBuilder output = new StringBuilder()
                 .append("*Название запроса:* ").append(config.getConfigName())

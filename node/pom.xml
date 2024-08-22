@@ -18,6 +18,7 @@
     <description>node-service</description>
 
     <properties>
+        <maven.compiler.plagin.version>3.13.0</maven.compiler.plagin.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -27,13 +28,14 @@
         <liquibase.version>4.24.0</liquibase.version>
         <hypersistence-utils.version>3.8.2</hypersistence-utils.version>
         <json.version>20231013</json.version>
+        <com.bipbup.common.version>0.0.1</com.bipbup.common.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.bipbup</groupId>
             <artifactId>common</artifactId>
-            <version>0.0.1</version>
+            <version>${com.bipbup.common.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -94,4 +96,17 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plagin.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
