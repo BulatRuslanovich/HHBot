@@ -1,14 +1,15 @@
 server:
-  port: ${NODE_PORT:8091}
+  port: ${NODE_PORT}
+
 spring:
   cache:
     type: redis
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
     redis:
       time-to-live: -1
   kafka:
-    bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${BOOTSTRAP_SERVERS}
     topics:
       answer-topic: ${ANSWER_TOPIC}
       edit-topic: ${EDIT_TOPIC}
@@ -25,12 +26,16 @@ spring:
     open-in-view: false
   liquibase:
     enabled: true
+
 headhunter:
   user-agent: ${HH_USER_AGENT}
   endpoint:
     searchForVacancy: ${HH_SEARCH_FOR_VACANCY}
+
 notifier:
   period: ${NOTIFIER_PERIOD}
+
 area:
   update-period: ${AREA_PERIOD}
+
 salt: ${SALT}
