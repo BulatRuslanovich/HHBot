@@ -35,7 +35,7 @@ public class NotifierServiceImpl implements NotifierService {
         var page = 0;
         var sizeOfPage = 500;
 
-        var configs = configService.getAll(page, sizeOfPage);
+        var configs = configService.getAll(page++, sizeOfPage);
 
         while (!configs.isEmpty()) {
 

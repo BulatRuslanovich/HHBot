@@ -80,9 +80,15 @@ public class WaitConfigNameStateHandler extends CancellableStateHandler {
         var telegramId = user.getTelegramId();
         var configId = configService.getSelectedConfigId(telegramId);
         configService.clearConfigSelection(telegramId);
-        return configService.getById(configId)
-                .map(c -> updateConfigName(user, c, configName))
-                .orElse(processConfigNotFoundMessage(user));
+
+        var optionalConfig = configService.getById(configId);
+
+        if (optionalConfig.isPresent()) {
+            var config = optionalConfig.get();
+            return updateConfigName(user, config, configName);
+        } else {
+            return processConfigNotFoundMessage(user);
+        }
     }
 
     private String processNewConfig(final AppUser user, final String configName) {
