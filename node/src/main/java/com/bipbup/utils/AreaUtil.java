@@ -1,5 +1,6 @@
 package com.bipbup.utils;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 
@@ -8,28 +9,26 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Stack;
 
 import static java.net.http.HttpResponse.BodyHandlers.ofString;
 
 @Slf4j
+@UtilityClass
 public class AreaUtil {
 
-    private static final String URL = "https://api.hh.ru/areas";
-    private static final int HTTP_STATUS_OK = 200;
+    private final String URL = "https://api.hh.ru/areas";
+    private final int HTTP_STATUS_OK = 200;
 
-    private AreaUtil() {
-    }
-
-    public static String getAreaIdFromApi(final String areaName) {
+    public String getAreaIdFromApi(final String areaName) {
         if (areaName == null)
             return null;
 
-        var client = HttpClient.newHttpClient();
         var uri = URI.create(URL);
         var request = HttpRequest.newBuilder().uri(uri).build();
         HttpResponse<String> response;
 
-        try {
+        try (var client = HttpClient.newHttpClient()) {
             response = client.send(request, ofString());
         } catch (IOException | InterruptedException e) {
             log.error("Error querying API", e);
@@ -49,20 +48,21 @@ public class AreaUtil {
         }
     }
 
-    private static String findAreaId(final JSONArray areas, final String name) {
-        for (int i = 0; i < areas.length(); i++) {
-            var area = areas.getJSONObject(i);
+    private String findAreaId(final JSONArray areas, final String name) {
+        Stack<JSONArray> stack = new Stack<>();
+        stack.push(areas);
 
-            var areaName = area.getString("name");
-            if (areaName.equalsIgnoreCase(name)) {
-                return area.getString("id");
-            }
+        while (!stack.isEmpty()) {
+            var currentAreas = stack.pop();
+            for (int i = 0; i < currentAreas.length(); i++) {
+                var area = currentAreas.getJSONObject(i);
 
-            if (area.has("areas")) {
-                var foundAreaId = findAreaId(area.getJSONArray("areas"), name);
-                if (foundAreaId != null)
-                    return foundAreaId;
+                var areaName = area.getString("name");
+                if (name.equalsIgnoreCase(areaName))
+                    return area.getString("id");
 
+                if (area.has("areas"))
+                    stack.push(area.getJSONArray("areas"));
             }
         }
 
