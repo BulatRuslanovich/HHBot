@@ -1,22 +1,22 @@
 server:
-  port: ${NODE_PORT}
+  port: ${NODE_PORT:8091}
 
 spring:
   cache:
     type: redis
-    host: ${REDIS_HOST}
-    port: ${REDIS_PORT}
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
     redis:
       time-to-live: -1
   kafka:
-    bootstrap-servers: ${BOOTSTRAP_SERVERS}
+    bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:9092}
     topics:
-      answer-topic: ${ANSWER_TOPIC}
-      edit-topic: ${EDIT_TOPIC}
-      text-update-topic: ${TEXT_UPDATE_TOPIC}
-      callback-query-update-topic: ${CALLBACK_QUERY_UPDATE_TOPIC}
+      answer-topic: ${ANSWER_TOPIC:answer}
+      edit-topic: ${EDIT_TOPIC:edit}
+      text-update-topic: ${TEXT_UPDATE_TOPIC:text-update}
+      callback-query-update-topic: ${CALLBACK_QUERY_UPDATE_TOPIC:callback-update}
   datasource:
-    url: ${POSTGRES_URL}
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/hhb_db}
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
   jpa:
@@ -28,14 +28,14 @@ spring:
     enabled: true
 
 headhunter:
-  user-agent: ${HH_USER_AGENT}
+  user-agent: ${HH_USER_AGENT:HHBot/1.0 (bulatruslanovich@gmail.com)}
   endpoint:
-    searchForVacancy: ${HH_SEARCH_FOR_VACANCY}
+    searchForVacancy: ${HH_SEARCH_FOR_VACANCY:https://api.hh.ru/vacancies}
 
 notifier:
-  period: ${NOTIFIER_PERIOD}
+  period: ${NOTIFIER_PERIOD:600000}
 
 area:
-  update-period: ${AREA_PERIOD}
+  update-period: ${AREA_PERIOD:864000000}
 
-salt: ${SALT}
+salt: ${SALT:qwertyuiiuytrewer}

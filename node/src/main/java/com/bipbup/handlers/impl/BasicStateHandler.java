@@ -68,7 +68,7 @@ public class BasicStateHandler implements StateHandler {
         }
 
         userService.saveUserState(user.getTelegramId(), QUERY_LIST_STATE);
-        log.debug("State of user {} set to QUERY_LIST_STATE", user.getFirstName());
+        log.info("State of user {} set to QUERY_LIST_STATE", user.getFirstName());
         return USER_QUERIES.getTemplate();
     }
 }
