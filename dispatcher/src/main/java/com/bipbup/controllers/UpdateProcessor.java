@@ -15,13 +15,13 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Component
 public class UpdateProcessor {
 
+    private final UpdateProducer updateProducer;
+
     @Value("${spring.kafka.topics.text-update-topic}")
     private String textUpdateTopic;
 
     @Value("${spring.kafka.topics.callback-query-update-topic}")
     private String callbackQueryUpdateTopic;
-
-    private final UpdateProducer updateProducer;
 
     private MyTelegramBot myTelegramBot;
 
@@ -70,24 +70,24 @@ public class UpdateProcessor {
     private void processCallbackQuery(final Update update) {
         var callbackQuery = update.getCallbackQuery();
 
-        if (callbackQuery != null) {
-            log.info("User {} sent callback query with data: {}",
-                    callbackQuery.getFrom().getFirstName(), callbackQuery.getData());
-            updateProducer.produce(callbackQueryUpdateTopic, update);
-        } else {
-            log.error("Update has no callback query");
+        log.info("User {} sent callback query with data: {}",
+                callbackQuery.getFrom().getFirstName(), callbackQuery.getData());
+        updateProducer.produce(callbackQueryUpdateTopic, update);
+    }
+
+    public void setView(final SendMessage message) {
+        try {
+            myTelegramBot.execute(message);
+        } catch (TelegramApiException e) {
+            log.error("Error with send message execute", e);
         }
     }
 
-    public void setView(final SendMessage sendMessage) {
-        myTelegramBot.sendAnswerMessage(sendMessage);
-    }
-
-    public void setEdit(final EditMessageText editMessage) {
+    public void setEdit(final EditMessageText message) {
         try {
-            myTelegramBot.execute(editMessage);
+            myTelegramBot.execute(message);
         } catch (TelegramApiException e) {
-            log.error("Error with edit message execute");
+            log.error("Error with edit message execute", e);
         }
     }
 }

@@ -35,6 +35,11 @@ public abstract class CancellableStateHandler implements StateHandler {
                 || NEWQUERY.getCommand().equals(input);
     }
 
+    protected boolean isConfigUpdating(final AppUser user) {
+        var configId = configService.getSelectedConfigId(user.getTelegramId());
+        return configId != null;
+    }
+
     protected String processCancelCommand(final AppUser user) {
         userService.clearUserState(user.getTelegramId());
         log.info("User {} cancelled the command and state set to BASIC_STATE", user.getFirstName());
@@ -84,10 +89,5 @@ public abstract class CancellableStateHandler implements StateHandler {
         }
 
         return configs.get(configs.size() - 1);
-    }
-
-    protected boolean isConfigUpdating(final AppUser user) {
-        var configId = configService.getSelectedConfigId(user.getTelegramId());
-        return configId != null;
     }
 }

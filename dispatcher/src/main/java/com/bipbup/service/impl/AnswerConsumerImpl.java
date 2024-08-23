@@ -26,5 +26,4 @@ public class AnswerConsumerImpl implements AnswerConsumer {
     public void consumeEditMessage(final EditMessageWrapper editMessage) {
         updateProcessor.setEdit(editMessage.getMessage());
     }
-
 }

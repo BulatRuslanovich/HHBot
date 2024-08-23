@@ -53,7 +53,7 @@ public class NotifierServiceImpl implements NotifierService {
     }
 
     private void processNewVacancies(final AppUserConfig config) {
-        var newVacancies = apiHandler.getNewVacancies(config);
+        var newVacancies = apiHandler.fetchNewVacancies(config);
         var user = config.getAppUser();
 
         if (!newVacancies.isEmpty()) {

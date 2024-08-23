@@ -25,7 +25,6 @@ public class WaitConfigNameStateHandler extends CancellableStateHandler {
         super(userService, configService, basicStateHandler);
     }
 
-
     @Override
     public String process(final AppUser user, final String input) {
         if (isCancelCommand(input))

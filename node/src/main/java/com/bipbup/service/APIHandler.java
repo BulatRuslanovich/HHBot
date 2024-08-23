@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface APIHandler {
 
-    List<VacancyDTO> getNewVacancies(final AppUserConfig config);
+    List<VacancyDTO> fetchNewVacancies(final AppUserConfig config);
 }

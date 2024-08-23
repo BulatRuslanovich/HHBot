@@ -37,16 +37,29 @@ import static com.bipbup.utils.factory.VacancyFactory.createVacancyDTO;
 public class APIHandlerImpl implements APIHandler {
 
     public static final int COUNT_OF_DAYS = 2;
+
     private static final int COUNT_OF_VACANCIES_IN_PAGE = 100;
+
     private static final int TIMESTAMP_FULL_LENGTH = 24;
+
     private static final int TIMESTAMP_TRIMMED_LENGTH = 19;
+
     private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
+
     private final APIConnection apiConnection;
+
     private final ObjectMapper objectMapper;
+
     private final RestTemplate restTemplate;
+
     private final AreaService areaService;
+
     @Value("${headhunter.endpoint.searchForVacancy}")
     private String searchForVacancyURI;
+
+    private static boolean isPresentJson(final JsonNode jsonNode) {
+        return jsonNode != null && !jsonNode.isEmpty();
+    }
 
     private static void addVacanciesFromPage(final AppUserConfig config,
                                              final List<VacancyDTO> vacancyList,
@@ -61,10 +74,6 @@ public class APIHandlerImpl implements APIHandler {
         });
     }
 
-    private static boolean isPresentJson(final JsonNode jsonNode) {
-        return jsonNode != null && !jsonNode.isEmpty();
-    }
-
     private static LocalDateTime getPublishedAtFromJson(final JsonNode vacancy) {
         var timestamp = vacancy.get("published_at").asText();
 
@@ -76,9 +85,9 @@ public class APIHandlerImpl implements APIHandler {
     }
 
     @Override
-    public List<VacancyDTO> getNewVacancies(final AppUserConfig config) {
+    public List<VacancyDTO> fetchNewVacancies(final AppUserConfig config) {
         var request = apiConnection.createRequestWithHeaders();
-        var pageCount = getPageCount(request, config);
+        var pageCount = fetchPageCount(request, config);
         List<VacancyDTO> vacancyList = new ArrayList<>();
 
         for (int i = 0; i <= pageCount; i++) {
@@ -88,26 +97,8 @@ public class APIHandlerImpl implements APIHandler {
         return vacancyList;
     }
 
-    private void processVacancyPage(final AppUserConfig config,
-                                    final HttpEntity<HttpHeaders> request,
-                                    final int pageNum,
-                                    final List<VacancyDTO> vacancyList) {
-        var jsonPage = fetchVacancyPage(request, pageNum, config);
-
-        if (isPresentJson(jsonPage))
-            addVacanciesFromPage(config, vacancyList, jsonPage.get("items"));
-    }
-
-    private int getPageCount(final HttpEntity<HttpHeaders> request,
-                             final AppUserConfig config) {
-        var firstPage = fetchVacancyPage(request, 0, config);
-
-        if (isPresentJson(firstPage)) {
-            var totalCount = firstPage.get("found").asInt(0);
-            return (int) Math.ceil((double) totalCount / COUNT_OF_VACANCIES_IN_PAGE);
-        }
-
-        return 0;
+    private String encodeQueryText(String queryText) {
+        return queryText.replace("+", "%2B");
     }
 
     private JsonNode fetchVacancyPage(final HttpEntity<HttpHeaders> request,
@@ -124,21 +115,26 @@ public class APIHandlerImpl implements APIHandler {
         }
     }
 
-    private String generateVacancySearchUri(final int pageNumber, final AppUserConfig config) {
-        var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
-                .queryParam("page", pageNumber)
-                .queryParam("per_page", COUNT_OF_VACANCIES_IN_PAGE)
-                .queryParam("text", encodeQueryText(config.getQueryText()))
-                .queryParam("search_field", "name")
-                .queryParam("period", COUNT_OF_DAYS)
-                .queryParam("order_by", "publication_time");
+    private int fetchPageCount(final HttpEntity<HttpHeaders> request,
+                               final AppUserConfig config) {
+        var firstPage = fetchVacancyPage(request, 0, config);
 
-        addAreaParam(builder, config);
-        addExperienceParam(builder, config);
-        addEducationParam(builder, config);
-        addScheduleParam(builder, config);
+        if (isPresentJson(firstPage)) {
+            var totalCount = firstPage.get("found").asInt(0);
+            return (int) Math.ceil((double) totalCount / COUNT_OF_VACANCIES_IN_PAGE);
+        }
 
-        return builder.build().toUriString();
+        return 0;
+    }
+
+    private void processVacancyPage(final AppUserConfig config,
+                                    final HttpEntity<HttpHeaders> request,
+                                    final int pageNum,
+                                    final List<VacancyDTO> vacancyList) {
+        var jsonPage = fetchVacancyPage(request, pageNum, config);
+
+        if (isPresentJson(jsonPage))
+            addVacanciesFromPage(config, vacancyList, jsonPage.get("items"));
     }
 
     private void addAreaParam(UriComponentsBuilder builder, AppUserConfig config) {
@@ -178,7 +174,20 @@ public class APIHandlerImpl implements APIHandler {
             builder.queryParam("schedule", types);
     }
 
-    private String encodeQueryText(String queryText) {
-        return queryText.replace("+", "%2B");
+    private String generateVacancySearchUri(final int pageNumber, final AppUserConfig config) {
+        var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
+                .queryParam("page", pageNumber)
+                .queryParam("per_page", COUNT_OF_VACANCIES_IN_PAGE)
+                .queryParam("text", encodeQueryText(config.getQueryText()))
+                .queryParam("search_field", "name")
+                .queryParam("period", COUNT_OF_DAYS)
+                .queryParam("order_by", "publication_time");
+
+        addAreaParam(builder, config);
+        addExperienceParam(builder, config);
+        addEducationParam(builder, config);
+        addScheduleParam(builder, config);
+
+        return builder.build().toUriString();
     }
 }

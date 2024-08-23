@@ -9,5 +9,6 @@ import java.util.List;
 
 @Repository
 public interface AppUserConfigDAO extends JpaRepository<AppUserConfig, Long> {
+
     List<AppUserConfig> findByAppUser(AppUser appUser);
 }

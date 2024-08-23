@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 @RequiredArgsConstructor
 @Service
 public class AnswerProducerImpl implements AnswerProducer {
+
     @Value("${spring.kafka.topics.answer-topic}")
     private String answerTopic;
 

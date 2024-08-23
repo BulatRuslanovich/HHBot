@@ -36,6 +36,20 @@ public class WaitScheduleStateHandler implements StateHandler {
         return "";
     }
 
+    private boolean hasSavePrefix(final String input) {
+        return input.startsWith(Prefix.SCHEDULE_SAVE);
+    }
+
+    private boolean hasSchedulePrefix(final String input) {
+        return input.startsWith(Prefix.WAIT_SCHEDULE_STATE);
+    }
+
+    private String processConfigNotFoundMessage(final AppUser user, final long configId) {
+        userService.clearUserState(user.getTelegramId());
+        log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
+        return CONFIG_NOT_FOUND.getTemplate();
+    }
+
     private String processSaveScheduleTypesCommand(final AppUser user, final String input) {
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);
@@ -82,19 +96,5 @@ public class WaitScheduleStateHandler implements StateHandler {
         } else {
             return processConfigNotFoundMessage(user, configId);
         }
-    }
-
-    private String processConfigNotFoundMessage(final AppUser user, final long configId) {
-        userService.clearUserState(user.getTelegramId());
-        log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-        return CONFIG_NOT_FOUND.getTemplate();
-    }
-
-    private boolean hasSavePrefix(final String input) {
-        return input.startsWith(Prefix.SCHEDULE_SAVE);
-    }
-
-    private boolean hasSchedulePrefix(final String input) {
-        return input.startsWith(Prefix.WAIT_SCHEDULE_STATE);
     }
 }

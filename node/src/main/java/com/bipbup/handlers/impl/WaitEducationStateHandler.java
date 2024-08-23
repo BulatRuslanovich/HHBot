@@ -36,6 +36,14 @@ public class WaitEducationStateHandler implements StateHandler {
         return "";
     }
 
+    private boolean hasSavePrefix(final String input) {
+        return input.startsWith(Prefix.EDU_SAVE);
+    }
+
+    private boolean hasEducationPrefix(final String input) {
+        return input.startsWith(Prefix.WAIT_EDU_STATE);
+    }
+
     private String processSaveEducationLevelsCommand(final AppUser user, final String input) {
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);
@@ -85,13 +93,5 @@ public class WaitEducationStateHandler implements StateHandler {
         userService.clearUserState(user.getTelegramId());
         log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
         return CONFIG_NOT_FOUND.getTemplate();
-    }
-
-    private boolean hasSavePrefix(final String input) {
-        return input.startsWith(Prefix.EDU_SAVE);
-    }
-
-    private boolean hasEducationPrefix(final String input) {
-        return input.startsWith(Prefix.WAIT_EDU_STATE);
     }
 }

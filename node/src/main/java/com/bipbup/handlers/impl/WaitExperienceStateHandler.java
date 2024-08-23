@@ -32,6 +32,10 @@ public class WaitExperienceStateHandler implements StateHandler {
         return "";
     }
 
+    private boolean hasExperiencePrefix(String input) {
+        return input.startsWith(Prefix.WAIT_EXP_STATE);
+    }
+
     private String processSetExperienceCommand(final AppUser user, final String input) {
         var prefix = input.substring(0, input.lastIndexOf('_') + 1);
         var configId = decoder.parseIdFromCallback(input);
@@ -52,9 +56,5 @@ public class WaitExperienceStateHandler implements StateHandler {
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return CONFIG_NOT_FOUND.getTemplate();
         }
-    }
-
-    private boolean hasExperiencePrefix(String input) {
-        return input.startsWith(Prefix.WAIT_EXP_STATE);
     }
 }

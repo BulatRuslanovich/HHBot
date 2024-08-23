@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -15,12 +14,13 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Component
 public class MyTelegramBot extends TelegramWebhookBot {
 
+    private final UpdateProcessor updateProcessor;
+
     @Value("${bot.uri}")
     private String botUri;
+
     @Value("${bot.username}")
     private String botUsername;
-
-    private final UpdateProcessor updateProcessor;
 
     public MyTelegramBot(final UpdateProcessor updateProcessor,
                          final @Value("${bot.token}") String botToken) {
@@ -38,17 +38,7 @@ public class MyTelegramBot extends TelegramWebhookBot {
                     .build();
             this.setWebhook(webhook);
         } catch (TelegramApiException e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    public void sendAnswerMessage(final SendMessage message) {
-        if (message != null) {
-            try {
-                execute(message);
-            } catch (TelegramApiException e) {
-                log.error(e.getMessage());
-            }
+            log.error("Error with webhook", e);
         }
     }
 
