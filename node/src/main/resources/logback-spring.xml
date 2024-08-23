@@ -1,5 +1,4 @@
 <configuration>
-    <!-- Консольный аппендер -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
             <layout class="ch.qos.logback.classic.PatternLayout">
@@ -10,7 +9,6 @@
         </encoder>
     </appender>
 
-    <!-- Файловый аппендер для логов категории "node" -->
     <appender name="NODE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>./log/node.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -22,13 +20,11 @@
         </encoder>
     </appender>
 
-    <!-- Логирование сообщений для пакета com.bipbup на уровнях DEBUG, INFO и ERROR -->
     <logger name="com.bipbup" level="debug" additivity="false">
         <appender-ref ref="NODE_FILE"/>
     </logger>
 
-    <!-- Указание общего уровня логирования для всего приложения -->
-    <root level="error">
+    <root level="info">
         <appender-ref ref="CONSOLE"/>
     </root>
 </configuration>

@@ -9,7 +9,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import static java.net.http.HttpResponse.BodyHandlers.ofString;
 
@@ -24,11 +25,12 @@ public class AreaUtil {
         if (areaName == null)
             return null;
 
+        var client = HttpClient.newHttpClient();
         var uri = URI.create(URL);
         var request = HttpRequest.newBuilder().uri(uri).build();
         HttpResponse<String> response;
 
-        try (var client = HttpClient.newHttpClient()) {
+        try {
             response = client.send(request, ofString());
         } catch (IOException | InterruptedException e) {
             log.error("Error querying API", e);
@@ -49,11 +51,11 @@ public class AreaUtil {
     }
 
     private String findAreaId(final JSONArray areas, final String name) {
-        Stack<JSONArray> stack = new Stack<>();
-        stack.push(areas);
+        Deque<JSONArray> deque = new ArrayDeque<>();
+        deque.push(areas);
 
-        while (!stack.isEmpty()) {
-            var currentAreas = stack.pop();
+        while (!deque.isEmpty()) {
+            var currentAreas = deque.pop();
             for (int i = 0; i < currentAreas.length(); i++) {
                 var area = currentAreas.getJSONObject(i);
 
@@ -62,7 +64,7 @@ public class AreaUtil {
                     return area.getString("id");
 
                 if (area.has("areas"))
-                    stack.push(area.getJSONArray("areas"));
+                    deque.push(area.getJSONArray("areas"));
             }
         }
 
