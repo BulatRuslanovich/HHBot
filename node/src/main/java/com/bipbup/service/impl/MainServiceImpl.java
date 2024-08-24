@@ -8,8 +8,12 @@ import com.bipbup.handlers.impl.QueryDeleteStateHandler;
 import com.bipbup.handlers.impl.QueryListStateHandler;
 import com.bipbup.handlers.impl.QueryMenuStateHandler;
 import com.bipbup.handlers.impl.QueryUpdateStateHandler;
+import com.bipbup.handlers.impl.WaitAreaStateHandler;
 import com.bipbup.handlers.impl.WaitConfigNameStateHandler;
+import com.bipbup.handlers.impl.WaitEducationStateHandler;
+import com.bipbup.handlers.impl.WaitExperienceStateHandler;
 import com.bipbup.handlers.impl.WaitQueryStateHandler;
+import com.bipbup.handlers.impl.WaitScheduleStateHandler;
 import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.MainService;
 import com.bipbup.service.UserService;
@@ -24,19 +28,25 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 
 import java.util.Map;
+import java.util.Set;
 
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_DELETE_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_AREA_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_EDUCATION_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
-import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
+import static com.bipbup.enums.AppUserState.WAIT_SCHEDULE_STATE;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 
 @Service
 public class MainServiceImpl implements MainService {
+
     private final UserService userService;
 
     private final KeyboardMarkupFactory markupFactory;
@@ -45,7 +55,7 @@ public class MainServiceImpl implements MainService {
 
     private final Map<AppUserState, StateHandler> messageStateHandlers;
 
-    private final Map<AppUserState, StateHandler> callbackStateHandlers;
+    private final Set<CallbackHandlerProperties> callbackHandlerProperties;
 
     public MainServiceImpl(final UserService userService,
                            final KeyboardMarkupFactory markupFactory,
@@ -56,19 +66,31 @@ public class MainServiceImpl implements MainService {
                            final QueryListStateHandler queryListStateHandler,
                            final QueryMenuStateHandler queryMenuStateHandler,
                            final QueryDeleteStateHandler queryDeleteStateHandler,
-                           final QueryUpdateStateHandler queryUpdateStateHandler) {
+                           final QueryUpdateStateHandler queryUpdateStateHandler,
+                           final WaitExperienceStateHandler waitExperienceStateHandler,
+                           final WaitAreaStateHandler waitAreaStateHandler,
+                           final WaitEducationStateHandler waitEducationStateHandler,
+                           final WaitScheduleStateHandler waitScheduleStateHandler) {
         this.userService = userService;
         this.markupFactory = markupFactory;
         this.answerProducer = answerProducer;
 
-        this.messageStateHandlers = Map.of(BASIC_STATE, basicStateHandler,
+        this.messageStateHandlers = Map.of(
+                BASIC_STATE, basicStateHandler,
                 WAIT_CONFIG_NAME_STATE, waitConfigNameStateHandle,
-                WAIT_QUERY_STATE, waitQueryStateHandler);
+                WAIT_QUERY_STATE, waitQueryStateHandler,
+                WAIT_AREA_STATE, waitAreaStateHandler
+        );
 
-        this.callbackStateHandlers = Map.of(QUERY_LIST_STATE, queryListStateHandler,
-                QUERY_MENU_STATE, queryMenuStateHandler,
-                QUERY_DELETE_STATE, queryDeleteStateHandler,
-                QUERY_UPDATE_STATE, queryUpdateStateHandler);
+        this.callbackHandlerProperties = Set.of(
+                new CallbackHandlerProperties(QUERY_LIST_STATE, queryListStateHandler, Prefix.QUERY),
+                new CallbackHandlerProperties(QUERY_MENU_STATE, queryMenuStateHandler, Prefix.MENU_STATE),
+                new CallbackHandlerProperties(QUERY_DELETE_STATE, queryDeleteStateHandler, Prefix.DELETE_STATE),
+                new CallbackHandlerProperties(QUERY_UPDATE_STATE, queryUpdateStateHandler, Prefix.UPDATE_STATE),
+                new CallbackHandlerProperties(WAIT_EXPERIENCE_STATE, waitExperienceStateHandler, Prefix.WAIT_EXP_STATE),
+                new CallbackHandlerProperties(WAIT_EDUCATION_STATE, waitEducationStateHandler, Prefix.WAIT_EDU_STATE),
+                new CallbackHandlerProperties(WAIT_SCHEDULE_STATE, waitScheduleStateHandler, Prefix.WAIT_SCHEDULE_STATE)
+        );
     }
 
     @Override
@@ -80,64 +102,68 @@ public class MainServiceImpl implements MainService {
         var output = handler.process(user, text);
 
         if (!output.isEmpty())
-            processOutput(user, update, output);
+            processMessageOutput(user, output);
     }
 
     @Override
     public void processCallbackQuery(final Update update) {
         var callbackData = update.getCallbackQuery().getData();
         var user = userService.findOrSaveAppUser(update);
-        var userState = userService.getUserState(user.getTelegramId());
+        var state = userService.getUserState(user.getTelegramId());
 
-        var handler = callbackStateHandlers.getOrDefault(userState, getCallbackStateHandler(callbackData));
+        var optionalProperty = callbackHandlerProperties.stream()
+                .filter(p -> p.state().equals(state))
+                .findFirst();
+
+        var handler = optionalProperty.isPresent()
+                ? optionalProperty.get().handler()
+                : getCallbackStateHandler(callbackData);
+
         var output = handler.process(user, callbackData);
 
         if (!output.isEmpty())
-            processOutput(user, update, output);
+            processCallbackQueryOutput(user, update.getCallbackQuery(), output);
     }
 
-    private StateHandler getCallbackStateHandler(String callbackData) {
-        if (callbackData.startsWith("query_"))
-            return callbackStateHandlers.get(QUERY_LIST_STATE);
-        if (callbackData.startsWith("action_") || callbackData.equals(MYQUERIES_COMMAND))
-            return callbackStateHandlers.get(QUERY_MENU_STATE);
-        if (callbackData.startsWith("update_"))
-            return callbackStateHandlers.get(QUERY_UPDATE_STATE);
-        if (callbackData.startsWith("delete_"))
-            return callbackStateHandlers.get(QUERY_DELETE_STATE);
+    private StateHandler getCallbackStateHandler(final String callbackData) {
+        var prefix = extractPrefix(callbackData);
 
-        return messageStateHandlers.get(BASIC_STATE);
+        var optionalProperty = callbackHandlerProperties.stream()
+                .filter(p -> p.prefix().equals(prefix))
+                .findFirst();
+
+        return optionalProperty.isPresent()
+                ? optionalProperty.get().handler()
+                : messageStateHandlers.get(BASIC_STATE);
     }
 
-    private void processOutput(final AppUser user,
-                               final Update update,
-                               final String output) {
-        var userState = userService.getUserState(user.getTelegramId());
-        if (userState.equals(QUERY_LIST_STATE) && !update.hasCallbackQuery())
-            sendAnswer(output, user.getTelegramId(), markupFactory.createUserConfigListKeyboard(user));
-        else if (update.hasCallbackQuery())
-            processCallbackQuery(user, update, output);
+    private String extractPrefix(String callbackData) {
+        return callbackData.substring(0, callbackData.indexOf('_') + 1);
+    }
+
+    private void processMessageOutput(final AppUser user, final String output) {
+        var telegramId = user.getTelegramId();
+
+        sendAnswer(output, telegramId, fetchKeyboardWithoutCallback(user));
+    }
+
+    private void processCallbackQueryOutput(final AppUser user,
+                                            final CallbackQuery callbackQuery,
+                                            final String output) {
+        var callbackData = callbackQuery.getData();
+        var telegramId = user.getTelegramId();
+        var messageId = callbackQuery.getMessage().getMessageId();
+        var state = userService.getUserState(telegramId);
+
+        if (!state.isWaiting() || isMultiSelecting(callbackData))
+            editAnswer(output, telegramId, messageId, fetchKeyboardWithCallback(user, callbackData));
         else
-            sendAnswer(output, user.getTelegramId());
+            sendAnswer(output, telegramId, fetchKeyboardWithCallback(user, callbackData));
     }
 
-    private void processCallbackQuery(final AppUser user,
-                                      final Update update,
-                                      final String output) {
-        var callbackQuery = update.getCallbackQuery();
-
-        var userState = userService.getUserState(user.getTelegramId());
-        var isWaitState = userState.toString().startsWith("WAIT_");
-        if (isWaitState)
-            sendAnswer(output, user.getTelegramId());
-        else
-            editAnswer(output, user.getTelegramId(), callbackQuery.getMessage().getMessageId(),
-                    fetchKeyboard(user, callbackQuery));
-    }
-
-    private void sendAnswer(final String text,
-                            final Long chatId) {
-        sendAnswer(text, chatId, null);
+    private static boolean isMultiSelecting(final String callbackData) {
+        return callbackData.startsWith(Prefix.WAIT_EDU_STATE)
+                || callbackData.startsWith(Prefix.WAIT_SCHEDULE_STATE);
     }
 
     private void sendAnswer(final String text,
@@ -147,6 +173,7 @@ public class MainServiceImpl implements MainService {
                 .chatId(chatId)
                 .text(text)
                 .replyMarkup(keyboard != null ? keyboard : new ReplyKeyboardRemove(true))
+                .parseMode("Markdown")
                 .build();
 
         answerProducer.produceAnswer(sendMessage);
@@ -161,24 +188,33 @@ public class MainServiceImpl implements MainService {
                 .chatId(chatId)
                 .messageId(messageId)
                 .replyMarkup(markup)
+                .parseMode("Markdown")
                 .build();
 
         answerProducer.produceEdit(messageText);
     }
 
-    private InlineKeyboardMarkup fetchKeyboard(final AppUser user,
-                                               final CallbackQuery callbackQuery) {
+    private InlineKeyboardMarkup fetchKeyboardWithCallback(final AppUser user, final String callbackData) {
         var userState = userService.getUserState(user.getTelegramId());
+
+        return switch (userState) {
+            case QUERY_MENU_STATE -> markupFactory.createConfigManagementKeyboard(callbackData);
+            case QUERY_DELETE_STATE -> markupFactory.createDeleteConfirmationKeyboard(callbackData);
+            case QUERY_UPDATE_STATE -> markupFactory.createUpdateConfigKeyboard(callbackData);
+            case WAIT_EXPERIENCE_STATE -> markupFactory.createExperienceSelectionKeyboard(callbackData);
+            case WAIT_EDUCATION_STATE -> markupFactory.createEducationLevelSelectionKeyboard(user, callbackData);
+            case WAIT_SCHEDULE_STATE -> markupFactory.createScheduleTypeSelectionKeyboard(user, callbackData);
+            case QUERY_LIST_STATE -> markupFactory.createUserConfigListKeyboard(user);
+            default -> null;
+        };
+    }
+
+    private InlineKeyboardMarkup fetchKeyboardWithoutCallback(final AppUser user) {
+        var userState = userService.getUserState(user.getTelegramId());
+
         if (userState.equals(QUERY_LIST_STATE))
             return markupFactory.createUserConfigListKeyboard(user);
-        if (userState.equals(QUERY_MENU_STATE))
-            return markupFactory.createConfigManagementKeyboard(callbackQuery);
-        if (userState.equals(QUERY_DELETE_STATE))
-            return markupFactory.createDeleteConfirmationKeyboard(callbackQuery);
-        if (userState.equals(QUERY_UPDATE_STATE))
-            return markupFactory.createUpdateConfigKeyboard(callbackQuery);
 
         return null;
     }
 }
-

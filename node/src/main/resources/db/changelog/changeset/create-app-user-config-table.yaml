@@ -30,7 +30,7 @@ databaseChangeLog:
                   name: query_text
                   type: varchar(255)
               - column:
-                  name: region
+                  name: area
                   type: varchar(255)
               - column:
                   name: schedule_params

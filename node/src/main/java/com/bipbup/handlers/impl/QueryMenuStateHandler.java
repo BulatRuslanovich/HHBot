@@ -8,20 +8,25 @@ import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import com.bipbup.utils.Decoder;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import static com.bipbup.enums.AppUserState.QUERY_DELETE_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRMATION_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.DELETE_PREFIX;
-import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
-import static com.bipbup.utils.CommandMessageConstants.UPDATE_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.DELETE_CONFIRMATION;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class QueryMenuStateHandler implements StateHandler {
+
     private final UserService userService;
 
     private final ConfigService configService;
@@ -30,91 +35,75 @@ public class QueryMenuStateHandler implements StateHandler {
 
     private final BasicStateHandler basicStateHandler;
 
-    public QueryMenuStateHandler(UserService userService,
-                                 ConfigService configService,
-                                 Decoder decoder,
-                                 BasicStateHandler basicStateHandler) {
-        this.userService = userService;
-        this.configService = configService;
-        this.decoder = decoder;
-        this.basicStateHandler = basicStateHandler;
-    }
-
     @Override
-    public String process(AppUser user, String input) {
-        if (isBackToQueryListCommand(input)) return processBackToQueryListCommand(user);
-        if (hasDeletePrefix(input)) return processDeleteCommand(user, input);
-        if (hasUpdatePrefix(input)) return processUpdateCommand(user, input);
+    public String process(final AppUser user, final String input) {
+        if (isBackToQueryListCommand(input))
+            return processBackToQueryListCommand(user);
+        if (hasDeletePrefix(input))
+            return processConfigActionCommand(user, input, QUERY_DELETE_STATE);
+        if (hasUpdatePrefix(input))
+            return processConfigActionCommand(user, input, QUERY_UPDATE_STATE);
 
         return "";
     }
 
-    private String processBackToQueryListCommand(AppUser user) {
-        return basicStateHandler.process(user, MYQUERIES_COMMAND);
+    private String processBackToQueryListCommand(final AppUser user) {
+        return basicStateHandler.process(user, MYQUERIES.getCommand());
     }
 
-    private boolean isBackToQueryListCommand(String input) {
-        return MYQUERIES_COMMAND.equals(input);
+    private boolean isBackToQueryListCommand(final String input) {
+        return MYQUERIES.getCommand().equals(input);
     }
 
-    private boolean hasUpdatePrefix(String input) {
-        return input.startsWith(UPDATE_PREFIX);
+    private boolean hasUpdatePrefix(final String input) {
+        return input.startsWith(Prefix.UPDATE);
     }
 
-    private boolean hasDeletePrefix(String input) {
-        return input.startsWith(DELETE_PREFIX);
+    private boolean hasDeletePrefix(final String input) {
+        return input.startsWith(Prefix.DELETE);
     }
 
-    private void appendEnumParams(StringBuilder output, EnumParam[] values, String prefix) {
+    private void appendEnumParams(StringBuilder output, final EnumParam[] values, final String prefix) {
         if (values != null && values.length > 0) {
             output.append(prefix);
-            for (EnumParam value : values) {
-                output.append(value.getDescription()).append(", ");
-            }
-            output.setLength(output.length() - " ,".length());
+
+            String paramNames = Arrays.stream(values)
+                    .map(param -> "• " + param.getDescription())
+                    .collect(Collectors.joining("\n"));
+
+            output.append(paramNames);
         }
     }
 
-    private String showDetailedQueryOutput(AppUserConfig config) {
+    private String showDetailedQueryOutput(final AppUserConfig config) {
         StringBuilder output = new StringBuilder()
-                .append(config.getConfigName())
-                .append("\nТекст запроса: ").append(config.getQueryText())
-                .append("\nРегион: ").append(config.getRegion() == null ? "Любой" : config.getRegion())
-                .append("\nОпыт работы: ").append(config.getExperience().getDescription());
+                .append("*Название запроса:* ").append(config.getConfigName())
+                .append("\n*Текст запроса:* ").append(config.getQueryText())
+                .append("\n*Регион:* ").append(config.getArea() == null ? "Любой" : config.getArea())
+                .append("\n*Опыт работы:* ").append(config.getExperience().getDescription());
 
-        appendEnumParams(output, config.getEducationLevels(), "\nУровень образования: ");
-        appendEnumParams(output, config.getScheduleTypes(), "\nТип графика: ");
+        appendEnumParams(output, config.getEducationLevels(), "\n*Уровень образования:* \n");
+        appendEnumParams(output, config.getScheduleTypes(), "\n*Тип графика:* \n");
 
         return output.toString();
     }
 
-    private String processDeleteCommand(AppUser user, String input) {
-        return processConfigActionCommand(user, input, DELETE_PREFIX, QUERY_DELETE_STATE);
-    }
+    private String processConfigActionCommand(final AppUser user, final String input, final AppUserState state) {
+        var configId = decoder.parseIdFromCallback(input);
+        var optionalConfig = configService.getById(configId);
 
-    private String processUpdateCommand(AppUser user, String input) {
-        return processConfigActionCommand(user, input, UPDATE_PREFIX, QUERY_UPDATE_STATE);
-    }
-
-    private String processConfigActionCommand(AppUser user, String input,
-                                              String prefix, AppUserState state) {
-        var hash = input.substring(prefix.length());
-        var configId = decoder.idOf(hash);
-        var optionalAppUserConfig = configService.getById(configId);
-
-        if (optionalAppUserConfig.isPresent()) {
-            AppUserConfig config = optionalAppUserConfig.get();
-
+        if (optionalConfig.isPresent()) {
+            var config = optionalConfig.get();
             userService.saveUserState(user.getTelegramId(), state);
-            log.debug("User {} selected menu action and state set to {}", user.getFirstName(), state);
+            log.info("User {} selected menu action and state set to {}", user.getFirstName(), state);
 
-            if (prefix.equals(UPDATE_PREFIX))
+            if (state == QUERY_UPDATE_STATE)
                 return showDetailedQueryOutput(config);
-            else
-                return DELETE_CONFIRMATION_MESSAGE;
+
+            return DELETE_CONFIRMATION.getTemplate();
         } else {
-            log.warn("Configuration with id {} not found for user {}", configId, user.getFirstName());
-            return CONFIG_NOT_FOUND_MESSAGE;
+            log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
+            return CONFIG_NOT_FOUND.getTemplate();
         }
     }
 }

@@ -1,0 +1,19 @@
+server:
+  port: ${DISPATCHER_PORT:8090}
+  ssl:
+    enabled: false
+
+bot:
+  uri: ${BOT_URI}
+  username: ${BOT_USERNAME}
+  token: ${BOT_TOKEN}
+
+spring:
+  kafka:
+    bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:9092}
+    topics:
+      answer-topic: ${ANSWER_TOPIC:answer}
+      edit-topic: ${EDIT_TOPIC:edit}
+      text-update-topic: ${TEXT_UPDATE_TOPIC:text-update}
+      callback-query-update-topic: ${CALLBACK_QUERY_UPDATE_TOPIC:callback-update}
+

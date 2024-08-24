@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class APIConnectionImpl implements APIConnection {
+
     @Value("${headhunter.user-agent}")
     private String userAgent;
 

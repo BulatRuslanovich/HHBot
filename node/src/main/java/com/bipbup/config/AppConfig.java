@@ -11,8 +11,10 @@ import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class AppConfig {
+
     @Value("${salt}")
     private String salt;
+
     @Bean
     public Hashids getHashids() {
         var minHashLength = 10;
@@ -23,13 +25,14 @@ public class AppConfig {
     public StringJsonMessageConverter jsonConverter() {
         return new StringJsonMessageConverter();
     }
+
     @Bean
     public RestTemplate restTemplate(final RestTemplateBuilder builder) {
         return builder.build();
     }
+
     @Bean
     public ObjectMapper objectMapper() {
         return new ObjectMapper();
     }
-
 }

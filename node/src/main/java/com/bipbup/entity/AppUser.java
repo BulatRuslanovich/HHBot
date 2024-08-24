@@ -28,6 +28,7 @@ import java.util.Objects;
 @Table(name = "app_user")
 @Entity
 public class AppUser {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;

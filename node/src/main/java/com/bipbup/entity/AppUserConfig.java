@@ -35,6 +35,7 @@ import java.time.LocalDateTime;
 @Table(name = "app_user_config")
 @Entity
 public class AppUserConfig {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userConfigId;
@@ -43,7 +44,7 @@ public class AppUserConfig {
 
     private String queryText;
 
-    private String region;
+    private String area;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

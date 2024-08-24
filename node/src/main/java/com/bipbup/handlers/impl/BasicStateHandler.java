@@ -10,13 +10,13 @@ import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
-import static com.bipbup.utils.CommandMessageConstants.MYQUERIES_COMMAND;
-import static com.bipbup.utils.CommandMessageConstants.NEWQUERY_COMMAND;
-import static com.bipbup.utils.CommandMessageConstants.NO_SAVED_QUERIES_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.QUERY_PROMPT_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.START_COMMAND;
-import static com.bipbup.utils.CommandMessageConstants.USER_QUERIES_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.WELCOME_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
+import static com.bipbup.utils.CommandMessageConstants.BotCommand.NEWQUERY;
+import static com.bipbup.utils.CommandMessageConstants.BotCommand.START;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.NO_SAVED_QUERIES;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.QUERY_PROMPT;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.USER_QUERIES;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.WELCOME;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,49 +29,47 @@ public class BasicStateHandler implements StateHandler {
 
     @Override
     public String process(final AppUser user, final String input) {
-        if (isStartCommand(input)) return processStartCommand(user);
-        if (isNewQueryCommand(input)) return processNewQueryCommand(user);
-        if (isMyQueriesCommand(input)) return processMyQueriesCommand(user);
+        if (isStartCommand(input))
+            return processStartCommand(user);
+        if (isNewQueryCommand(input))
+            return processNewQueryCommand(user);
+        if (isMyQueriesCommand(input))
+            return processMyQueriesCommand(user);
+
         return "";
     }
 
-    private boolean isStartCommand(String input) {
-        return START_COMMAND.equals(input);
+    private boolean isStartCommand(final String input) {
+        return START.getCommand().equals(input);
     }
 
-    private boolean isNewQueryCommand(String input) {
-        return NEWQUERY_COMMAND.equals(input);
+    private boolean isNewQueryCommand(final String input) {
+        return NEWQUERY.getCommand().equals(input);
     }
 
-    private boolean isMyQueriesCommand(String input) {
-        return MYQUERIES_COMMAND.equals(input);
+    private boolean isMyQueriesCommand(final String input) {
+        return MYQUERIES.getCommand().equals(input);
     }
 
     private String processStartCommand(final AppUser user) {
-        var firstName = user.getFirstName();
-        return String.format(WELCOME_MESSAGE, firstName);
+        return String.format(WELCOME.getTemplate(), user.getFirstName());
     }
 
     private String processNewQueryCommand(final AppUser user) {
-        var userState = userService.getUserState(user.getTelegramId());
-        if (!WAIT_CONFIG_NAME_STATE.equals(userState)) {
-            userService.saveUserState(user.getTelegramId(), WAIT_CONFIG_NAME_STATE);
-            log.debug("User {} changed state to WAIT_CONFIG_NAME_STATE", user.getFirstName());
-        }
-
-        return QUERY_PROMPT_MESSAGE;
+        userService.saveUserState(user.getTelegramId(), WAIT_CONFIG_NAME_STATE);
+        log.info("State of user {} set to WAIT_CONFIG_NAME_STATE", user.getFirstName());
+        return QUERY_PROMPT.getTemplate();
     }
 
     protected String processMyQueriesCommand(final AppUser user) {
-        var userConfigs = configService.getByUser(user);
-        if (userConfigs == null || userConfigs.isEmpty()) return NO_SAVED_QUERIES_MESSAGE;
-
-        var userState = userService.getUserState(user.getTelegramId());
-        if (!QUERY_LIST_STATE.equals(userState)) {
-            userService.saveUserState(user.getTelegramId(), QUERY_LIST_STATE);
-            log.debug("User {} changed state to QUERY_LIST_STATE", user.getFirstName());
+        var configs = configService.getByUser(user);
+        if (configs == null || configs.isEmpty()) {
+            userService.clearUserState(user.getTelegramId());
+            return NO_SAVED_QUERIES.getTemplate();
         }
 
-        return USER_QUERIES_MESSAGE;
+        userService.saveUserState(user.getTelegramId(), QUERY_LIST_STATE);
+        log.info("State of user {} set to QUERY_LIST_STATE", user.getFirstName());
+        return USER_QUERIES.getTemplate();
     }
 }

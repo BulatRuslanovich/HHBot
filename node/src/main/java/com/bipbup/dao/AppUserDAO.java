@@ -8,5 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface AppUserDAO extends JpaRepository<AppUser, Long> {
+
     Optional<AppUser> findByTelegramId(Long id);
 }

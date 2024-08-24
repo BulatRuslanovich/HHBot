@@ -5,63 +5,59 @@ import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import com.bipbup.utils.Decoder;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.QUERY_OUTPUT_MESSAGE_TEMPLATE;
-import static com.bipbup.utils.CommandMessageConstants.QUERY_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.QUERY_OUTPUT;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
+import static java.lang.Boolean.TRUE;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class QueryListStateHandler implements StateHandler {
+
     private final UserService userService;
 
     private final ConfigService configService;
 
     private final Decoder decoder;
 
-    public QueryListStateHandler(UserService userService,
-                                 ConfigService configService,
-                                 Decoder decoder) {
-        this.userService = userService;
-        this.configService = configService;
-        this.decoder = decoder;
-    }
-
     @Override
-    public String process(AppUser user, String input) {
+    public String process(final AppUser user, final String input) {
         if (hasQueryPrefix(input)) return processQueryCommand(user, input);
 
         return "";
     }
 
     private boolean hasQueryPrefix(final String input) {
-        return input.startsWith(QUERY_PREFIX);
+        return input.startsWith(Prefix.QUERY);
     }
     
-    private Pair<String, Boolean> generateQueryOutput(final long configId) {
-        var optionalAppUserConfig = configService.getById(configId);
+    private Pair<Boolean, String> generateQueryOutput(final long configId) {
+        var optionalConfig = configService.getById(configId);
 
-        if (optionalAppUserConfig.isEmpty()) return Pair.of(CONFIG_NOT_FOUND_MESSAGE, false);
+        if (optionalConfig.isEmpty())
+            return Pair.of(false, CONFIG_NOT_FOUND.getTemplate());
 
-        var config = optionalAppUserConfig.get();
-        var answer = String.format(QUERY_OUTPUT_MESSAGE_TEMPLATE, config.getConfigName(), config.getQueryText());
-        return Pair.of(answer, true);
+        var config = optionalConfig.get();
+        var answer = String.format(QUERY_OUTPUT.getTemplate(), config.getConfigName(), config.getQueryText());
+        return Pair.of(true, answer);
     }
 
-    private String processQueryCommand(AppUser user, String input) {
-        var hash = input.substring(QUERY_PREFIX.length());
-        var configId = decoder.idOf(hash);
+    private String processQueryCommand(final AppUser user, final String input) {
+        var configId = decoder.parseIdFromCallback(input);
         var answer = generateQueryOutput(configId);
 
-        if (Boolean.TRUE.equals(answer.getSecond())) {
+        if (TRUE.equals(answer.getFirst())) {
             userService.saveUserState(user.getTelegramId(), QUERY_MENU_STATE);
+            log.info("User {} queried configuration with id {} and state set to QUERY_MENU_STATE", user.getFirstName(), configId);
         }
 
-        log.debug("User {} queried configuration with id {} and state set to QUERY_MENU_STATE", user.getFirstName(), configId);
-        return answer.getFirst();
+        return answer.getSecond();
     }
 }

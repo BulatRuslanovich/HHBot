@@ -5,67 +5,65 @@ import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import com.bipbup.utils.Decoder;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_DELETED_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_DELETED_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.CONFIG_NOT_FOUND_MESSAGE;
 import static com.bipbup.utils.CommandMessageConstants.DELETE_CANCEL_COMMAND;
-import static com.bipbup.utils.CommandMessageConstants.DELETE_CONFIRM_PREFIX;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_DELETED;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_DELETED;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class QueryDeleteStateHandler implements StateHandler {
+
     private final UserService userService;
 
     private final ConfigService configService;
 
     private final Decoder decoder;
 
-    public QueryDeleteStateHandler(UserService userService,
-                                   ConfigService configService,
-                                   Decoder decoder) {
-        this.userService = userService;
-        this.configService = configService;
-        this.decoder = decoder;
-    }
-
     @Override
-    public String process(AppUser user, String input) {
-        if (hasDeleteYesPrefix(input)) return processDeleteYesCommand(user, input);
-        if (isDeleteNoCommand(input)) return processDeleteNoCommand(user);
+    public String process(final AppUser user, final String input) {
+        if (hasDeleteConfirmPrefix(input))
+            return processDeleteConfirmCommand(user, input);
+        if (isDeleteCancelCommand(input))
+            return processDeleteCancelCommand(user);
 
         return "";
     }
 
-    private boolean isDeleteNoCommand(final String input) {
+    private boolean isDeleteCancelCommand(final String input) {
         return DELETE_CANCEL_COMMAND.equals(input);
     }
 
-    private boolean hasDeleteYesPrefix(final String input) {
-        return input.startsWith(DELETE_CONFIRM_PREFIX);
+    private boolean hasDeleteConfirmPrefix(final String input) {
+        return input.startsWith(Prefix.DELETE_CONFIRM);
     }
 
-    private String processDeleteYesCommand(AppUser user, String input) {
-        var hash = input.substring(DELETE_CONFIRM_PREFIX.length());
-        var configId = decoder.idOf(hash);
-        var optional = configService.getById(configId);
+    private String processDeleteConfirmCommand(final AppUser user, final String input) {
+        var configId = decoder.parseIdFromCallback(input);
+        var optionalConfig = configService.getById(configId);
 
-        if (optional.isPresent()) {
-            configService.delete(optional.get());
-            userService.clearUserState(user.getTelegramId());
-            log.debug("User {} deleted configuration with id {} and state set to BASIC_STATE", user.getFirstName(), configId);
-            return CONFIG_DELETED_MESSAGE;
+        userService.clearUserState(user.getTelegramId());
+
+        if (optionalConfig.isPresent()) {
+            var config = optionalConfig.get();
+            configService.delete(config);
+            log.info("User {} deleted configuration with id {} and state set to BASIC_STATE", user.getFirstName(), configId);
+            return CONFIG_DELETED.getTemplate();
         } else {
-            log.warn("Configuration with id {} not found for user {}", configId, user.getFirstName());
-            return CONFIG_NOT_FOUND_MESSAGE;
+            log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
+            return CONFIG_NOT_FOUND.getTemplate();
         }
     }
 
-    private String processDeleteNoCommand(AppUser user) {
+    private String processDeleteCancelCommand(final AppUser user) {
         userService.clearUserState(user.getTelegramId());
-        log.debug("User {} chose not to delete the configuration and state set to BASIC_STATE", user.getFirstName());
-        return CONFIG_NOT_DELETED_MESSAGE;
+        log.info("User {} chose not to delete the configuration and state set to BASIC_STATE", user.getFirstName());
+        return CONFIG_NOT_DELETED.getTemplate();
     }
 }

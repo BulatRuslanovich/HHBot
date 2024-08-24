@@ -10,12 +10,11 @@ public class Encoder {
 
     private final Hashids hashids;
 
-    public String hashOf(Long number) {
+    public String hashOf(final long number) {
         var encode = hashids.encode(number);
 
-        if (encode != null && !encode.isEmpty()) {
+        if (encode != null && !encode.isEmpty())
             return encode;
-        }
 
         return "";
     }
