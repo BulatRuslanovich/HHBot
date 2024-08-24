@@ -102,17 +102,17 @@ public class MainServiceImpl implements MainService {
         var output = handler.process(user, text);
 
         if (!output.isEmpty())
-            processOutput(user, update, output);
+            processMessageOutput(user, output);
     }
 
     @Override
     public void processCallbackQuery(final Update update) {
         var callbackData = update.getCallbackQuery().getData();
         var user = userService.findOrSaveAppUser(update);
-        var userState = userService.getUserState(user.getTelegramId());
+        var state = userService.getUserState(user.getTelegramId());
 
         var optionalProperty = callbackHandlerProperties.stream()
-                .filter(p -> p.state().equals(userState))
+                .filter(p -> p.state().equals(state))
                 .findFirst();
 
         var handler = optionalProperty.isPresent()
@@ -122,7 +122,7 @@ public class MainServiceImpl implements MainService {
         var output = handler.process(user, callbackData);
 
         if (!output.isEmpty())
-            processOutput(user, update, output);
+            processCallbackQueryOutput(user, update.getCallbackQuery(), output);
     }
 
     private StateHandler getCallbackStateHandler(final String callbackData) {
@@ -141,15 +141,10 @@ public class MainServiceImpl implements MainService {
         return callbackData.substring(0, callbackData.indexOf('_') + 1);
     }
 
-    private void processOutput(final AppUser user,
-                               final Update update,
-                               final String output) {
+    private void processMessageOutput(final AppUser user, final String output) {
         var telegramId = user.getTelegramId();
 
-        if (update.hasCallbackQuery())
-            processCallbackQueryOutput(user, update.getCallbackQuery(), output);
-        else
-            sendAnswer(output, telegramId, fetchKeyboardWithoutCallback(user));
+        sendAnswer(output, telegramId, fetchKeyboardWithoutCallback(user));
     }
 
     private void processCallbackQueryOutput(final AppUser user,
@@ -160,7 +155,7 @@ public class MainServiceImpl implements MainService {
         var messageId = callbackQuery.getMessage().getMessageId();
         var state = userService.getUserState(telegramId);
 
-        if (!state.isWait() || isMultiSelecting(callbackData))
+        if (!state.isWaiting() || isMultiSelecting(callbackData))
             editAnswer(output, telegramId, messageId, fetchKeyboardWithCallback(user, callbackData));
         else
             sendAnswer(output, telegramId, fetchKeyboardWithCallback(user, callbackData));
@@ -209,6 +204,7 @@ public class MainServiceImpl implements MainService {
             case WAIT_EXPERIENCE_STATE -> markupFactory.createExperienceSelectionKeyboard(callbackData);
             case WAIT_EDUCATION_STATE -> markupFactory.createEducationLevelSelectionKeyboard(user, callbackData);
             case WAIT_SCHEDULE_STATE -> markupFactory.createScheduleTypeSelectionKeyboard(user, callbackData);
+            case QUERY_LIST_STATE -> markupFactory.createUserConfigListKeyboard(user);
             default -> null;
         };
     }

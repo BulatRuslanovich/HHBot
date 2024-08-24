@@ -35,6 +35,7 @@ public class BasicStateHandler implements StateHandler {
             return processNewQueryCommand(user);
         if (isMyQueriesCommand(input))
             return processMyQueriesCommand(user);
+
         return "";
     }
 

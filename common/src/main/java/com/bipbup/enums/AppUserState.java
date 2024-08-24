@@ -29,5 +29,5 @@ public enum AppUserState {
 
     WAIT_SCHEDULE_STATE(true);
 
-    private final boolean isWait;
+    private final boolean isWaiting;
 }
