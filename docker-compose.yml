@@ -164,7 +164,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./data:/etc/traefik/data
-      - /home/bipbup/certs:/etc/traefik/certs
+      - /home/bipbop/certs:/etc/traefik/certs
     labels:
       - "traefik.enable=true"
 
