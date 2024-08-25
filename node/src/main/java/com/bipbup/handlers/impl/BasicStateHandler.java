@@ -43,6 +43,8 @@ public class BasicStateHandler implements StateHandler {
 
     @Override
     public String process(final AppUser user, final String input) {
+        userService.clearUserState(user.getTelegramId());
+
         if (isStartCommand(input))
             return processStartCommand(user);
         if (isNewQueryCommand(input))

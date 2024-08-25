@@ -8,6 +8,7 @@ import com.bipbup.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.bipbup.utils.CommandMessageConstants.AdminCommand.BROADCAST;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.CANCEL;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.NEWQUERY;
@@ -32,7 +33,8 @@ public abstract class CancellableStateHandler implements StateHandler {
 
     protected boolean isBasicCommand(final String input) {
         return MYQUERIES.getCommand().equals(input)
-                || NEWQUERY.getCommand().equals(input);
+                || NEWQUERY.getCommand().equals(input)
+                || input.startsWith(BROADCAST.getCommand());
     }
 
     protected boolean isConfigUpdating(final AppUser user) {

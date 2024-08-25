@@ -2,7 +2,7 @@
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>
-                %highlight(%-5level) %magenta(%d{yyyy-MM-dd HH:mm:ss}) %cyan(%logger{15}) -%boldRed(%replace(%marker){'^.+$',' $0'}) %msg%n%ex{short}
+                %highlight(%-5level) %magenta(%d{yyyy-MM-dd HH:mm:ss}) %cyan(%logger{15}) -%boldGreen(%replace(%marker){'^.+$',' $0'}) %msg%n%ex{short}
             </pattern>
         </encoder>
     </appender>
