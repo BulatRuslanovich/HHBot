@@ -4,6 +4,8 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.List;
+
 public interface UserService {
 
     AppUser findOrSaveAppUser(final Update update);
@@ -11,6 +13,8 @@ public interface UserService {
     AppUserState saveUserState(long telegramId, final AppUserState state);
 
     AppUserState getUserState(long telegramId);
+
+    List<AppUser> getAllUsers();
 
     void clearUserState(long telegramId);
 }

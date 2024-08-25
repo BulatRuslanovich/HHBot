@@ -25,6 +25,14 @@ public class CommandMessageConstants {
 
     @Getter
     @RequiredArgsConstructor
+    public enum AdminCommand {
+        BROADCAST("!broadcast");
+
+        private final String command;
+    }
+
+    @Getter
+    @RequiredArgsConstructor
     public enum MessageTemplate {
 
         WELCOME("🎉 Добро пожаловать в мир возможностей, %s! Пора завоевывать новые горизонты!"),
@@ -82,6 +90,18 @@ public class CommandMessageConstants {
         SELECT_SCHEDULE("Выберите график работы для конфигурации *%s*:"),
 
         COMMAND_CANCELLED("❌ Действие отменено. Если передумаете, всегда можно начать заново!");
+
+        private final String template;
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public enum AdminMessageTemplate {
+        NO_PERMISSION("*You do not have the necessary permissions to execute this command.*"),
+        USAGE("Incorrect usage. Please enter the command as follows: `%s <password>`"),
+        ENTER_MESSAGE("*Please enter the message to broadcast:*"),
+        INCORRECT_PASSWORD("_The password you entered is incorrect. Please try again._"),
+        MESSAGE_SENT("*The message has been successfully sent.*");
 
         private final String template;
     }

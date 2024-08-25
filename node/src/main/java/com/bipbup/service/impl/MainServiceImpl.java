@@ -9,6 +9,7 @@ import com.bipbup.handlers.impl.QueryListStateHandler;
 import com.bipbup.handlers.impl.QueryMenuStateHandler;
 import com.bipbup.handlers.impl.QueryUpdateStateHandler;
 import com.bipbup.handlers.impl.WaitAreaStateHandler;
+import com.bipbup.handlers.impl.WaitBroadcastMessageHandler;
 import com.bipbup.handlers.impl.WaitConfigNameStateHandler;
 import com.bipbup.handlers.impl.WaitEducationStateHandler;
 import com.bipbup.handlers.impl.WaitExperienceStateHandler;
@@ -36,6 +37,7 @@ import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_AREA_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_BROADCAST_MESSAGE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_EDUCATION_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
@@ -70,7 +72,8 @@ public class MainServiceImpl implements MainService {
                            final WaitExperienceStateHandler waitExperienceStateHandler,
                            final WaitAreaStateHandler waitAreaStateHandler,
                            final WaitEducationStateHandler waitEducationStateHandler,
-                           final WaitScheduleStateHandler waitScheduleStateHandler) {
+                           final WaitScheduleStateHandler waitScheduleStateHandler,
+                           final WaitBroadcastMessageHandler waitBroadcastMessageHandler) {
         this.userService = userService;
         this.markupFactory = markupFactory;
         this.answerProducer = answerProducer;
@@ -79,7 +82,8 @@ public class MainServiceImpl implements MainService {
                 BASIC_STATE, basicStateHandler,
                 WAIT_CONFIG_NAME_STATE, waitConfigNameStateHandle,
                 WAIT_QUERY_STATE, waitQueryStateHandler,
-                WAIT_AREA_STATE, waitAreaStateHandler
+                WAIT_AREA_STATE, waitAreaStateHandler,
+                WAIT_BROADCAST_MESSAGE, waitBroadcastMessageHandler
         );
 
         this.callbackHandlerProperties = Set.of(

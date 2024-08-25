@@ -6,10 +6,19 @@ import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_BROADCAST_MESSAGE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
+import static com.bipbup.utils.CommandMessageConstants.AdminCommand.BROADCAST;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.ENTER_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.INCORRECT_PASSWORD;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.NO_PERMISSION;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.USAGE;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.NEWQUERY;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.START;
@@ -27,6 +36,11 @@ public class BasicStateHandler implements StateHandler {
 
     private final ConfigService configService;
 
+    private final Set<Long> adminIds;
+
+    @Value("${admin.password}")
+    private String adminPassword;
+
     @Override
     public String process(final AppUser user, final String input) {
         if (isStartCommand(input))
@@ -35,8 +49,15 @@ public class BasicStateHandler implements StateHandler {
             return processNewQueryCommand(user);
         if (isMyQueriesCommand(input))
             return processMyQueriesCommand(user);
+        if (isBroadcastCommand(input)) {
+            return processBroadcastCommand(user, input);
+        }
 
         return "";
+    }
+
+    private boolean isBroadcastCommand(String input) {
+        return input.startsWith(BROADCAST.getCommand());
     }
 
     private boolean isStartCommand(final String input) {
@@ -71,5 +92,24 @@ public class BasicStateHandler implements StateHandler {
         userService.saveUserState(user.getTelegramId(), QUERY_LIST_STATE);
         log.info("State of user {} set to QUERY_LIST_STATE", user.getFirstName());
         return USER_QUERIES.getTemplate();
+    }
+
+    private String processBroadcastCommand(final AppUser user, final String input) {
+        if (!adminIds.contains(user.getTelegramId()))
+            return NO_PERMISSION.getTemplate();
+
+        var split = input.split(" ", 2);
+
+        if (split.length != 2)
+            return USAGE.getTemplate().formatted(BROADCAST.getCommand());
+
+        var password = split[1];
+
+        if (adminPassword.equals(password)) {
+            userService.saveUserState(user.getTelegramId(), WAIT_BROADCAST_MESSAGE);
+            return ENTER_MESSAGE.getTemplate();
+        }
+
+        return INCORRECT_PASSWORD.getTemplate();
     }
 }
