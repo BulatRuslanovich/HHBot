@@ -14,7 +14,7 @@
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%-5level %d{yyyy-MM-dd HH:mm:ss} %logger{36} -%replace(%marker){'^.+$',' $0'} %msg%n%ex{short}</pattern>
+            <pattern>%-5level %d{yyyy-MM-dd HH:mm:ss} %logger{36} -%replace(%marker){'^.+$',' $0'} %msg%n%ex</pattern>
         </encoder>
     </appender>
 
