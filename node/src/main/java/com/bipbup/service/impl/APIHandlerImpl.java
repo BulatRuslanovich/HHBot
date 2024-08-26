@@ -139,7 +139,6 @@ public class APIHandlerImpl implements APIHandler {
 
     private void addAreaParam(UriComponentsBuilder builder, AppUserConfig config) {
         Optional.ofNullable(areaService.getAreaIdByName(config.getArea()))
-                .map(Integer::parseInt)
                 .ifPresent(areaId -> builder.queryParam("area", areaId));
     }
 

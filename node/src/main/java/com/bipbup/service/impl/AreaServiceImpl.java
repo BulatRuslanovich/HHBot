@@ -13,7 +13,7 @@ public class AreaServiceImpl implements AreaService {
 
     @Override
     @Cacheable(value = "areaIds")
-    public String getAreaIdByName(final String areaName) {
+    public Integer getAreaIdByName(final String areaName) {
         return AreaUtil.getAreaIdFromApi(areaName);
     }
 
