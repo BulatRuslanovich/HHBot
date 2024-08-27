@@ -3,22 +3,24 @@ package com.bipbup.handlers.impl;
 import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
+import com.bipbup.service.NotifierService;
 import com.bipbup.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_BROADCAST_MESSAGE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import static com.bipbup.utils.CommandMessageConstants.AdminCommand.BROADCAST;
-import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.ENTER_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.INCORRECT_PASSWORD;
-import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.NO_PERMISSION;
-import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.USAGE;
+import static com.bipbup.utils.CommandMessageConstants.AdminCommand.SEARCH;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.*;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.NEWQUERY;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.START;
@@ -32,9 +34,13 @@ import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.WELCOME;
 @Component
 public class BasicStateHandler implements StateHandler {
 
+    protected static final Marker ADMIN_LOG = MarkerFactory.getMarker("ADMIN");
+
     private final UserService userService;
 
     private final ConfigService configService;
+
+    private final NotifierService notifierService;
 
     private final Set<Long> adminIds;
 
@@ -51,11 +57,16 @@ public class BasicStateHandler implements StateHandler {
             return processNewQueryCommand(user);
         if (isMyQueriesCommand(input))
             return processMyQueriesCommand(user);
-        if (isBroadcastCommand(input)) {
+        if (isBroadcastCommand(input))
             return processBroadcastCommand(user, input);
-        }
+        if (isSearchCommand(input))
+            return processSearchCommand(user, input);
 
         return "";
+    }
+
+    private boolean isSearchCommand(final String input) {
+        return input.startsWith(SEARCH.getCommand());
     }
 
     private boolean isBroadcastCommand(String input) {
@@ -97,20 +108,36 @@ public class BasicStateHandler implements StateHandler {
     }
 
     private String processBroadcastCommand(final AppUser user, final String input) {
+        return processAdminCommand(user, input, BROADCAST.getCommand(), () -> {
+            userService.saveUserState(user.getTelegramId(), WAIT_BROADCAST_MESSAGE);
+            return ENTER_MESSAGE.getTemplate();
+        });
+    }
+
+    private String processSearchCommand(final AppUser user, final String input) {
+        return processAdminCommand(user, input, SEARCH.getCommand(), () -> {
+            log.info(ADMIN_LOG, "{} launched vacancies searching", user.getFirstName());
+            notifierService.searchNewVacancies();
+            return SEARCHING_COMPLETED.getTemplate();
+        });
+    }
+
+    private String processAdminCommand(final AppUser user,
+                                       final String input,
+                                       final String command,
+                                       final Supplier<String> action) {
         if (!adminIds.contains(user.getTelegramId()))
             return NO_PERMISSION.getTemplate();
 
         var split = input.split(" ", 2);
 
         if (split.length != 2)
-            return USAGE.getTemplate().formatted(BROADCAST.getCommand());
+            return USAGE.getTemplate().formatted(command);
 
         var password = split[1];
 
-        if (adminPassword.equals(password)) {
-            userService.saveUserState(user.getTelegramId(), WAIT_BROADCAST_MESSAGE);
-            return ENTER_MESSAGE.getTemplate();
-        }
+        if (adminPassword.equals(password))
+            return action.get();
 
         return INCORRECT_PASSWORD.getTemplate();
     }

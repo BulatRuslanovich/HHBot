@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 public class CommandMessageConstants {
 
     public static final String DELETE_CANCEL_COMMAND = Prefix.DELETE_STATE + "cancel";
+
     public static final String ANY = "Любой";
 
     @Getter
@@ -26,7 +27,10 @@ public class CommandMessageConstants {
     @Getter
     @RequiredArgsConstructor
     public enum AdminCommand {
-        BROADCAST("!broadcast");
+
+        BROADCAST("!broadcast"),
+
+        SEARCH("!search");
 
         private final String command;
     }
@@ -97,11 +101,18 @@ public class CommandMessageConstants {
     @Getter
     @RequiredArgsConstructor
     public enum AdminMessageTemplate {
+
         NO_PERMISSION("*You do not have the necessary permissions to execute this command.*"),
+
         USAGE("Incorrect usage. Please enter the command as follows: `%s <password>`"),
+
         ENTER_MESSAGE("*Please enter the message to broadcast:*"),
+
         INCORRECT_PASSWORD("_The password you entered is incorrect. Please try again._"),
-        MESSAGE_SENT("*The message has been successfully sent.*");
+
+        MESSAGE_SENT("*The message has been successfully sent.*"),
+
+        SEARCHING_COMPLETED("*Vacancies searching has been successfully completed.*");
 
         private final String template;
     }

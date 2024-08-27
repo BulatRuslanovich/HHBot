@@ -70,8 +70,7 @@ public class NotifierServiceImpl implements NotifierService {
                 user.getFirstName(), newVacancies.size(), config.getConfigName());
     }
 
-    private void sendVacancyMessage(final VacancyDTO vacancy,
-                                    final AppUserConfig config) {
+    private void sendVacancyMessage(final VacancyDTO vacancy, final AppUserConfig config) {
 
         var message = String.format("""
                     *🔍 Название запроса:* %s
