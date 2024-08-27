@@ -20,7 +20,11 @@ import static com.bipbup.enums.AppUserState.WAIT_BROADCAST_MESSAGE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import static com.bipbup.utils.CommandMessageConstants.AdminCommand.BROADCAST;
 import static com.bipbup.utils.CommandMessageConstants.AdminCommand.SEARCH;
-import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.*;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.ENTER_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.INCORRECT_PASSWORD;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.NO_PERMISSION;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.SEARCHING_COMPLETED;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.USAGE;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.NEWQUERY;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.START;
@@ -66,11 +70,11 @@ public class BasicStateHandler implements StateHandler {
     }
 
     private boolean isSearchCommand(final String input) {
-        return input.startsWith(SEARCH.getCommand());
+        return input.split(" ", 2)[0].equals(SEARCH.getCommand());
     }
 
     private boolean isBroadcastCommand(String input) {
-        return input.startsWith(BROADCAST.getCommand());
+        return input.split(" ", 2)[0].equals(BROADCAST.getCommand());
     }
 
     private boolean isStartCommand(final String input) {
