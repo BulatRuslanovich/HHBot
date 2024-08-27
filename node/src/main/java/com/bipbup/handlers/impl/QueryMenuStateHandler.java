@@ -100,7 +100,7 @@ public class QueryMenuStateHandler implements StateHandler {
             if (state == QUERY_UPDATE_STATE)
                 return showDetailedQueryOutput(config);
 
-            return DELETE_CONFIRMATION.getTemplate();
+            return String.format(DELETE_CONFIRMATION.getTemplate(), config.getConfigName());
         } else {
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return CONFIG_NOT_FOUND.getTemplate();

@@ -5,8 +5,6 @@ import lombok.RequiredArgsConstructor;
 
 public class CommandMessageConstants {
 
-    public static final String DELETE_CANCEL_COMMAND = Prefix.DELETE_STATE + "cancel";
-
     public static final String ANY = "Любой";
 
     @Getter
@@ -55,11 +53,9 @@ public class CommandMessageConstants {
                 Что будем с этим делать?
                 """),
 
-        DELETE_CONFIRMATION("❗ Вы точно хотите удалить этот запрос? Это действие нельзя будет отменить."),
+        DELETE_CONFIRMATION("❗ Вы точно хотите удалить запрос *%s*? Это действие нельзя будет отменить."),
 
         CONFIG_DELETED("❌ Конфигурация была успешно удалена."),
-
-        CONFIG_NOT_DELETED("✅ Конфигурация не была удалена."),
 
         CONFIG_EXISTS("⚠️ Конфигурация с названием *%s* уже существует."),
 
