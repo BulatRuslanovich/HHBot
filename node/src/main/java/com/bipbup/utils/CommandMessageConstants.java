@@ -2,8 +2,28 @@ package com.bipbup.utils;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+
+import java.util.Locale;
 
 public class CommandMessageConstants {
+
+    static {
+        var source = new ReloadableResourceBundleMessageSource();
+        source.setBasename("classpath:/messages");
+        source.setDefaultEncoding("UTF-8");
+        messageSource = source;
+    }
+
+    private static final MessageSource messageSource;
+
+    private CommandMessageConstants() {
+    }
+
+    private static String get(String code) {
+        return messageSource.getMessage(code, null, code, Locale.ROOT);
+    }
 
     public static final String ANY = "Любой";
 
@@ -37,59 +57,67 @@ public class CommandMessageConstants {
     @RequiredArgsConstructor
     public enum MessageTemplate {
 
-        WELCOME("🎉 Добро пожаловать в мир возможностей, %s! Пора завоевывать новые горизонты!"),
+        WELCOME(get("message.welcome")),
 
-        QUERY_PROMPT("📝 Как вы назовете свою конфигурацию? Если передумали, просто введите /cancel."),
+        QUERY_PROMPT(get("message.query.prompt")),
 
-        USER_QUERIES("📋 Вот ваши сохраненные запросы:"),
+        USER_QUERIES(get("message.user.queries")),
 
-        NO_SAVED_QUERIES("""
-                ℹ️ У вас ещё нет сохранённых запросов.
-                Но это легко исправить — введите /newquery, чтобы начать!
-                """),
+        NO_SAVED_QUERIES(get("message.no.saved.queries")),
 
-        QUERY_OUTPUT("""
-                🔍 Конфигурация *%s* с запросом *%s*.
-                Что будем с этим делать?
-                """),
+        QUERY_OUTPUT(get("message.query.output")),
 
-        DELETE_CONFIRMATION("❗ Вы точно хотите удалить запрос *%s*? Это действие нельзя будет отменить."),
+        DELETE_CONFIRMATION(get("message.delete.confirmation")),
 
-        CONFIG_DELETED("❌ Конфигурация была успешно удалена."),
+        CONFIG_DELETED(get("message.config.deleted")),
 
-        CONFIG_EXISTS("⚠️ Конфигурация с названием *%s* уже существует."),
+        CONFIG_EXISTS(get("message.config.exists")),
 
-        CONFIG_NAME_UPDATED("Название конфигурации *%s* успешно изменено на *%s*."),
+        CONFIG_NAME_UPDATED(get("message.config.name.updated")),
 
-        QUERY_SET("Запрос *%s* успешно установлен в конфигурации *%s*."),
+        QUERY_SET(get("message.query.set")),
 
-        EXP_SET("Опыт работы *%s* успешно установлен в конфигурации *%s*."),
+        EXP_SET(get("message.exp.set")),
 
-        AREA_SET("Регион *%s* успешно установлен в конфигурации *%s*."),
+        AREA_SET(get("message.area.set")),
 
-        ANY_AREA_SET("Регион не будет учитываться в конфигурации *%s*."),
+        ANY_AREA_SET(get("message.any.area.set")),
 
-        EDU_SAVE("Уровень образования успешно сохранен для конфигурации *%s*."),
+        EDU_SAVE(get("message.edu.save")),
 
-        SCHEDULE_SAVE("График работы успешно сохранен для конфигурации *%s*."),
+        SCHEDULE_SAVE(get("message.schedule.save")),
 
-        CONFIG_NOT_FOUND("❌ Конфигурация не найдена."),
+        CONFIG_NOT_FOUND(get("message.config.not.found")),
 
-        INVALID_INPUT("⚠️ Некорректный ввод. Пожалуйста, проверьте введенные данные."),
+        INVALID_INPUT(get("message.invalid.input")),
 
-        ENTER_CONFIG_NAME("Введите новое название для конфигурации *%s*:"),
+        ENTER_CONFIG_NAME(get("message.enter.config.name")),
 
-        ENTER_QUERY("Введите запрос для конфигурации *%s*:"),
+        ENTER_QUERY(get("message.enter.query")),
 
-        ENTER_AREA("Введите название региона или _Любой_ для конфигурации *%s*:"),
+        ENTER_AREA(get("message.enter.area")),
 
-        SELECT_EXPERIENCE("Выберите опыт работы для конфигурации *%s*:"),
+        SELECT_EXPERIENCE(get("message.select.experience")),
 
-        SELECT_EDUCATION("Выберите уровень образования для конфигурации *%s*:"),
+        SELECT_EDUCATION(get("message.select.education")),
 
-        SELECT_SCHEDULE("Выберите график работы для конфигурации *%s*:"),
+        SELECT_SCHEDULE(get("message.select.schedule")),
 
-        COMMAND_CANCELLED("❌ Действие отменено. Если передумаете, всегда можно начать заново!");
+        COMMAND_CANCELLED(get("message.command.cancelled")),
+
+        MENU_CONFIG_NAME(get("message.menu.config.name")),
+
+        MENU_QUERY(get("message.menu.config.query")),
+
+        MENU_AREA(get("message.menu.config.area")),
+
+        MENU_EXPERIENCE(get("message.menu.config.experience")),
+
+        MENU_EDUCATION(get("message.menu.config.education")),
+
+        MENU_SCHEDULE(get("message.menu.config.schedule")),
+
+        VACANCY(get("message.vacancy"));
 
         private final String template;
     }
@@ -98,17 +126,17 @@ public class CommandMessageConstants {
     @RequiredArgsConstructor
     public enum AdminMessageTemplate {
 
-        NO_PERMISSION("*You do not have the necessary permissions to execute this command.*"),
+        NO_PERMISSION(get("admin.message.no.permission")),
 
-        USAGE("Incorrect usage. Please enter the command as follows: `%s <password>`"),
+        USAGE(get("admin.message.usage")),
 
-        ENTER_MESSAGE("*Please enter the message to broadcast:*"),
+        ENTER_MESSAGE(get("admin.message.enter.message")),
 
-        INCORRECT_PASSWORD("_The password you entered is incorrect. Please try again._"),
+        INCORRECT_PASSWORD(get("admin.message.incorrect.password")),
 
-        MESSAGE_SENT("*The message has been successfully sent.*"),
+        MESSAGE_SENT(get("admin.message.sent")),
 
-        SEARCHING_COMPLETED("*Vacancies searching has been successfully completed.*");
+        SEARCHING_COMPLETED(get("admin.message.searching.completed"));
 
         private final String template;
     }
@@ -158,36 +186,33 @@ public class CommandMessageConstants {
 
     public static class ButtonText {
 
-        public static final String UPDATE = "🔄 Обновить";
+        public static final String UPDATE = get("button.update");
 
-        public static final String DELETE = "🗑️ Удалить";
+        public static final String DELETE = get("button.delete");
 
-        public static final String DELETE_CONFIRM = "❌ Удалить";
+        public static final String DELETE_CONFIRM = get("button.delete.confirm");
 
-        public static final String DELETE_CANCEL = "✅ Сохранить";
+        public static final String DELETE_CANCEL = get("button.delete.cancel");
 
-        public static final String UPDATE_CONFIG_NAME = "Переименовать конфигурацию";
+        public static final String UPDATE_CONFIG_NAME = get("button.update.config.name");
 
-        public static final String UPDATE_QUERY = "Обновить запрос";
+        public static final String UPDATE_QUERY = get("button.update.query");
 
-        public static final String UPDATE_AREA = "Выбрать новый регион";
+        public static final String UPDATE_AREA = get("button.update.area");
 
-        public static final String UPDATE_EXPERIENCE = "Изменить опыт работы";
+        public static final String UPDATE_EXPERIENCE = get("button.update.experience");
 
-        public static final String UPDATE_EDUCATION = "Изменить образование";
+        public static final String UPDATE_EDUCATION = get("button.update.education");
 
-        public static final String UPDATE_SCHEDULE = "Изменить график";
+        public static final String UPDATE_SCHEDULE = get("button.update.schedule");
 
-        public static final String BACK = "🔙 Вернуться";
+        public static final String BACK = get("button.back");
 
-        public static final String SELECTED = " \uD83D\uDD18";
+        public static final String SELECTED = get("button.selected");
 
-        public static final String SAVE = "💾 Сохранить";
+        public static final String SAVE = get("button.save");
 
         private ButtonText() {
         }
-    }
-
-    private CommandMessageConstants() {
     }
 }
