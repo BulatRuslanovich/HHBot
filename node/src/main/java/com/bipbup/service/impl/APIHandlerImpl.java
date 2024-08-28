@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -98,7 +100,7 @@ public class APIHandlerImpl implements APIHandler {
     }
 
     private String encodeQueryText(String queryText) {
-        return queryText.replace("+", "%2B");
+        return URLEncoder.encode(queryText, StandardCharsets.UTF_8);
     }
 
     private JsonNode fetchVacancyPage(final HttpEntity<HttpHeaders> request,
