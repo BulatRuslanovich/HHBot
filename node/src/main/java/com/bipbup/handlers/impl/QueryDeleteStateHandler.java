@@ -49,14 +49,14 @@ public class QueryDeleteStateHandler implements StateHandler {
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);
 
-        userService.clearUserState(user.getTelegramId());
-
         if (optionalConfig.isPresent()) {
             var config = optionalConfig.get();
             configService.delete(config);
-            log.info("User {} deleted configuration with id {} and state set to BASIC_STATE", user.getFirstName(), configId);
+            userService.saveUserState(user.getTelegramId(), QUERY_LIST_STATE);
+            log.info("User {} deleted configuration with id {} and state set to QUERY_LIST_STATE", user.getFirstName(), configId);
             return String.format(CONFIG_DELETED.getTemplate(), config.getConfigName());
         } else {
+            userService.clearUserState(user.getTelegramId());
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return CONFIG_NOT_FOUND.getTemplate();
         }
