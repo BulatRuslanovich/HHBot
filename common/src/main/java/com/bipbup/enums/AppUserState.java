@@ -27,7 +27,9 @@ public enum AppUserState {
 
     WAIT_EDUCATION_STATE(true),
 
-    WAIT_SCHEDULE_STATE(true);
+    WAIT_SCHEDULE_STATE(true),
+
+    WAIT_BROADCAST_MESSAGE(true);
 
     private final boolean isWaiting;
 }

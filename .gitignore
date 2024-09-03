@@ -32,3 +32,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+
+.env
+node/src/main/resources/application.yaml
+dispatcher/src/main/resources/application.yaml

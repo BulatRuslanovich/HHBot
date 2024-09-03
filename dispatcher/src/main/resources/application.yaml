@@ -10,7 +10,7 @@ bot:
 
 spring:
   kafka:
-    bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:29092}
     topics:
       answer-topic: ${ANSWER_TOPIC:answer}
       edit-topic: ${EDIT_TOPIC:edit}

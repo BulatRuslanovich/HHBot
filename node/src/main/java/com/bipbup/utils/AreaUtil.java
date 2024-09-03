@@ -21,7 +21,7 @@ public class AreaUtil {
     private final String URL = "https://api.hh.ru/areas";
     private final int HTTP_STATUS_OK = 200;
 
-    public String getAreaIdFromApi(final String areaName) {
+    public Integer getAreaIdFromApi(final String areaName) {
         if (areaName == null)
             return null;
 
@@ -39,7 +39,12 @@ public class AreaUtil {
 
         if (response.statusCode() == HTTP_STATUS_OK) {
             var areas = new JSONArray(response.body());
-            return findAreaId(areas, areaName);
+            var areaId = findAreaId(areas, areaName);
+
+            if (areaId == null)
+                return null;
+
+            return Integer.valueOf(areaId);
         } else {
             log.error("Error querying API {}: {} {}",
                     response.request().method(),

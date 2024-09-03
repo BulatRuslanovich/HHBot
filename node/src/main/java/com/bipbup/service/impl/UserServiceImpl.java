@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
+import java.util.List;
+
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
 
 @RequiredArgsConstructor
@@ -41,6 +43,11 @@ public class UserServiceImpl implements UserService {
     @Cacheable(value = "userStates")
     public AppUserState getUserState(long telegramId) {
         return BASIC_STATE;
+    }
+
+    @Override
+    public List<AppUser> getAllUsers() {
+        return appUserDAO.findAll();
     }
 
     @Override

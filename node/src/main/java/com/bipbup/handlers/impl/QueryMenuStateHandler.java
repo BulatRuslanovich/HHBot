@@ -20,6 +20,12 @@ import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.DELETE_CONFIRMATION;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_AREA;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_CONFIG_NAME;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_EDUCATION;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_EXPERIENCE;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_QUERY;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_SCHEDULE;
 import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @Slf4j
@@ -65,10 +71,10 @@ public class QueryMenuStateHandler implements StateHandler {
 
     private void appendEnumParams(StringBuilder output, final EnumParam[] values, final String prefix) {
         if (values != null && values.length > 0) {
-            output.append(prefix);
+            output.append('\n').append(prefix).append('\n');
 
             String paramNames = Arrays.stream(values)
-                    .map(param -> "• " + param.getDescription())
+                    .map(param -> "  - " + param.getDescription())
                     .collect(Collectors.joining("\n"));
 
             output.append(paramNames);
@@ -77,13 +83,13 @@ public class QueryMenuStateHandler implements StateHandler {
 
     private String showDetailedQueryOutput(final AppUserConfig config) {
         StringBuilder output = new StringBuilder()
-                .append("*Название запроса:* ").append(config.getConfigName())
-                .append("\n*Текст запроса:* ").append(config.getQueryText())
-                .append("\n*Регион:* ").append(config.getArea() == null ? "Любой" : config.getArea())
-                .append("\n*Опыт работы:* ").append(config.getExperience().getDescription());
+                .append(MENU_CONFIG_NAME.getTemplate()).append(config.getConfigName()).append("\n")
+                .append(MENU_QUERY.getTemplate()).append(config.getQueryText()).append("\n")
+                .append(MENU_AREA.getTemplate()).append(config.getArea() == null ? "Любой" : config.getArea()).append("\n")
+                .append(MENU_EXPERIENCE.getTemplate()).append(config.getExperience().getDescription());
 
-        appendEnumParams(output, config.getEducationLevels(), "\n*Уровень образования:* \n");
-        appendEnumParams(output, config.getScheduleTypes(), "\n*Тип графика:* \n");
+        appendEnumParams(output, config.getEducationLevels(), MENU_EDUCATION.getTemplate());
+        appendEnumParams(output, config.getScheduleTypes(), MENU_SCHEDULE.getTemplate());
 
         return output.toString();
     }
@@ -100,7 +106,7 @@ public class QueryMenuStateHandler implements StateHandler {
             if (state == QUERY_UPDATE_STATE)
                 return showDetailedQueryOutput(config);
 
-            return DELETE_CONFIRMATION.getTemplate();
+            return String.format(DELETE_CONFIRMATION.getTemplate(), config.getConfigName());
         } else {
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return CONFIG_NOT_FOUND.getTemplate();

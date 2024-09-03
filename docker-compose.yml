@@ -66,6 +66,8 @@ services:
       NOTIFIER_PERIOD: ${NOTIFIER_PERIOD}
       AREA_PERIOD: ${AREA_PERIOD}
       SALT: ${SALT}
+      ADMIN_IDS: ${ADMIN_IDS}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     logging:
       driver: 'json-file'
       options:

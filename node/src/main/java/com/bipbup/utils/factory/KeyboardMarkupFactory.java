@@ -19,7 +19,6 @@ import java.util.List;
 
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
 import static com.bipbup.utils.CommandMessageConstants.ButtonText;
-import static com.bipbup.utils.CommandMessageConstants.DELETE_CANCEL_COMMAND;
 import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @RequiredArgsConstructor
@@ -63,7 +62,7 @@ public class KeyboardMarkupFactory {
 
         List<InlineKeyboardButton> buttons = List.of(
                 createButton(ButtonText.DELETE_CONFIRM, Prefix.DELETE_CONFIRM + hash),
-                createButton(ButtonText.DELETE_CANCEL, DELETE_CANCEL_COMMAND)
+                createButton(ButtonText.DELETE_CANCEL, Prefix.QUERY + hash)
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);

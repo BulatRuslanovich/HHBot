@@ -16,6 +16,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Locale;
 
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.VACANCY;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -70,17 +72,9 @@ public class NotifierServiceImpl implements NotifierService {
                 user.getFirstName(), newVacancies.size(), config.getConfigName());
     }
 
-    private void sendVacancyMessage(final VacancyDTO vacancy,
-                                    final AppUserConfig config) {
+    private void sendVacancyMessage(final VacancyDTO vacancy, final AppUserConfig config) {
 
-        var message = String.format("""
-                    *🔍 Название запроса:* %s
-                    *💼 Вакансия:* %s
-                    *👔 Работодатель:* %s
-                    *🏙️ Регион:* %s
-                    *🗓 Дата публикации:* %s
-                    *🔗 Ссылка:* [Открыть вакансию](%s)
-                    """,
+        var message = String.format(VACANCY.getTemplate(),
                 config.getConfigName(),
                 vacancy.getNameVacancy(),
                 vacancy.getNameEmployer(),
