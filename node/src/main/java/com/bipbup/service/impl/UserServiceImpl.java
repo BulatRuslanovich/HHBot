@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
 
@@ -30,7 +31,33 @@ public class UserServiceImpl implements UserService {
                 ? update.getMessage().getFrom()
                 : update.getCallbackQuery().getFrom();
         var optionalUser = appUserDAO.findByTelegramId(sender.getId());
-        return optionalUser.orElseGet(() -> saveAppUser(sender));
+
+        if (optionalUser.isPresent()) {
+            var user = optionalUser.get();
+
+            var updated = false;
+
+            if (!Objects.equals(user.getUsername(), sender.getUserName())) {
+                user.setUsername(sender.getUserName());
+                updated = true;
+            }
+
+            if (!Objects.equals(user.getFirstName(), sender.getFirstName())) {
+                user.setFirstName(sender.getFirstName());
+                updated = true;
+            }
+
+            if (!Objects.equals(user.getLastName(), sender.getLastName())) {
+                user.setLastName(sender.getLastName());
+                updated = true;
+            }
+
+            if (updated) appUserDAO.save(user);
+
+            return user;
+        }
+
+        return saveAppUser(sender);
     }
 
     @Override

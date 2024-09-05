@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_DELETED;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.USER_QUERIES;
 import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @Slf4j
@@ -54,7 +55,7 @@ public class QueryDeleteStateHandler implements StateHandler {
             configService.delete(config);
             userService.saveUserState(user.getTelegramId(), QUERY_LIST_STATE);
             log.info("User {} deleted configuration with id {} and state set to QUERY_LIST_STATE", user.getFirstName(), configId);
-            return String.format(CONFIG_DELETED.getTemplate(), config.getConfigName());
+            return String.format(CONFIG_DELETED.getTemplate(), config.getConfigName()) + "\n" + USER_QUERIES.getTemplate();
         } else {
             userService.clearUserState(user.getTelegramId());
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
