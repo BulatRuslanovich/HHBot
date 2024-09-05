@@ -60,6 +60,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "22181:2181"
+    restart: unless-stopped
 
   kafka:
     container_name: kafka
