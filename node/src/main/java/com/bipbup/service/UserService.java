@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface UserService {
 
+    void deleteUser(final AppUser user);
+
     AppUser findOrSaveAppUser(final Update update);
 
     AppUserState saveUserState(long telegramId, final AppUserState state);

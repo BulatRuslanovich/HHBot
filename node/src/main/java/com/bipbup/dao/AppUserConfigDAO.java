@@ -11,4 +11,6 @@ import java.util.List;
 public interface AppUserConfigDAO extends JpaRepository<AppUserConfig, Long> {
 
     List<AppUserConfig> findByAppUser(AppUser appUser);
+
+    void deleteAllByAppUser(AppUser appUser);
 }

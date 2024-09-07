@@ -10,10 +10,13 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,6 +30,7 @@ public class UpdateProcessor {
     private static final Marker BAD_HUMAN_MARKER = MarkerFactory.getMarker("BAD_HUMAN");
 
     private final UpdateProducer updateProducer;
+
     @Value("${spring.kafka.topics.text-update-topic}")
     private String textUpdateTopic;
 
@@ -35,16 +39,28 @@ public class UpdateProcessor {
 
     private MyTelegramBot myTelegramBot;
 
-    private static void logEmptyMessageUpdate(final Update update) {
+    private void logEmptyMessageUpdate(final Update update) {
         var status = update.getMyChatMember().getNewChatMember().getStatus();
         var user = update.getMyChatMember().getFrom();
         if (status.equals("kicked")) {
             log.info(BAD_HUMAN_MARKER, "User {} block the bot", user.getFirstName());
+            deactivateUser(user);
         } else if (status.equals("member")) {
             log.info(WELCOME_MARKER, "User {} joined", user.getFirstName());
         } else {
             log.error("Message is null");
         }
+    }
+
+    private void deactivateUser(User user) {
+        var callbackQuery = new CallbackQuery();
+        callbackQuery.setFrom(user);
+        callbackQuery.setData("delete_me_from_db");
+
+        var update = new Update();
+        update.setCallbackQuery(callbackQuery);
+
+        updateProducer.produce(callbackQueryUpdateTopic, update);
     }
 
     public void registerBot(final MyTelegramBot myTelegramBot) {
@@ -89,10 +105,15 @@ public class UpdateProcessor {
     public void setView(final SendMessage message) {
         try {
             myTelegramBot.execute(message);
+        } catch (TelegramApiRequestException e) {
+            if (e.getErrorCode() == 403 && e.getApiResponse().contains("bot was blocked by the user")) {
+                log.info("Bot was blocked by user: {}", message.getChatId());
+            }
         } catch (TelegramApiException e) {
             log.error("Error with send message execute", e);
         }
     }
+
 
     public void setEdit(final EditMessageText message) {
         try {

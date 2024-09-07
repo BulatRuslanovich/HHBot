@@ -1,5 +1,6 @@
 package com.bipbup.service.impl;
 
+import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
@@ -24,6 +25,15 @@ import static com.bipbup.enums.AppUserState.BASIC_STATE;
 public class UserServiceImpl implements UserService {
 
     private final AppUserDAO appUserDAO;
+
+    private final AppUserConfigDAO appUserConfigDAO;
+
+    @Override
+    @Transactional
+    public void deleteUser(AppUser user) {
+        appUserConfigDAO.deleteAllByAppUser(user);
+        appUserDAO.delete(user);
+    }
 
     @Override
     @Transactional
