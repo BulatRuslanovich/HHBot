@@ -3,6 +3,7 @@ package com.bipbup.service.impl;
 import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
+import com.bipbup.enums.Role;
 import com.bipbup.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -89,6 +90,7 @@ public class UserServiceImpl implements UserService {
                 .username(sender.getUserName())
                 .firstName(sender.getFirstName())
                 .lastName(sender.getLastName())
+                .role(Role.USER)
                 .build();
 
         appUserDAO.save(appUser);

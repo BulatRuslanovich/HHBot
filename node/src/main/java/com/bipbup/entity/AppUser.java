@@ -1,7 +1,10 @@
 package com.bipbup.entity;
 
+import com.bipbup.enums.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -44,6 +47,9 @@ public class AppUser {
     private String firstName;
 
     private String lastName;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @OneToMany
     @JoinColumn(name = "app_user_id", referencedColumnName = "userId")

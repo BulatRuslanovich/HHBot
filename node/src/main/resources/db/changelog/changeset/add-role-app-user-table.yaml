@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4
+      author: getname
+      changes:
+        - addColumn:
+            tableName: app_user
+            columns:
+              - column:
+                  name: role
+                  type: varchar(32)
+                  defaultValue: 'USER'
+                  constraints:
+                    nullable: false
+                    checkConstraint: role::text = ANY (ARRAY['USER', 'ADMIN']::text[])

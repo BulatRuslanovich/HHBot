@@ -1,6 +1,7 @@
 package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
+import com.bipbup.enums.Role;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.NotifierService;
@@ -13,7 +14,6 @@ import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
 import java.util.function.Supplier;
 
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
@@ -43,8 +43,6 @@ public class BasicStateHandler implements StateHandler {
     private final ConfigService configService;
 
     private final NotifierService notifierService;
-
-    private final Set<Long> adminIds;
 
     @Value("${admin.password}")
     private String adminPassword;
@@ -138,7 +136,7 @@ public class BasicStateHandler implements StateHandler {
                                        final String input,
                                        final String command,
                                        final Supplier<String> action) {
-        if (!adminIds.contains(user.getTelegramId()))
+        if (!user.getRole().equals(Role.ADMIN))
             return NO_PERMISSION.getTemplate();
 
         var split = input.split(" ", 2);
