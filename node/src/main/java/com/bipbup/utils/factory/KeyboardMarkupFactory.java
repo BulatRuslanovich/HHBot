@@ -124,7 +124,7 @@ public class KeyboardMarkupFactory {
         String text = enumParam.getDescription();
 
         if (params.contains(enumParam))
-            text += ButtonText.SELECTED;
+            text += " " + ButtonText.SELECTED;
 
         String callback = enumParam.getPrefix() + hash;
         return createButton(text, callback);

@@ -1,10 +1,12 @@
 package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
+import com.bipbup.enums.Role;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.NotifierService;
 import com.bipbup.service.UserService;
+import com.bipbup.utils.CommandMessageConstants.MessageTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Marker;
@@ -12,7 +14,6 @@ import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
 import java.util.function.Supplier;
 
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
@@ -20,11 +21,8 @@ import static com.bipbup.enums.AppUserState.WAIT_BROADCAST_MESSAGE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import static com.bipbup.utils.CommandMessageConstants.AdminCommand.BROADCAST;
 import static com.bipbup.utils.CommandMessageConstants.AdminCommand.SEARCH;
-import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.ENTER_MESSAGE;
-import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.INCORRECT_PASSWORD;
-import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.NO_PERMISSION;
-import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.SEARCHING_COMPLETED;
-import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.USAGE;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.*;
+import static com.bipbup.utils.CommandMessageConstants.BotCommand.HELP;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.NEWQUERY;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.START;
@@ -46,8 +44,6 @@ public class BasicStateHandler implements StateHandler {
 
     private final NotifierService notifierService;
 
-    private final Set<Long> adminIds;
-
     @Value("${admin.password}")
     private String adminPassword;
 
@@ -57,6 +53,8 @@ public class BasicStateHandler implements StateHandler {
 
         if (isStartCommand(input))
             return processStartCommand(user);
+        if (isHelpCommand(input))
+            return processHelpCommand();
         if (isNewQueryCommand(input))
             return processNewQueryCommand(user);
         if (isMyQueriesCommand(input))
@@ -81,6 +79,10 @@ public class BasicStateHandler implements StateHandler {
         return START.getCommand().equals(input);
     }
 
+    private boolean isHelpCommand(final String input) {
+        return HELP.getCommand().equals(input);
+    }
+
     private boolean isNewQueryCommand(final String input) {
         return NEWQUERY.getCommand().equals(input);
     }
@@ -91,6 +93,10 @@ public class BasicStateHandler implements StateHandler {
 
     private String processStartCommand(final AppUser user) {
         return String.format(WELCOME.getTemplate(), user.getFirstName());
+    }
+
+    private String processHelpCommand() {
+        return MessageTemplate.HELP.getTemplate();
     }
 
     private String processNewQueryCommand(final AppUser user) {
@@ -130,7 +136,7 @@ public class BasicStateHandler implements StateHandler {
                                        final String input,
                                        final String command,
                                        final Supplier<String> action) {
-        if (!adminIds.contains(user.getTelegramId()))
+        if (!user.getRole().equals(Role.ADMIN))
             return NO_PERMISSION.getTemplate();
 
         var split = input.split(" ", 2);

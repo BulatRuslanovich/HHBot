@@ -35,6 +35,8 @@ public class CommandMessageConstants {
 
         START("/start"),
 
+        HELP("/help"),
+
         NEWQUERY("/newquery"),
 
         MYQUERIES("/myqueries");
@@ -58,6 +60,8 @@ public class CommandMessageConstants {
     public enum MessageTemplate {
 
         WELCOME(get("message.welcome")),
+
+        HELP(get("message.help")),
 
         QUERY_PROMPT(get("message.query.prompt")),
 

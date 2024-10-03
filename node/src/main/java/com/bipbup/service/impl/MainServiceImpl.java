@@ -115,6 +115,11 @@ public class MainServiceImpl implements MainService {
         var user = userService.findOrSaveAppUser(update);
         var state = userService.getUserState(user.getTelegramId());
 
+        if (callbackData.equals("delete_me_from_db")) {
+            userService.deleteUser(user);
+            return;
+        }
+
         var optionalProperty = callbackHandlerProperties.stream()
                 .filter(p -> p.state().equals(state))
                 .findFirst();

@@ -5,3 +5,5 @@ databaseChangeLog:
       file: db/changelog/changeset/create-app-user-table.yaml
   - include:
       file: db/changelog/changeset/create-app-user-config-table.yaml
+  - include:
+      file: db/changelog/changeset/add-role-app-user-table.yaml
