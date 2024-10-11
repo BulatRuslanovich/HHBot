@@ -10,12 +10,12 @@ public class Decoder {
 
     private final Hashids hashids;
 
-    public Long parseIdFromCallback(final String callback) {
+    public Long parseIdFromCallback(String callback) {
         var hash = callback.substring(callback.lastIndexOf('_') + 1);
         return idOf(hash);
     }
 
-    private Long idOf(final String hash) {
+    private Long idOf(String hash) {
         var decode = hashids.decode(hash);
 
         if (decode != null && decode.length > 0)

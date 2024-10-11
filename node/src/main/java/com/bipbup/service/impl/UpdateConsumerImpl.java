@@ -15,13 +15,13 @@ public class UpdateConsumerImpl implements UpdateConsumer {
 
     @Override
     @KafkaListener(topics = "${spring.kafka.topics.text-update-topic}", groupId = "groupId")
-    public void consumeTextUpdate(final Update update) {
+    public void consumeTextUpdate(Update update) {
         mainService.processMessage(update);
     }
 
     @Override
     @KafkaListener(topics = "${spring.kafka.topics.callback-query-update-topic}", groupId = "groupId")
-    public void consumeCallbackQueryUpdate(final Update update) {
+    public void consumeCallbackQueryUpdate(Update update) {
         mainService.processCallbackQuery(update);
     }
 }

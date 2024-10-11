@@ -2,11 +2,13 @@ package com.bipbup.utils;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.UtilityClass;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 
 import java.util.Locale;
 
+@UtilityClass
 public class CommandMessageConstants {
 
     static {
@@ -17,9 +19,6 @@ public class CommandMessageConstants {
     }
 
     private static final MessageSource messageSource;
-
-    private CommandMessageConstants() {
-    }
 
     private static String get(String code) {
         return messageSource.getMessage(code, null, code, Locale.ROOT);
@@ -146,6 +145,7 @@ public class CommandMessageConstants {
     }
 
     // Command prefixes
+    @UtilityClass
     public static class Prefix {
 
         public static final String QUERY = "query_";
@@ -183,11 +183,9 @@ public class CommandMessageConstants {
         public static final String EDU_SAVE = WAIT_EDU_STATE + "save_";
 
         public static final String SCHEDULE_SAVE = WAIT_SCHEDULE_STATE + "save_";
-
-        private Prefix() {
-        }
     }
 
+    @UtilityClass
     public static class ButtonText {
 
         public static final String UPDATE = get("button.update");
@@ -215,8 +213,5 @@ public class CommandMessageConstants {
         public static final String SELECTED = get("button.selected");
 
         public static final String SAVE = get("button.save");
-
-        private ButtonText() {
-        }
     }
 }

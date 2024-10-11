@@ -7,6 +7,7 @@ import com.bipbup.service.AreaService;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -23,29 +24,26 @@ public class WaitAreaStateHandler extends CancellableStateHandler {
 
     private final AreaService areaService;
 
-    public WaitAreaStateHandler(final UserService userService,
-                                final ConfigService configService,
-                                final BasicStateHandler basicStateHandler,
-                                final AreaService areaService) {
+    @Autowired
+    public WaitAreaStateHandler(UserService userService,
+                                ConfigService configService,
+                                BasicStateHandler basicStateHandler,
+                                AreaService areaService) {
         super(userService, configService, basicStateHandler);
         this.areaService = areaService;
     }
 
     private static String getOutputSetArea(AppUserConfig config, String input, String area) {
-        String output;
-
         if (!input.equalsIgnoreCase(ANY)) {
             config.setArea(area);
-            output = String.format(AREA_SET.getTemplate(), area, config.getConfigName());
+            return String.format(AREA_SET.getTemplate(), area, config.getConfigName());
         } else {
             config.setArea(null);
-            output = String.format(ANY_AREA_SET.getTemplate(), config.getConfigName());
+            return String.format(ANY_AREA_SET.getTemplate(), config.getConfigName());
         }
-
-        return output;
     }
 
-    private static String normalizeAreaName(final String input) {
+    private static String normalizeAreaName(String input) {
         if (input.equalsIgnoreCase(ANY)) return input;
         var separator = input.contains("-") ? "-" : " ";
         return Arrays.stream(input.split(separator))
@@ -55,7 +53,7 @@ public class WaitAreaStateHandler extends CancellableStateHandler {
     }
 
     @Override
-    public String process(final AppUser user, final String input) {
+    public String process(AppUser user, String input) {
         if (isCancelCommand(input))
             return processCancelCommand(user);
         if (isBasicCommand(input))
@@ -63,16 +61,14 @@ public class WaitAreaStateHandler extends CancellableStateHandler {
         if (isInvalidAreaName(input))
             return processInvalidInput(user);
 
-        var config = fetchConfig(user);
-        if (config == null)
-            return processConfigNotFoundMessage(user);
-
-        return processValidAreaName(user, config, input);
+        var optionalConfig = fetchConfig(user);
+        return optionalConfig.map(config -> processValidAreaName(user, config, input))
+                .orElseGet(() -> processConfigNotFoundMessage(user));
     }
 
-    private String processValidAreaName(final AppUser user,
-                                        final AppUserConfig config,
-                                        final String input) {
+    private String processValidAreaName(AppUser user,
+                                        AppUserConfig config,
+                                        String input) {
         var area = normalizeAreaName(input);
         var output = getOutputSetArea(config, input, area);
 
@@ -83,7 +79,7 @@ public class WaitAreaStateHandler extends CancellableStateHandler {
         return output;
     }
 
-    private boolean isInvalidAreaName(final String input) {
+    private boolean isInvalidAreaName(String input) {
         return !(input != null
                 && !input.trim().isEmpty()
                 && (input.equalsIgnoreCase(ANY)

@@ -49,7 +49,7 @@ public class QueryUpdateStateHandler implements StateHandler {
     );
 
     @Override
-    public String process(final AppUser user, final String input) {
+    public String process(AppUser user, String input) {
         if (isBackToQueryMenuCommand(input))
             return processBackToQueryMenuCommand(user, input);
         if (hasUpdatePrefix(input))
@@ -58,28 +58,28 @@ public class QueryUpdateStateHandler implements StateHandler {
         return "";
     }
 
-    private boolean hasUpdatePrefix(final String input) {
+    private boolean hasUpdatePrefix(String input) {
         return input.startsWith(Prefix.UPDATE_STATE);
     }
 
-    private String processBackToQueryMenuCommand(final AppUser user, final String input) {
+    private String processBackToQueryMenuCommand(AppUser user, String input) {
         return queryListStateHandler.process(user, input);
     }
 
-    private boolean isBackToQueryMenuCommand(final String input) {
+    private boolean isBackToQueryMenuCommand(String input) {
         return input.startsWith(Prefix.QUERY);
     }
 
-    private String processUpdateConfigCommand(final AppUser user, final String input) {
+    private String processUpdateConfigCommand(AppUser user, String input) {
         var prefix = input.substring(0, input.lastIndexOf('_') + 1);
         var properties = actionPropertiesMap.get(prefix);
 
         return updateConfigSelectionAndUserState(user, input, properties);
     }
 
-    private String updateConfigSelectionAndUserState(final AppUser user,
-                                                     final String input,
-                                                     final ActionProperties properties) {
+    private String updateConfigSelectionAndUserState(AppUser user,
+                                                     String input,
+                                                     ActionProperties properties) {
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);
 

@@ -31,7 +31,7 @@ public class KeyboardMarkupFactory {
 
     private final Encoder encoder;
 
-    public InlineKeyboardMarkup createUserConfigListKeyboard(final AppUser appUser) {
+    public InlineKeyboardMarkup createUserConfigListKeyboard(AppUser appUser) {
         var configs = configService.getByUser(appUser);
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
@@ -40,12 +40,12 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    private InlineKeyboardButton createButtonFromConfig(final AppUserConfig config) {
+    private InlineKeyboardButton createButtonFromConfig(AppUserConfig config) {
         var callback = Prefix.QUERY + encoder.hashOf(config.getUserConfigId());
         return createButton(config.getConfigName(), callback);
     }
 
-    public InlineKeyboardMarkup createConfigManagementKeyboard(final String callbackData) {
+    public InlineKeyboardMarkup createConfigManagementKeyboard(String callbackData) {
         var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
@@ -57,7 +57,7 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    public InlineKeyboardMarkup createDeleteConfirmationKeyboard(final String callbackData) {
+    public InlineKeyboardMarkup createDeleteConfirmationKeyboard(String callbackData) {
         var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
@@ -68,7 +68,7 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    public InlineKeyboardMarkup createUpdateConfigKeyboard(final String callbackData) {
+    public InlineKeyboardMarkup createUpdateConfigKeyboard(String callbackData) {
         var hash = extractHash(callbackData);
 
         List<InlineKeyboardButton> buttons = List.of(
@@ -84,7 +84,7 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    public InlineKeyboardMarkup createExperienceSelectionKeyboard(final String callbackData) {
+    public InlineKeyboardMarkup createExperienceSelectionKeyboard(String callbackData) {
         var hash = extractHash(callbackData);
 
         var buttons = Arrays.stream(ExperienceParam.values())
@@ -94,7 +94,7 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    public InlineKeyboardMarkup createEducationLevelSelectionKeyboard(final AppUser user, final String callbackData) {
+    public InlineKeyboardMarkup createEducationLevelSelectionKeyboard(AppUser user, String callbackData) {
         var selectedLevels = configService.getSelectedEducationLevels(user.getTelegramId());
         var hash = extractHash(callbackData);
 
@@ -107,7 +107,7 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, 1);
     }
 
-    public InlineKeyboardMarkup createScheduleTypeSelectionKeyboard(final AppUser user, final String callbackData) {
+    public InlineKeyboardMarkup createScheduleTypeSelectionKeyboard(AppUser user, String callbackData) {
         var selectedTypes = configService.getSelectedScheduleTypes(user.getTelegramId());
         var hash = extractHash(callbackData);
 
@@ -120,7 +120,7 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, 1);
     }
 
-    private InlineKeyboardButton createButtonFromEnum(final EnumParam enumParam, final List<? extends EnumParam> params, final String hash) {
+    private InlineKeyboardButton createButtonFromEnum(EnumParam enumParam, List<? extends EnumParam> params, String hash) {
         String text = enumParam.getDescription();
 
         if (params.contains(enumParam))
@@ -130,14 +130,14 @@ public class KeyboardMarkupFactory {
         return createButton(text, callback);
     }
 
-    private InlineKeyboardButton createButton(final String text, final String callbackData) {
+    private InlineKeyboardButton createButton(String text, String callbackData) {
         return InlineKeyboardButton.builder()
                 .text(text)
                 .callbackData(callbackData)
                 .build();
     }
 
-    private InlineKeyboardMarkup createMarkup(final List<InlineKeyboardButton> buttons, final int buttonsPerRow) {
+    private InlineKeyboardMarkup createMarkup(List<InlineKeyboardButton> buttons, int buttonsPerRow) {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
 
         for (int i = 0; i < buttons.size(); i += buttonsPerRow) {

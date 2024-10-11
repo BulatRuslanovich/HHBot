@@ -4,7 +4,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 public interface MainService {
 
-    void processMessage(final Update update);
+    void processMessage(Update update);
 
-    void processCallbackQuery(final Update update);
+    void processCallbackQuery(Update update);
 }

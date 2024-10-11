@@ -59,13 +59,13 @@ public class APIHandlerImpl implements APIHandler {
     @Value("${headhunter.endpoint.searchForVacancy}")
     private String searchForVacancyURI;
 
-    private static boolean isPresentJson(final JsonNode jsonNode) {
+    private static boolean isPresentJson(JsonNode jsonNode) {
         return jsonNode != null && !jsonNode.isEmpty();
     }
 
-    private static void addVacanciesFromPage(final AppUserConfig config,
-                                             final List<VacancyDTO> vacancyList,
-                                             final JsonNode vacanciesOnPage) {
+    private static void addVacanciesFromPage(AppUserConfig config,
+                                             List<VacancyDTO> vacancyList,
+                                             JsonNode vacanciesOnPage) {
         vacanciesOnPage.forEach(v -> {
             var publishedAt = getPublishedAtFromJson(v);
 
@@ -76,7 +76,7 @@ public class APIHandlerImpl implements APIHandler {
         });
     }
 
-    private static LocalDateTime getPublishedAtFromJson(final JsonNode vacancy) {
+    private static LocalDateTime getPublishedAtFromJson(JsonNode vacancy) {
         var timestamp = vacancy.get("published_at").asText();
 
         if (timestamp.length() == TIMESTAMP_FULL_LENGTH)
@@ -87,7 +87,7 @@ public class APIHandlerImpl implements APIHandler {
     }
 
     @Override
-    public List<VacancyDTO> fetchNewVacancies(final AppUserConfig config) {
+    public List<VacancyDTO> fetchNewVacancies(AppUserConfig config) {
         var request = apiConnection.createRequestWithHeaders();
         var pageCount = fetchPageCount(request, config);
         List<VacancyDTO> vacancyList = new ArrayList<>();
@@ -103,9 +103,9 @@ public class APIHandlerImpl implements APIHandler {
         return URLEncoder.encode(queryText, StandardCharsets.UTF_8);
     }
 
-    private JsonNode fetchVacancyPage(final HttpEntity<HttpHeaders> request,
-                                      final int pageNumber,
-                                      final AppUserConfig config) {
+    private JsonNode fetchVacancyPage(HttpEntity<HttpHeaders> request,
+                                      int pageNumber,
+                                      AppUserConfig config) {
         var vacancySearchUri = generateVacancySearchUri(pageNumber, config);
         var response = restTemplate.exchange(vacancySearchUri, HttpMethod.GET, request, String.class).getBody();
 
@@ -117,8 +117,8 @@ public class APIHandlerImpl implements APIHandler {
         }
     }
 
-    private int fetchPageCount(final HttpEntity<HttpHeaders> request,
-                               final AppUserConfig config) {
+    private int fetchPageCount(HttpEntity<HttpHeaders> request,
+                               AppUserConfig config) {
         var firstPage = fetchVacancyPage(request, 0, config);
 
         if (isPresentJson(firstPage)) {
@@ -129,10 +129,10 @@ public class APIHandlerImpl implements APIHandler {
         return 0;
     }
 
-    private void processVacancyPage(final AppUserConfig config,
-                                    final HttpEntity<HttpHeaders> request,
-                                    final int pageNum,
-                                    final List<VacancyDTO> vacancyList) {
+    private void processVacancyPage(AppUserConfig config,
+                                    HttpEntity<HttpHeaders> request,
+                                    int pageNum,
+                                    List<VacancyDTO> vacancyList) {
         var jsonPage = fetchVacancyPage(request, pageNum, config);
 
         if (isPresentJson(jsonPage))
@@ -175,7 +175,7 @@ public class APIHandlerImpl implements APIHandler {
             builder.queryParam("schedule", types);
     }
 
-    private String generateVacancySearchUri(final int pageNumber, final AppUserConfig config) {
+    private String generateVacancySearchUri(int pageNumber, AppUserConfig config) {
         var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
                 .queryParam("page", pageNumber)
                 .queryParam("per_page", COUNT_OF_VACANCIES_IN_PAGE)

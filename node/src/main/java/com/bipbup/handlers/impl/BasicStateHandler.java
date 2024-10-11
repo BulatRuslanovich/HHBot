@@ -36,7 +36,7 @@ import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.WELCOME;
 @Component
 public class BasicStateHandler implements StateHandler {
 
-    protected static final Marker ADMIN_LOG = MarkerFactory.getMarker("ADMIN");
+    public static final Marker ADMIN_LOG = MarkerFactory.getMarker("ADMIN");
 
     private final UserService userService;
 
@@ -48,7 +48,7 @@ public class BasicStateHandler implements StateHandler {
     private String adminPassword;
 
     @Override
-    public String process(final AppUser user, final String input) {
+    public String process(AppUser user, String input) {
         userService.clearUserState(user.getTelegramId());
 
         if (isStartCommand(input))
@@ -67,7 +67,7 @@ public class BasicStateHandler implements StateHandler {
         return "";
     }
 
-    private boolean isSearchCommand(final String input) {
+    private boolean isSearchCommand(String input) {
         return input.split(" ", 2)[0].equals(SEARCH.getCommand());
     }
 
@@ -75,23 +75,23 @@ public class BasicStateHandler implements StateHandler {
         return input.split(" ", 2)[0].equals(BROADCAST.getCommand());
     }
 
-    private boolean isStartCommand(final String input) {
+    private boolean isStartCommand(String input) {
         return START.getCommand().equals(input);
     }
 
-    private boolean isHelpCommand(final String input) {
+    private boolean isHelpCommand(String input) {
         return HELP.getCommand().equals(input);
     }
 
-    private boolean isNewQueryCommand(final String input) {
+    private boolean isNewQueryCommand(String input) {
         return NEWQUERY.getCommand().equals(input);
     }
 
-    private boolean isMyQueriesCommand(final String input) {
+    private boolean isMyQueriesCommand(String input) {
         return MYQUERIES.getCommand().equals(input);
     }
 
-    private String processStartCommand(final AppUser user) {
+    private String processStartCommand(AppUser user) {
         return String.format(WELCOME.getTemplate(), user.getFirstName());
     }
 
@@ -99,13 +99,13 @@ public class BasicStateHandler implements StateHandler {
         return MessageTemplate.HELP.getTemplate();
     }
 
-    private String processNewQueryCommand(final AppUser user) {
+    private String processNewQueryCommand(AppUser user) {
         userService.saveUserState(user.getTelegramId(), WAIT_CONFIG_NAME_STATE);
         log.info("State of user {} set to WAIT_CONFIG_NAME_STATE", user.getFirstName());
         return QUERY_PROMPT.getTemplate();
     }
 
-    protected String processMyQueriesCommand(final AppUser user) {
+    protected String processMyQueriesCommand(AppUser user) {
         var configs = configService.getByUser(user);
         if (configs == null || configs.isEmpty()) {
             userService.clearUserState(user.getTelegramId());
@@ -117,14 +117,14 @@ public class BasicStateHandler implements StateHandler {
         return USER_QUERIES.getTemplate();
     }
 
-    private String processBroadcastCommand(final AppUser user, final String input) {
+    private String processBroadcastCommand(AppUser user, String input) {
         return processAdminCommand(user, input, BROADCAST.getCommand(), () -> {
             userService.saveUserState(user.getTelegramId(), WAIT_BROADCAST_MESSAGE);
             return ENTER_MESSAGE.getTemplate();
         });
     }
 
-    private String processSearchCommand(final AppUser user, final String input) {
+    private String processSearchCommand(AppUser user, String input) {
         return processAdminCommand(user, input, SEARCH.getCommand(), () -> {
             log.info(ADMIN_LOG, "{} launched vacancies searching", user.getFirstName());
             notifierService.searchNewVacancies();
@@ -132,10 +132,10 @@ public class BasicStateHandler implements StateHandler {
         });
     }
 
-    private String processAdminCommand(final AppUser user,
-                                       final String input,
-                                       final String command,
-                                       final Supplier<String> action) {
+    private String processAdminCommand(AppUser user,
+                                       String input,
+                                       String command,
+                                       Supplier<String> action) {
         if (!user.getRole().equals(Role.ADMIN))
             return NO_PERMISSION.getTemplate();
 

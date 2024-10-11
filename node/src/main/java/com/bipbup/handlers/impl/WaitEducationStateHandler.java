@@ -27,7 +27,7 @@ public class WaitEducationStateHandler implements StateHandler {
     private final Decoder decoder;
 
     @Override
-    public String process(final AppUser user, final String input) {
+    public String process(AppUser user, String input) {
         if (hasSavePrefix(input))
             return processSaveEducationLevelsCommand(user, input);
         if (hasEducationPrefix(input))
@@ -36,15 +36,15 @@ public class WaitEducationStateHandler implements StateHandler {
         return "";
     }
 
-    private boolean hasSavePrefix(final String input) {
+    private boolean hasSavePrefix(String input) {
         return input.startsWith(Prefix.EDU_SAVE);
     }
 
-    private boolean hasEducationPrefix(final String input) {
+    private boolean hasEducationPrefix(String input) {
         return input.startsWith(Prefix.WAIT_EDU_STATE);
     }
 
-    private String processSaveEducationLevelsCommand(final AppUser user, final String input) {
+    private String processSaveEducationLevelsCommand(AppUser user, String input) {
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);
 
@@ -64,7 +64,7 @@ public class WaitEducationStateHandler implements StateHandler {
         }
     }
 
-    private String processSetEducationLevelCommand(final AppUser user, final String input) {
+    private String processSetEducationLevelCommand(AppUser user, String input) {
         var prefix = input.substring(0, input.lastIndexOf('_') + 1);
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);
@@ -89,7 +89,7 @@ public class WaitEducationStateHandler implements StateHandler {
             return processConfigNotFoundMessage(user, configId);
     }
 
-    private String processConfigNotFoundMessage(final AppUser user, final long configId) {
+    private String processConfigNotFoundMessage(AppUser user, long configId) {
         userService.clearUserState(user.getTelegramId());
         log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
         return CONFIG_NOT_FOUND.getTemplate();

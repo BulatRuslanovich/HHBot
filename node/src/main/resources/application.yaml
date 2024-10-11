@@ -17,8 +17,8 @@ spring:
       callback-query-update-topic: ${CALLBACK_QUERY_UPDATE_TOPIC:callback-update}
   datasource:
     url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/hhb_db}
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
+    username: ${POSTGRES_USERNAME:getname}
+    password: ${POSTGRES_PASSWORD:4002}
   jpa:
     hibernate:
       ddl-auto: none

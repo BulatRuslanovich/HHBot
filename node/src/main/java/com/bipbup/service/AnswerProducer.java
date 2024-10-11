@@ -5,7 +5,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 
 public interface AnswerProducer {
 
-    void produceAnswer(final SendMessage sendMessage);
+    void produceAnswer(SendMessage sendMessage);
 
-    void produceEdit(final EditMessageText editMessage);
+    void produceEdit(EditMessageText editMessage);
 }

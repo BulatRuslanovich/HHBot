@@ -75,6 +75,7 @@ public abstract class CancellableStateHandler implements StateHandler {
 
         var telegramId = user.getTelegramId();
         var configId = configService.getSelectedConfigId(telegramId);
+        configService.clearConfigSelection(telegramId);
         return configService.getById(configId);
     }
 

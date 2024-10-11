@@ -12,13 +12,13 @@ public interface ConfigService {
 
     List<AppUserConfig> getAll(int page, int size);
 
-    AppUserConfig save(final AppUserConfig config);
+    AppUserConfig save(AppUserConfig config);
 
-    void delete(final AppUserConfig config);
+    void delete(AppUserConfig config);
 
-    Optional<AppUserConfig> getById(final long configId);
+    Optional<AppUserConfig> getById(long configId);
 
-    List<AppUserConfig> getByUser(final AppUser user);
+    List<AppUserConfig> getByUser(AppUser user);
 
     Long saveConfigSelection(long telegramId, long configId);
 
@@ -27,24 +27,24 @@ public interface ConfigService {
     void clearConfigSelection(long telegramId);
 
     List<EducationLevelParam> addEducationLevelSelection(long telegramId,
-                                                         final EducationLevelParam param,
-                                                         final List<EducationLevelParam> educationLevelParams);
+                                                         EducationLevelParam param,
+                                                         List<EducationLevelParam> educationLevelParams);
 
     List<EducationLevelParam> removeEducationLevelSelection(long telegramId,
-                                                            final EducationLevelParam param,
-                                                            final List<EducationLevelParam> educationLevelParams);
+                                                            EducationLevelParam param,
+                                                            List<EducationLevelParam> educationLevelParams);
 
     List<EducationLevelParam> getSelectedEducationLevels(long telegramId);
 
     void clearEducationLevelSelections(long telegramId);
 
     List<ScheduleTypeParam> addScheduleTypeSelection(long telegramId,
-                                                     final ScheduleTypeParam param,
-                                                     final List<ScheduleTypeParam> scheduleTypeParams);
+                                                     ScheduleTypeParam param,
+                                                     List<ScheduleTypeParam> scheduleTypeParams);
 
     List<ScheduleTypeParam> removeScheduleTypeSelection(long telegramId,
-                                                        final ScheduleTypeParam param,
-                                                        final List<ScheduleTypeParam> scheduleTypeParams);
+                                                        ScheduleTypeParam param,
+                                                        List<ScheduleTypeParam> scheduleTypeParams);
 
     List<ScheduleTypeParam> getSelectedScheduleTypes(long telegramId);
 

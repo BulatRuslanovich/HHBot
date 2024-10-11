@@ -6,6 +6,7 @@ import com.bipbup.handlers.CancellableStateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.QUERY_SET;
@@ -16,14 +17,15 @@ public class WaitQueryStateHandler extends CancellableStateHandler {
 
     protected static final int MAX_QUERY_LENGTH = 50;
 
-    public WaitQueryStateHandler(final UserService userService,
-                                 final ConfigService configService,
-                                 final BasicStateHandler basicStateHandler) {
+    @Autowired
+    public WaitQueryStateHandler(UserService userService,
+                                 ConfigService configService,
+                                 BasicStateHandler basicStateHandler) {
         super(userService, configService, basicStateHandler);
     }
 
     @Override
-    public String process(final AppUser user, final String input) {
+    public String process(AppUser user, String input) {
         if (isCancelCommand(input))
             return processCancelCommand(user);
         if (isBasicCommand(input))
@@ -32,21 +34,19 @@ public class WaitQueryStateHandler extends CancellableStateHandler {
             return processInvalidInput(user);
 
         var optionalConfig = fetchConfig(user);
-        if (optionalConfig.isEmpty())
-            return processConfigNotFoundMessage(user);
-
-        return processValidQuery(user, optionalConfig.get(), input);
+        return optionalConfig.map(config -> processValidQuery(user, config, input))
+                .orElseGet(() -> processConfigNotFoundMessage(user));
     }
 
-    private boolean isInvalidQueryText(final String input) {
+    private boolean isInvalidQueryText(String input) {
         return !(input != null
                 && !input.trim().isEmpty()
                 && input.length() <= MAX_QUERY_LENGTH);
     }
 
-    private String processValidQuery(final AppUser user,
-                                     final AppUserConfig config,
-                                     final String input) {
+    private String processValidQuery(AppUser user,
+                                     AppUserConfig config,
+                                     String input) {
         config.setQueryText(input);
         configService.save(config);
         userService.clearUserState(user.getTelegramId());

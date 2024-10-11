@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public AppUser findOrSaveAppUser(final Update update) {
+    public AppUser findOrSaveAppUser(Update update) {
         var sender = update.hasMessage()
                 ? update.getMessage().getFrom()
                 : update.getCallbackQuery().getFrom();
@@ -46,24 +46,17 @@ public class UserServiceImpl implements UserService {
         if (optionalUser.isPresent()) {
             var user = optionalUser.get();
 
-            var updated = false;
-
             if (!Objects.equals(user.getUsername(), sender.getUserName())) {
                 user.setUsername(sender.getUserName());
-                updated = true;
             }
 
             if (!Objects.equals(user.getFirstName(), sender.getFirstName())) {
                 user.setFirstName(sender.getFirstName());
-                updated = true;
             }
 
             if (!Objects.equals(user.getLastName(), sender.getLastName())) {
                 user.setLastName(sender.getLastName());
-                updated = true;
             }
-
-            if (updated) appUserDAO.save(user);
 
             return user;
         }
@@ -73,7 +66,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @CachePut(value = "userStates", key = "#telegramId")
-    public AppUserState saveUserState(long telegramId, final AppUserState state) {
+    public AppUserState saveUserState(long telegramId, AppUserState state) {
         return state;
     }
 
@@ -94,7 +87,7 @@ public class UserServiceImpl implements UserService {
         // clearing cache, doesn't need implementing
     }
 
-    private AppUser saveAppUser(final User sender) {
+    private AppUser saveAppUser(User sender) {
         var appUser = AppUser.builder()
                 .telegramId(sender.getId())
                 .username(sender.getUserName())

@@ -25,9 +25,9 @@ public class WaitScheduleStateHandler implements StateHandler {
     private final UserService userService;
 
     private final Decoder decoder;
-
+    
     @Override
-    public String process(final AppUser user, final String input) {
+    public String process(AppUser user, String input) {
         if (hasSavePrefix(input))
             return processSaveScheduleTypesCommand(user, input);
         if (hasSchedulePrefix(input))
@@ -36,21 +36,21 @@ public class WaitScheduleStateHandler implements StateHandler {
         return "";
     }
 
-    private boolean hasSavePrefix(final String input) {
+    private boolean hasSavePrefix(String input) {
         return input.startsWith(Prefix.SCHEDULE_SAVE);
     }
 
-    private boolean hasSchedulePrefix(final String input) {
+    private boolean hasSchedulePrefix(String input) {
         return input.startsWith(Prefix.WAIT_SCHEDULE_STATE);
     }
 
-    private String processConfigNotFoundMessage(final AppUser user, final long configId) {
+    private String processConfigNotFoundMessage(AppUser user, long configId) {
         userService.clearUserState(user.getTelegramId());
         log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
         return CONFIG_NOT_FOUND.getTemplate();
     }
 
-    private String processSaveScheduleTypesCommand(final AppUser user, final String input) {
+    private String processSaveScheduleTypesCommand(AppUser user, String input) {
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);
 
@@ -71,7 +71,7 @@ public class WaitScheduleStateHandler implements StateHandler {
         }
     }
 
-    private String processSetScheduleTypeCommand(final AppUser user, final String input) {
+    private String processSetScheduleTypeCommand(AppUser user, String input) {
         var prefix = input.substring(0, input.lastIndexOf('_') + 1);
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);

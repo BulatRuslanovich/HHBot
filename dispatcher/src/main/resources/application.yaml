@@ -4,9 +4,9 @@ server:
     enabled: false
 
 bot:
-  uri: ${BOT_URI:unset}
-  username: ${BOT_USERNAME:unset}
-  token: ${BOT_TOKEN:unset}
+  uri: ${BOT_URI:https://cae7-87-117-189-157.ngrok-free.app/}
+  username: ${BOT_USERNAME:headh_v2_bot}
+  token: ${BOT_TOKEN:7361235631:AAGgia9VqWY6Q_o1pW2WTaLQ4d6vzLgRcOg}
 
 spring:
   kafka:

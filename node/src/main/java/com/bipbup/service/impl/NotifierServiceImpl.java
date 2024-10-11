@@ -50,11 +50,11 @@ public class NotifierServiceImpl implements NotifierService {
         }
     }
 
-    private boolean isPresentQuery(final AppUserConfig config) {
+    private boolean isPresentQuery(AppUserConfig config) {
         return !(config.getQueryText() == null || config.getQueryText().isEmpty());
     }
 
-    private void processNewVacancies(final AppUserConfig config) {
+    private void processNewVacancies(AppUserConfig config) {
         var newVacancies = apiHandler.fetchNewVacancies(config);
         var user = config.getAppUser();
 
@@ -72,8 +72,7 @@ public class NotifierServiceImpl implements NotifierService {
                 user.getFirstName(), newVacancies.size(), config.getConfigName());
     }
 
-    private void sendVacancyMessage(final VacancyDTO vacancy, final AppUserConfig config) {
-
+    private void sendVacancyMessage(VacancyDTO vacancy, AppUserConfig config) {
         var message = String.format(VACANCY.getTemplate(),
                 config.getConfigName(),
                 vacancy.getNameVacancy(),

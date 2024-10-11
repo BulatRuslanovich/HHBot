@@ -6,6 +6,7 @@ import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
@@ -18,32 +19,17 @@ public class WaitBroadcastMessageHandler extends CancellableStateHandler {
 
     private final AnswerProducer producer;
 
-    public WaitBroadcastMessageHandler(final UserService userService,
-                                       final ConfigService configService,
-                                       final BasicStateHandler basicStateHandler,
-                                       final AnswerProducer producer) {
+    @Autowired
+    public WaitBroadcastMessageHandler(UserService userService,
+                                       ConfigService configService,
+                                       BasicStateHandler basicStateHandler,
+                                       AnswerProducer producer) {
         super(userService, configService, basicStateHandler);
         this.producer = producer;
     }
 
-    private void sendMessage(final AppUser user, final String output) {
-        var message = SendMessage.builder()
-                .text(output)
-                .chatId(user.getTelegramId())
-                .parseMode("MarkDown")
-                .build();
-        producer.produceAnswer(message);
-    }
-
-    private void sendBroadcast(final AppUser user, final String  input) {
-        var users = userService.getAllUsers();
-        log.info(ADMIN_LOG, "{} send message to everyone:\n{}", user.getFirstName(), input);
-        users.stream().filter(u -> !u.getTelegramId().equals(user.getTelegramId()))
-                .forEach(u -> sendMessage(u, input));
-    }
-
     @Override
-    public String process(final AppUser user, final String input) {
+    public String process(AppUser user, String input) {
         if (isCancelCommand(input))
             return processCancelCommand(user);
         if (isBasicCommand(input))
@@ -53,5 +39,21 @@ public class WaitBroadcastMessageHandler extends CancellableStateHandler {
         userService.clearUserState(user.getTelegramId());
 
         return MESSAGE_SENT.getTemplate();
+    }
+
+    private void sendMessage(AppUser user, String output) {
+        var message = SendMessage.builder()
+                .text(output)
+                .chatId(user.getTelegramId())
+                .parseMode("MarkDown")
+                .build();
+        producer.produceAnswer(message);
+    }
+
+    private void sendBroadcast(AppUser user, String  input) {
+        var users = userService.getAllUsers();
+        log.info(ADMIN_LOG, "{} send message to everyone:\n{}", user.getFirstName(), input);
+        users.stream().filter(u -> !u.getTelegramId().equals(user.getTelegramId()))
+                .forEach(u -> sendMessage(u, input));
     }
 }

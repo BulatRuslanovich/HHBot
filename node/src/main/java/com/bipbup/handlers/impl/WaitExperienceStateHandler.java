@@ -26,7 +26,7 @@ public class WaitExperienceStateHandler implements StateHandler {
     private final Decoder decoder;
 
     @Override
-    public String process(final AppUser user, final String input) {
+    public String process(AppUser user, String input) {
         if (hasExperiencePrefix(input)) return processSetExperienceCommand(user, input);
 
         return "";
@@ -36,7 +36,7 @@ public class WaitExperienceStateHandler implements StateHandler {
         return input.startsWith(Prefix.WAIT_EXP_STATE);
     }
 
-    private String processSetExperienceCommand(final AppUser user, final String input) {
+    private String processSetExperienceCommand(AppUser user, String input) {
         var prefix = input.substring(0, input.lastIndexOf('_') + 1);
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);

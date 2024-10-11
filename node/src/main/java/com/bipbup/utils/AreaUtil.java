@@ -3,6 +3,7 @@ package com.bipbup.utils;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.net.URI;
@@ -19,9 +20,8 @@ import static java.net.http.HttpResponse.BodyHandlers.ofString;
 public class AreaUtil {
 
     private final String URL = "https://api.hh.ru/areas";
-    private final int HTTP_STATUS_OK = 200;
 
-    public Integer getAreaIdFromApi(final String areaName) {
+    public Integer getAreaIdFromApi(String areaName) {
         if (areaName == null)
             return null;
 
@@ -37,7 +37,7 @@ public class AreaUtil {
             return null;
         }
 
-        if (response.statusCode() == HTTP_STATUS_OK) {
+        if (response.statusCode() == HttpStatus.OK.value()) {
             var areas = new JSONArray(response.body());
             var areaId = findAreaId(areas, areaName);
 

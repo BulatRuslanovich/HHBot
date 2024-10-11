@@ -42,7 +42,7 @@ public class QueryMenuStateHandler implements StateHandler {
     private final BasicStateHandler basicStateHandler;
 
     @Override
-    public String process(final AppUser user, final String input) {
+    public String process(AppUser user, String input) {
         if (isBackToQueryListCommand(input))
             return processBackToQueryListCommand(user);
         if (hasDeletePrefix(input))
@@ -53,23 +53,23 @@ public class QueryMenuStateHandler implements StateHandler {
         return "";
     }
 
-    private String processBackToQueryListCommand(final AppUser user) {
+    private String processBackToQueryListCommand(AppUser user) {
         return basicStateHandler.process(user, MYQUERIES.getCommand());
     }
 
-    private boolean isBackToQueryListCommand(final String input) {
+    private boolean isBackToQueryListCommand(String input) {
         return MYQUERIES.getCommand().equals(input);
     }
 
-    private boolean hasUpdatePrefix(final String input) {
+    private boolean hasUpdatePrefix(String input) {
         return input.startsWith(Prefix.UPDATE);
     }
 
-    private boolean hasDeletePrefix(final String input) {
+    private boolean hasDeletePrefix(String input) {
         return input.startsWith(Prefix.DELETE);
     }
 
-    private void appendEnumParams(StringBuilder output, final EnumParam[] values, final String prefix) {
+    private void appendEnumParams(StringBuilder output, EnumParam[] values, String prefix) {
         if (values != null && values.length > 0) {
             output.append('\n').append(prefix).append('\n');
 
@@ -81,7 +81,7 @@ public class QueryMenuStateHandler implements StateHandler {
         }
     }
 
-    private String showDetailedQueryOutput(final AppUserConfig config) {
+    private String showDetailedQueryOutput(AppUserConfig config) {
         StringBuilder output = new StringBuilder()
                 .append(MENU_CONFIG_NAME.getTemplate()).append(config.getConfigName()).append("\n")
                 .append(MENU_QUERY.getTemplate()).append(config.getQueryText()).append("\n")
@@ -94,7 +94,7 @@ public class QueryMenuStateHandler implements StateHandler {
         return output.toString();
     }
 
-    private String processConfigActionCommand(final AppUser user, final String input, final AppUserState state) {
+    private String processConfigActionCommand(AppUser user, String input, AppUserState state) {
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);
 

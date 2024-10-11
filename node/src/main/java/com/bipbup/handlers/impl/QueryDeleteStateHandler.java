@@ -29,7 +29,7 @@ public class QueryDeleteStateHandler implements StateHandler {
     private final Decoder decoder;
 
     @Override
-    public String process(final AppUser user, final String input) {
+    public String process(AppUser user, String input) {
         if (hasDeleteConfirmPrefix(input))
             return processDeleteConfirmCommand(user, input);
         if (isDeleteCancelCommand(input))
@@ -38,15 +38,15 @@ public class QueryDeleteStateHandler implements StateHandler {
         return "";
     }
 
-    private boolean isDeleteCancelCommand(final String input) {
+    private boolean isDeleteCancelCommand(String input) {
         return input.startsWith(Prefix.QUERY);
     }
 
-    private boolean hasDeleteConfirmPrefix(final String input) {
+    private boolean hasDeleteConfirmPrefix(String input) {
         return input.startsWith(Prefix.DELETE_CONFIRM);
     }
 
-    private String processDeleteConfirmCommand(final AppUser user, final String input) {
+    private String processDeleteConfirmCommand(AppUser user, String input) {
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);
 
@@ -63,7 +63,7 @@ public class QueryDeleteStateHandler implements StateHandler {
         }
     }
 
-    private String processDeleteCancelCommand(final AppUser user, final String input) {
+    private String processDeleteCancelCommand(AppUser user, String input) {
         userService.saveUserState(user.getTelegramId(), QUERY_LIST_STATE);
         log.info("User {} chose not to delete the configuration and state set to QUERY_LIST_STATE", user.getFirstName());
         return queryListStateHandler.process(user, input);

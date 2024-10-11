@@ -28,17 +28,17 @@ public class QueryListStateHandler implements StateHandler {
     private final Decoder decoder;
 
     @Override
-    public String process(final AppUser user, final String input) {
+    public String process(AppUser user, String input) {
         if (hasQueryPrefix(input)) return processQueryCommand(user, input);
 
         return "";
     }
 
-    private boolean hasQueryPrefix(final String input) {
+    private boolean hasQueryPrefix(String input) {
         return input.startsWith(Prefix.QUERY);
     }
     
-    private Pair<Boolean, String> generateQueryOutput(final long configId) {
+    private Pair<Boolean, String> generateQueryOutput(long configId) {
         var optionalConfig = configService.getById(configId);
 
         if (optionalConfig.isEmpty())
@@ -49,7 +49,7 @@ public class QueryListStateHandler implements StateHandler {
         return Pair.of(true, answer);
     }
 
-    private String processQueryCommand(final AppUser user, final String input) {
+    private String processQueryCommand(AppUser user, String input) {
         var configId = decoder.parseIdFromCallback(input);
         var answer = generateQueryOutput(configId);
 

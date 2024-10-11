@@ -10,7 +10,7 @@ public class Encoder {
 
     private final Hashids hashids;
 
-    public String hashOf(final long number) {
+    public String hashOf(long number) {
         var encode = hashids.encode(number);
 
         if (encode != null && !encode.isEmpty())

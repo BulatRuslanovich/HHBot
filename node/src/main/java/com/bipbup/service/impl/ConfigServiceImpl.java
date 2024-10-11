@@ -31,12 +31,12 @@ public class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
-    public AppUserConfig save(final AppUserConfig config) {
+    public AppUserConfig save(AppUserConfig config) {
         return appUserConfigDAO.saveAndFlush(config);
     }
 
     @Override
-    public void delete(final AppUserConfig config) {
+    public void delete(AppUserConfig config) {
         appUserConfigDAO.delete(config);
     }
 
@@ -46,7 +46,7 @@ public class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
-    public List<AppUserConfig> getByUser(final AppUser user) {
+    public List<AppUserConfig> getByUser(AppUser user) {
         return appUserConfigDAO.findByAppUser(user);
     }
 
@@ -71,8 +71,8 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @CachePut(value = "educationSelections", key = "#telegramId")
     public List<EducationLevelParam> addEducationLevelSelection(long telegramId,
-                                                                final EducationLevelParam param,
-                                                                final List<EducationLevelParam> educationLevelParams) {
+                                                                EducationLevelParam param,
+                                                                List<EducationLevelParam> educationLevelParams) {
         educationLevelParams.add(param);
         return educationLevelParams;
     }
@@ -80,8 +80,8 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @CachePut(value = "educationSelections", key = "#telegramId")
     public List<EducationLevelParam> removeEducationLevelSelection(long telegramId,
-                                                                   final EducationLevelParam param,
-                                                                   final List<EducationLevelParam> educationLevelParams) {
+                                                                   EducationLevelParam param,
+                                                                   List<EducationLevelParam> educationLevelParams) {
         educationLevelParams.remove(param);
         return educationLevelParams;
     }
@@ -101,8 +101,8 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @CachePut(value = "scheduleSelections", key = "#telegramId")
     public List<ScheduleTypeParam> addScheduleTypeSelection(long telegramId,
-                                                            final ScheduleTypeParam param,
-                                                            final List<ScheduleTypeParam> scheduleTypeParams) {
+                                                            ScheduleTypeParam param,
+                                                            List<ScheduleTypeParam> scheduleTypeParams) {
         scheduleTypeParams.add(param);
         return scheduleTypeParams;
     }
@@ -110,8 +110,8 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @CachePut(value = "scheduleSelections", key = "#telegramId")
     public List<ScheduleTypeParam> removeScheduleTypeSelection(long telegramId,
-                                                               final ScheduleTypeParam param,
-                                                               final List<ScheduleTypeParam> scheduleTypeParams) {
+                                                               ScheduleTypeParam param,
+                                                               List<ScheduleTypeParam> scheduleTypeParams) {
         scheduleTypeParams.remove(param);
         return scheduleTypeParams;
     }
