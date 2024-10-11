@@ -17,7 +17,10 @@ The project aims to automate the process of job search and notify users about su
 
 - **Spring Boot**: Framework for creating web applications and microservices, offering flexibility and ease of development.
 - **Kafka**: Messaging system for asynchronous communication between microservices, ensuring reliable message delivery.
+- **ZooKeeper**: A distributed configuration management and coordination system for managing Kafka clusters and ensuring high availability.
 - **PostgreSQL**: Relational database for storing user data and settings.
+- **Redis**: An in-memory data store for caching and storing temporary data, ensuring lightning-fast performance and reduced latency.
+- **Liquibase**: A database migration and version control tool for managing database schema changes and ensuring data consistency.
 - **Telegram API**: Interface for interacting with Telegram and sending messages to users.
 - **HeadHunter API**: Interface for retrieving job vacancies and searching for job offers on the HeadHunter platform.
 

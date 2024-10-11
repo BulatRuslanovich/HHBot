@@ -10,12 +10,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class APIConnectionImpl implements APIConnection {
+
     @Value("${headhunter.user-agent}")
     private String userAgent;
 
     @Override
     public HttpEntity<HttpHeaders> createRequestWithHeaders() {
-        HttpHeaders headers = new HttpHeaders();
+        var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("User-Agent", userAgent);
         return new HttpEntity<>(headers);

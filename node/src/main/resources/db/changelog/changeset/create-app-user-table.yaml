@@ -22,11 +22,6 @@ databaseChangeLog:
                   name: last_name
                   type: varchar(255)
               - column:
-                  name: state
-                  type: varchar(255)
-                  constraints:
-                    checkConstraint: state::text = ANY (ARRAY['BASIC_STATE', 'WAIT_CONFIG_NAME_STATE', 'WAIT_QUERY_STATE', 'QUERY_LIST_STATE', 'QUERY_MENU_STATE', 'QUERY_DELETE_STATE', 'QUERY_EDIT_STATE', 'WAIT_AREA_STATE', 'WAIT_EXPERIENCE_STATE', 'WAIT_EDUCATION_STATE']::text[])
-              - column:
                   name: telegram_id
                   type: bigint
                   constraints:

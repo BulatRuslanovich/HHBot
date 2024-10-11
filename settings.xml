@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+    <profiles>
+        <profile>
+            <id>central-maven</id>
+            <repositories>
+                <repository>
+                    <id>central</id>
+                    <name>Maven Central Repository</name>
+                    <url>https://repo.maven.apache.org/maven2/</url>
+                </repository>
+            </repositories>
+        </profile>
+        <profile>
+            <!-- Source: https://www.deps.co/guides/public-maven-repositories/ -->
+            <id>sonatype-mirror</id>
+            <repositories>
+                <repository>
+                    <id>sonatype-repository</id>
+                    <name>Sonatype Nexus Repository</name>
+                    <url>https://oss.sonatype.org/content/repositories/releases/</url>
+                </repository>
+            </repositories>
+        </profile>
+        <profile>
+            <!-- Source: https://repo.maven.apache.org/maven2/.meta/repository-metadata.xml -->
+            <id>google-central</id>
+            <repositories>
+                <repository>
+                    <id>google-maven-central</id>
+                    <name>Google Maven Central</name>
+                    <url>https://maven-central.storage-download.googleapis.com/maven2/</url>
+                </repository>
+            </repositories>
+        </profile>
+        <profile>
+            <!-- Source: https://repo.maven.apache.org/maven2/.meta/repository-metadata.xml -->
+            <id>google-central-eu</id>
+            <repositories>
+                <repository>
+                    <id>google-maven-central-eu</id>
+                    <name>Google Maven Central EU</name>
+                    <url>https://maven-central-eu.storage-download.googleapis.com/maven2/</url>
+                </repository>
+            </repositories>
+        </profile>
+        <profile>
+            <!-- Source: https://repo.maven.apache.org/maven2/.meta/repository-metadata.xml -->
+            <id>google-central-ap</id>
+            <repositories>
+                <repository>
+                    <id>google-maven-central-ap</id>
+                    <name>Google Maven Central AP</name>
+                    <url>https://maven-central-asia.storage-download.googleapis.com/maven2/</url>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+    <activeProfiles>
+        <activeProfile>central-maven</activeProfile>
+        <!--<activeProfile>sonatype-mirror</activeProfile>-->
+        <!--<activeProfile>google-central</activeProfile>-->
+        <!--<activeProfile>google-central-eu</activeProfile>-->
+        <!--<activeProfile>google-central-ap</activeProfile>-->
+    </activeProfiles>
+
+</settings>

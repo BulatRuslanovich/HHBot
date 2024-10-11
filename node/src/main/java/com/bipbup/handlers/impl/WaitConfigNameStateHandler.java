@@ -1,78 +1,103 @@
 package com.bipbup.handlers.impl;
 
-import com.bipbup.dao.AppUserConfigDAO;
-import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
-import com.bipbup.handlers.StateHandler;
-import lombok.RequiredArgsConstructor;
+import com.bipbup.handlers.CancellableStateHandler;
+import com.bipbup.service.ConfigService;
+import com.bipbup.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import static com.bipbup.enums.AppUserState.BASIC_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_EXISTS;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NAME_UPDATED;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ENTER_QUERY;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
-public class WaitConfigNameStateHandler implements StateHandler {
-    protected static final String CANCEL_COMMAND = "/cancel";
-    protected static final String CANCEL_MESSAGE = "Команда была отменена.";
-    protected static final String CONFIG_EXISTS_MESSAGE_TEMPLATE =
-            "Конфигурация с названием \"%s\" уже существует.";
-    protected static final String ENTER_QUERY_MESSAGE_TEMPLATE =
-            "Введите запрос для конфигурации \"%s\":";
+public class WaitConfigNameStateHandler extends CancellableStateHandler {
 
-    private final AppUserDAO appUserDAO;
-    private final AppUserConfigDAO appUserConfigDAO;
+    protected static final int MAX_CONFIG_NAME_LENGTH = 50;
+
+    public WaitConfigNameStateHandler(final UserService userService,
+                                      final ConfigService configService,
+                                      final BasicStateHandler basicStateHandler) {
+        super(userService, configService, basicStateHandler);
+    }
 
     @Override
-    public String process(final AppUser appUser, final String text) {
-        if (isCancelCommand(text)) {
-            return handleCancel(appUser);
-        } else if (isConfigExist(appUser, text)) {
-            return handleExistingConfig(appUser, text);
-        } else {
-            return handleNewConfig(appUser, text);
-        }
+    public String process(final AppUser user, final String input) {
+        if (isCancelCommand(input))
+            return processCancelCommand(user);
+        if (isBasicCommand(input))
+            return processBasicCommand(user, input);
+        if (isInvalidConfigName(input))
+            return processInvalidInput(user);
+        if (isConfigExist(user, input))
+            return processExistingConfig(user, input);
+        if (isConfigUpdating(user))
+            return processUpdatingConfig(user, input);
+
+        return processNewConfig(user, input);
     }
 
-    private boolean isCancelCommand(final String text) {
-        return CANCEL_COMMAND.equals(text);
+    private boolean isInvalidConfigName(final String configName) {
+        return !(configName != null
+                && !configName.trim().isEmpty()
+                && configName.length() <= MAX_CONFIG_NAME_LENGTH);
     }
 
-    private String handleCancel(final AppUser appUser) {
-        appUser.setState(BASIC_STATE);
-        appUserDAO.saveAndFlush(appUser);
-        log.debug("User {} cancelled the command and state set to BASIC_STATE", appUser.getFirstName());
-        return CANCEL_MESSAGE;
-    }
-
-    private boolean isConfigExist(final AppUser appUser, final String configName) {
-        var configs = appUserConfigDAO.findByAppUser(appUser);
+    private boolean isConfigExist(final AppUser user, final String configName) {
+        var configs = configService.getByUser(user);
         return configs.stream().anyMatch(config -> config.getConfigName().equals(configName));
     }
 
-    private String handleExistingConfig(final AppUser appUser, final String configName) {
-        appUser.setState(BASIC_STATE);
-        appUserDAO.saveAndFlush(appUser);
-        log.debug("User {} attempted to create an existing config '{}'", appUser.getFirstName(), configName);
-        return String.format(CONFIG_EXISTS_MESSAGE_TEMPLATE, configName);
-    }
-
-    private String handleNewConfig(final AppUser appUser, final String configName) {
-        AppUserConfig newConfig = createConfigWithOnlyName(appUser, configName);
-        appUserConfigDAO.save(newConfig);
-        appUser.setState(WAIT_QUERY_STATE);
-        appUserDAO.saveAndFlush(appUser);
-        log.debug("User {} changed state to WAIT_QUERY_STATE", appUser.getFirstName());
-        return String.format(ENTER_QUERY_MESSAGE_TEMPLATE, configName);
-    }
-
-    private AppUserConfig createConfigWithOnlyName(final AppUser appUser, final String configName) {
+    private AppUserConfig createConfigWithOnlyName(final AppUser user, final String configName) {
         return AppUserConfig.builder()
                 .configName(configName)
-                .appUser(appUser)
+                .appUser(user)
                 .build();
+    }
+
+    private String updateConfigName(final AppUser user,
+                                    final AppUserConfig config,
+                                    final String newConfigName) {
+        var oldConfigName = config.getConfigName();
+        config.setConfigName(newConfigName);
+        configService.save(config);
+        userService.clearUserState(user.getTelegramId());
+        log.info("User {} updated name of config \"{}\" and state set to BASIC_STATE", user.getFirstName(), oldConfigName);
+        return String.format(CONFIG_NAME_UPDATED.getTemplate(), oldConfigName, newConfigName);
+    }
+
+    private String processExistingConfig(final AppUser user, final String configName) {
+        userService.clearUserState(user.getTelegramId());
+        log.info("User {} attempted to create an existing config \"{}\" and state set to BASIC_STATE", user.getFirstName(), configName);
+        return String.format(CONFIG_EXISTS.getTemplate(), configName);
+    }
+
+    private String processUpdatingConfig(final AppUser user, final String configName) {
+        var telegramId = user.getTelegramId();
+        var configId = configService.getSelectedConfigId(telegramId);
+        configService.clearConfigSelection(telegramId);
+
+        var optionalConfig = configService.getById(configId);
+
+        if (optionalConfig.isPresent()) {
+            var config = optionalConfig.get();
+            return updateConfigName(user, config, configName);
+        } else {
+            return processConfigNotFoundMessage(user);
+        }
+    }
+
+    private String processNewConfig(final AppUser user, final String configName) {
+        var telegramId = user.getTelegramId();
+        var newConfig = createConfigWithOnlyName(user, configName);
+        configService.save(newConfig);
+        configService.clearConfigSelection(telegramId);
+        userService.saveUserState(telegramId, WAIT_QUERY_STATE);
+        log.info("User {} created config \"{}\" and state set to WAIT_QUERY_STATE", user.getFirstName(), configName);
+        return String.format(ENTER_QUERY.getTemplate(), configName);
     }
 }

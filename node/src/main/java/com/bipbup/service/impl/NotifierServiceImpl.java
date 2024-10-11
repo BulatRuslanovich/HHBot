@@ -1,11 +1,10 @@
 package com.bipbup.service.impl;
 
-import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.dto.VacancyDTO;
-import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.service.APIHandler;
 import com.bipbup.service.AnswerProducer;
+import com.bipbup.service.ConfigService;
 import com.bipbup.service.NotifierService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,77 +12,82 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
-import java.util.List;
+import java.util.Locale;
+
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.VACANCY;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class NotifierServiceImpl implements NotifierService {
+
     private final APIHandler apiHandler;
+
     private final AnswerProducer answerProducer;
-    private final AppUserConfigDAO appUserConfigDAO;
+
+    private final ConfigService configService;
+
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("ru"));
 
     @Override
     @Scheduled(fixedRateString = "${notifier.period}")
     public void searchNewVacancies() {
-        var appUserConfigs = appUserConfigDAO.findAll();
+        var page = 0;
+        var sizeOfPage = 500;
 
-        for (var appUserConfig : appUserConfigs) {
-            if (appUserConfig.getQueryText() == null
-                    || appUserConfig.getQueryText().isEmpty()) {
-                continue;
-            }
+        var configs = configService.getAll(page++, sizeOfPage);
 
-            processNewVacancies(appUserConfig);
+        while (!configs.isEmpty()) {
+
+            configs.stream()
+                    .filter(this::isPresentQuery)
+                    .forEach(this::processNewVacancies);
+
+            configs = configService.getAll(page, sizeOfPage);
+            page++;
         }
     }
 
-    private void processNewVacancies(final AppUserConfig appUserConfig) {
-        List<VacancyDTO> newVacancies =
-                apiHandler.getNewVacancies(appUserConfig);
-        AppUser appUser = appUserConfig.getAppUser();
+    private boolean isPresentQuery(final AppUserConfig config) {
+        return !(config.getQueryText() == null || config.getQueryText().isEmpty());
+    }
+
+    private void processNewVacancies(final AppUserConfig config) {
+        var newVacancies = apiHandler.fetchNewVacancies(config);
+        var user = config.getAppUser();
 
         if (!newVacancies.isEmpty()) {
-            LocalDateTime lastNotificationTime =
-                    newVacancies.get(0).getPublishedAt().plusMinutes(1);
+            var lastNotificationTime = newVacancies.get(0).getPublishedAt().plusMinutes(1);
             Collections.reverse(newVacancies);
 
-            for (var vacancy : newVacancies) {
-                sendVacancyMessage(vacancy, appUser);
-            }
+            newVacancies.forEach(v -> sendVacancyMessage(v, config));
 
-            appUserConfig.setLastNotificationTime(lastNotificationTime);
-            appUserConfigDAO.save(appUserConfig);
+            config.setLastNotificationTime(lastNotificationTime);
+            configService.save(config);
         }
 
         log.info("For user {} find {} vacancies with config {}",
-                appUser.getFirstName(),
-                newVacancies.size(),
-                appUserConfig.getConfigName());
+                user.getFirstName(), newVacancies.size(), config.getConfigName());
     }
 
-    private void sendVacancyMessage(final VacancyDTO newVacancyDTO,
-                                    final AppUser appUser) {
-        String message = String.format("""
-                        *Вакансия:* %s
-                        *Работодатель:* %s
-                        *Город:* %s
-                        *Дата публикации:* %s
-                        *Ссылка:* %s
-                        """,
-                newVacancyDTO.getNameVacancy(),
-                newVacancyDTO.getNameEmployer(),
-                newVacancyDTO.getNameArea(),
-                newVacancyDTO.getPublishedAt().toLocalDate(),
-                newVacancyDTO.getUrl());
+    private void sendVacancyMessage(final VacancyDTO vacancy, final AppUserConfig config) {
 
+        var message = String.format(VACANCY.getTemplate(),
+                config.getConfigName(),
+                vacancy.getNameVacancy(),
+                vacancy.getNameEmployer(),
+                vacancy.getNameArea(),
+                vacancy.getPublishedAt().toLocalDate().format(formatter),
+                vacancy.getUrl());
 
-        SendMessage sendMessage = SendMessage.builder()
+        var telegramId = config.getAppUser().getTelegramId();
+
+        var sendMessage = SendMessage.builder()
                 .text(message)
                 .parseMode("Markdown")
-                .chatId(appUser.getTelegramId())
+                .chatId(telegramId)
                 .build();
 
         answerProducer.produceAnswer(sendMessage);

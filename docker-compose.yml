@@ -1,0 +1,207 @@
+
+volumes:
+  postgres-data:
+    driver: local
+  kafka-data:
+    driver: local
+  redis-data:
+    driver: local
+  traefik-certs:
+    driver: local
+
+services:
+  dispatcher:
+    container_name: dispatcher
+    restart: on-failure
+    build:
+      context: ./
+      dockerfile: ./dispatcher/Dockerfile
+#    ports:
+#      - ${DISPATCHER_PORT}:${DISPATCHER_PORT}
+    environment:
+      DISPATCHER_PORT: ${DISPATCHER_PORT}
+      BOT_URI: ${BOT_URI}
+      BOT_USERNAME: ${BOT_USERNAME}
+      BOT_TOKEN: ${BOT_TOKEN}
+      BOOTSTRAP_SERVERS: ${BOOTSTRAP_SERVERS}
+      ANSWER_TOPIC: ${ANSWER_TOPIC}
+      EDIT_TOPIC: ${EDIT_TOPIC}
+      TEXT_UPDATE_TOPIC: ${TEXT_UPDATE_TOPIC}
+      CALLBACK_QUERY_UPDATE_TOPIC: ${CALLBACK_QUERY_UPDATE_TOPIC}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.dispatcher.loadbalancer.server.port=${DISPATCHER_PORT}"
+      - "traefik.http.routers.dispatcher.rule=Host(`${HOST_URL}`) && PathPrefix(`/callback`)"
+      - "traefik.http.routers.dispatcher.entrypoints=websecure8"
+      - "traefik.http.routers.dispatcher.tls=true"
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '100m'
+        max-file: '3'
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  node:
+    container_name: node
+    restart: on-failure
+    build:
+      context: ./
+      dockerfile: ./node/Dockerfile
+    environment:
+      NODE_PORT: ${NODE_PORT}
+      BOOTSTRAP_SERVERS: ${BOOTSTRAP_SERVERS}
+      ANSWER_TOPIC: ${ANSWER_TOPIC}
+      EDIT_TOPIC: ${EDIT_TOPIC}
+      TEXT_UPDATE_TOPIC: ${TEXT_UPDATE_TOPIC}
+      CALLBACK_QUERY_UPDATE_TOPIC: ${CALLBACK_QUERY_UPDATE_TOPIC}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      POSTGRES_URL: ${POSTGRES_URL}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      HH_USER_AGENT: ${HH_USER_AGENT}
+      HH_SEARCH_FOR_VACANCY: ${HH_SEARCH_FOR_VACANCY}
+      NOTIFIER_PERIOD: ${NOTIFIER_PERIOD}
+      AREA_PERIOD: ${AREA_PERIOD}
+      SALT: ${SALT}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '100m'
+        max-file: '3'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  postgres:
+    container_name: postgres-db
+    hostname: postgres
+    image: postgres:14.5
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_PORT_MAPPING}
+    environment:
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME} -d ${POSTGRES_DATABASE} -h 127.0.0.1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:latest
+    volumes:
+      - redis-data:/var/lib/redis/data
+    ports:
+      - ${REDIS_PORT_MAPPING}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  zookeeper:
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"
+    restart: unless-stopped
+
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: [ "CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+  traefik:
+    container_name: traefik
+    image: traefik:v2.9
+    ports:
+      - 80:80
+      - 8443:8443
+      - 9443:9443
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data:/etc/traefik/data
+      - /home/bipbop/certs:/etc/traefik/certs
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.traefik.rule=Host(`${HOST_URL}`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure9"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8088"
+
+      # Установка пароля для входа в админку
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_USER}:${TRAEFIK_PASSWORD}"
+      - "traefik.http.routers.traefik.middlewares=traefik-auth"
+
+      - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=false"
+    command:
+      - "--api.dashboard=true"
+      - "--ping=true"
+      - "--ping.entrypoint=ping"
+      - "--entryPoints.ping.address=:8888"
+      - "--entryPoints.web.address=:80"
+      - "--entrypoints.websecure8.address=:8443"
+      - "--entrypoints.websecure9.address=:9443"
+      - "--providers.docker=true"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.filename=/etc/traefik/data/tls.yml"
+    healthcheck:
+      test: [ "CMD", "wget", "http://127.0.0.1:8888/ping","--spider" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped

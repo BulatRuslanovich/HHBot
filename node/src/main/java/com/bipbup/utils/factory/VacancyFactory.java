@@ -1,4 +1,4 @@
-package com.bipbup.utils;
+package com.bipbup.utils.factory;
 
 import com.bipbup.dto.VacancyDTO;
 import com.fasterxml.jackson.databind.JsonNode;
