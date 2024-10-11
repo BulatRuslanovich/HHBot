@@ -18,14 +18,11 @@
     <description>node-service</description>
 
     <properties>
-        <maven.compiler.plagin.version>3.13.0</maven.compiler.plagin.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <postgresql.version>42.7.2</postgresql.version>
         <jaxb-api.version>2.3.0</jaxb-api.version>
         <hashids.version>1.0.1</hashids.version>
-        <liquibase.version>4.24.0</liquibase.version>
         <hypersistence-utils.version>3.8.2</hypersistence-utils.version>
         <json.version>20231013</json.version>
         <com.bipbup.common.version>0.0.1</com.bipbup.common.version>
@@ -71,9 +68,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>${postgresql.version}</version>
         </dependency>
 
         <dependency>
@@ -85,7 +86,6 @@
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
-            <version>${liquibase.version}</version>
         </dependency>
 
         <dependency>
@@ -116,7 +116,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plagin.version}</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>

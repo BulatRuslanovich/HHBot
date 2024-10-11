@@ -39,30 +39,6 @@ public class UpdateProcessor {
 
     private MyTelegramBot myTelegramBot;
 
-    private void logEmptyMessageUpdate(final Update update) {
-        var status = update.getMyChatMember().getNewChatMember().getStatus();
-        var user = update.getMyChatMember().getFrom();
-        if (status.equals("kicked")) {
-            log.info(BAD_HUMAN_MARKER, "User {} block the bot", user.getFirstName());
-            deactivateUser(user);
-        } else if (status.equals("member")) {
-            log.info(WELCOME_MARKER, "User {} joined", user.getFirstName());
-        } else {
-            log.error("Message is null");
-        }
-    }
-
-    private void deactivateUser(User user) {
-        var callbackQuery = new CallbackQuery();
-        callbackQuery.setFrom(user);
-        callbackQuery.setData("delete_me_from_db");
-
-        var update = new Update();
-        update.setCallbackQuery(callbackQuery);
-
-        updateProducer.produce(callbackQueryUpdateTopic, update);
-    }
-
     public void registerBot(final MyTelegramBot myTelegramBot) {
         this.myTelegramBot = myTelegramBot;
     }
@@ -82,6 +58,30 @@ public class UpdateProcessor {
         }
 
         return true;
+    }
+
+    private void logEmptyMessageUpdate(final Update update) {
+        var status = update.getMyChatMember().getNewChatMember().getStatus();
+        var user = update.getMyChatMember().getFrom();
+        if (status.equals("kicked")) {
+            log.info(BAD_HUMAN_MARKER, "User {} block the bot", user.getFirstName());
+            deactivateUser(user);
+        } else if (status.equals("member")) {
+            log.info(WELCOME_MARKER, "User {} joined", user.getFirstName());
+        } else {
+            log.error("Message is null");
+        }
+    }
+
+    protected void deactivateUser(User user) {
+        var callbackQuery = new CallbackQuery();
+        callbackQuery.setFrom(user);
+        callbackQuery.setData("delete_me_from_db");
+
+        var update = new Update();
+        update.setCallbackQuery(callbackQuery);
+
+        updateProducer.produce(callbackQueryUpdateTopic, update);
     }
 
     private void processMessage(Update update) {
@@ -123,7 +123,7 @@ public class UpdateProcessor {
         }
     }
 
-    private void easterEgg(Update update) {
+    protected void easterEgg(Update update) {
         var message = update.getMessage();
         var input = message.getText();
         var firstName = update.getMessage().getFrom().getFirstName();
