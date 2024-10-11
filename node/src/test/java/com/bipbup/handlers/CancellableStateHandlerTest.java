@@ -1,7 +1,5 @@
 package com.bipbup.handlers;
 
-import com.bipbup.entity.AppUser;
-import com.bipbup.entity.AppUserConfig;
 import com.bipbup.handlers.impl.BasicStateHandler;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;

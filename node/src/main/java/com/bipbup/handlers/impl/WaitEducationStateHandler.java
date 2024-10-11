@@ -1,6 +1,7 @@
 package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
+import com.bipbup.entity.EducationLevelParamEntity;
 import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
@@ -51,7 +52,9 @@ public class WaitEducationStateHandler implements StateHandler {
         if (optionalConfig.isPresent()) {
             var config = optionalConfig.get();
             var selectedEducationLevels = configService.getSelectedEducationLevels(user.getTelegramId());
-            config.setEducationLevels(selectedEducationLevels.toArray(new EducationLevelParam[0]));
+            var listOfEduLvlEntities = selectedEducationLevels.stream().map(s -> new EducationLevelParamEntity(null, s, config))
+                    .toList();
+            config.setEduParams(listOfEduLvlEntities);
 
             configService.save(config);
             configService.clearEducationLevelSelections(user.getTelegramId());

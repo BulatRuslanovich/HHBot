@@ -8,6 +8,7 @@ import com.bipbup.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_EXISTS;
@@ -49,7 +50,8 @@ public class WaitConfigNameStateHandler extends CancellableStateHandler {
                 && configName.length() <= MAX_CONFIG_NAME_LENGTH);
     }
 
-    private boolean isConfigExist(AppUser user, String configName) {
+    @Transactional
+    protected boolean isConfigExist(AppUser user, String configName) {
         var configs = configService.getByUser(user);
         return configs.stream().anyMatch(config -> config.getConfigName().equals(configName));
     }

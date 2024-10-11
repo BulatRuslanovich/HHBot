@@ -2,6 +2,8 @@ package com.bipbup.service.impl;
 
 import com.bipbup.dto.VacancyDTO;
 import com.bipbup.entity.AppUserConfig;
+import com.bipbup.entity.EducationLevelParamEntity;
+import com.bipbup.entity.ScheduleParamEntity;
 import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.enums.impl.ScheduleTypeParam;
@@ -25,11 +27,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static com.bipbup.utils.factory.VacancyFactory.createVacancyDTO;
 
@@ -152,10 +150,10 @@ public class APIHandlerImpl implements APIHandler {
     }
 
     private void addEducationParam(UriComponentsBuilder builder, AppUserConfig config) {
-        var levels = Optional.ofNullable(config.getEducationLevels())
+        var levels = Optional.ofNullable(config.getEduParams())
                 .stream()
-                .flatMap(Arrays::stream)
-                .map(EducationLevelParam::getParam)
+                .flatMap(Collection::stream)
+                .map(EducationLevelParamEntity::getParamName)
                 .filter(Objects::nonNull)
                 .toList();
 
@@ -164,10 +162,10 @@ public class APIHandlerImpl implements APIHandler {
     }
 
     private void addScheduleParam(UriComponentsBuilder builder, AppUserConfig config) {
-        var types = Optional.ofNullable(config.getScheduleTypes())
+        var types = Optional.ofNullable(config.getScheduleParams())
                 .stream()
-                .flatMap(Arrays::stream)
-                .map(ScheduleTypeParam::getParam)
+                .flatMap(Collection::stream)
+                .map(ScheduleParamEntity::getParamName)
                 .filter(Objects::nonNull)
                 .toList();
 

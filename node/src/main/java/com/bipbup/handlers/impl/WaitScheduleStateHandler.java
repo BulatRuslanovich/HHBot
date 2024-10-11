@@ -1,6 +1,7 @@
 package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
+import com.bipbup.entity.ScheduleParamEntity;
 import com.bipbup.enums.impl.ScheduleTypeParam;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
@@ -9,6 +10,8 @@ import com.bipbup.utils.Decoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.SCHEDULE_SAVE;
@@ -58,7 +61,9 @@ public class WaitScheduleStateHandler implements StateHandler {
             var telegramId = user.getTelegramId();
             var config = optionalConfig.get();
             var selectedScheduleTypes = configService.getSelectedScheduleTypes(telegramId);
-            config.setScheduleTypes(selectedScheduleTypes.toArray(new ScheduleTypeParam[0]));
+            var listOfScheduleTypeEntities = selectedScheduleTypes.stream()
+                    .map(s -> new ScheduleParamEntity(null, s, config)).toList();
+            config.setScheduleParams(listOfScheduleTypeEntities);
 
             configService.save(config);
             configService.clearScheduleTypeSelections(telegramId);

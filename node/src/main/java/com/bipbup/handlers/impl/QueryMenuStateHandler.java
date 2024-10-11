@@ -2,6 +2,8 @@ package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
+import com.bipbup.entity.EducationLevelParamEntity;
+import com.bipbup.entity.ScheduleParamEntity;
 import com.bipbup.enums.AppUserState;
 import com.bipbup.enums.EnumParam;
 import com.bipbup.handlers.StateHandler;
@@ -11,6 +13,7 @@ import com.bipbup.utils.Decoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -18,14 +21,7 @@ import java.util.stream.Collectors;
 import static com.bipbup.enums.AppUserState.QUERY_DELETE_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.DELETE_CONFIRMATION;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_AREA;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_CONFIG_NAME;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_EDUCATION;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_EXPERIENCE;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_QUERY;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_SCHEDULE;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.*;
 import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @Slf4j
@@ -88,13 +84,17 @@ public class QueryMenuStateHandler implements StateHandler {
                 .append(MENU_AREA.getTemplate()).append(config.getArea() == null ? "Любой" : config.getArea()).append("\n")
                 .append(MENU_EXPERIENCE.getTemplate()).append(config.getExperience().getDescription());
 
-        appendEnumParams(output, config.getEducationLevels(), MENU_EDUCATION.getTemplate());
-        appendEnumParams(output, config.getScheduleTypes(), MENU_SCHEDULE.getTemplate());
+        var eduParams = config.getEduParams().stream().map(EducationLevelParamEntity::getParamName).toArray();
+        var scheduleParams = config.getScheduleParams().stream().map(ScheduleParamEntity::getParamName).toArray();
+
+        appendEnumParams(output, (EnumParam[]) eduParams, MENU_EDUCATION.getTemplate());
+        appendEnumParams(output, (EnumParam[]) scheduleParams, MENU_SCHEDULE.getTemplate());
 
         return output.toString();
     }
 
-    private String processConfigActionCommand(AppUser user, String input, AppUserState state) {
+    @Transactional
+    protected String processConfigActionCommand(AppUser user, String input, AppUserState state) {
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);
 

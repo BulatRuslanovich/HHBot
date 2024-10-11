@@ -7,6 +7,7 @@ import com.bipbup.service.ConfigService;
 import com.bipbup.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -79,7 +80,7 @@ public abstract class CancellableStateHandler implements StateHandler {
         return configService.getById(configId);
     }
 
-    protected Optional<AppUserConfig> fetchLastConfig(AppUser user) {
+    private Optional<AppUserConfig> fetchLastConfig(AppUser user) {
         var configs = configService.getByUser(user);
 
         return configs.stream()

@@ -12,6 +12,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ public class ConfigServiceImpl implements ConfigService {
     private final AppUserConfigDAO appUserConfigDAO;
 
     @Override
+    @Transactional
     public List<AppUserConfig> getAll(int page, int size) {
         var pageRequest = PageRequest.of(page, size);
         var pageResult = appUserConfigDAO.findAll(pageRequest);
@@ -31,11 +33,13 @@ public class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
+    @Transactional
     public AppUserConfig save(AppUserConfig config) {
         return appUserConfigDAO.saveAndFlush(config);
     }
 
     @Override
+    @Transactional
     public void delete(AppUserConfig config) {
         appUserConfigDAO.delete(config);
     }
@@ -46,6 +50,7 @@ public class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
+    @Transactional
     public List<AppUserConfig> getByUser(AppUser user) {
         return appUserConfigDAO.findByAppUser(user);
     }

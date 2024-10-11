@@ -8,6 +8,7 @@ import com.bipbup.utils.Decoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_DELETED;
@@ -46,7 +47,8 @@ public class QueryDeleteStateHandler implements StateHandler {
         return input.startsWith(Prefix.DELETE_CONFIRM);
     }
 
-    private String processDeleteConfirmCommand(AppUser user, String input) {
+    @Transactional
+    protected String processDeleteConfirmCommand(AppUser user, String input) {
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getById(configId);
 

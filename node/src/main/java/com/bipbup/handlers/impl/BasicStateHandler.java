@@ -13,6 +13,7 @@ import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.function.Supplier;
 
@@ -105,6 +106,7 @@ public class BasicStateHandler implements StateHandler {
         return QUERY_PROMPT.getTemplate();
     }
 
+    @Transactional
     protected String processMyQueriesCommand(AppUser user) {
         var configs = configService.getByUser(user);
         if (configs == null || configs.isEmpty()) {

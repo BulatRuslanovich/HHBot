@@ -41,7 +41,7 @@ public class KeyboardMarkupFactory {
     }
 
     private InlineKeyboardButton createButtonFromConfig(AppUserConfig config) {
-        var callback = Prefix.QUERY + encoder.hashOf(config.getUserConfigId());
+        var callback = Prefix.QUERY + encoder.hashOf(config.getId());
         return createButton(config.getConfigName(), callback);
     }
 
