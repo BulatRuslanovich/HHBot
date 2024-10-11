@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.http.HttpClient;
+
 @Configuration
 public class AppConfig {
 
@@ -34,5 +36,10 @@ public class AppConfig {
     @Bean
     public ObjectMapper objectMapper() {
         return new ObjectMapper();
+    }
+
+    @Bean
+    public HttpClient httpClient() {
+        return HttpClient.newHttpClient();
     }
 }

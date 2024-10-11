@@ -1,9 +1,10 @@
 package com.bipbup.utils;
 
-import lombok.experimental.UtilityClass;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,16 +17,18 @@ import java.util.Deque;
 import static java.net.http.HttpResponse.BodyHandlers.ofString;
 
 @Slf4j
-@UtilityClass
+@Component
+@RequiredArgsConstructor
 public class AreaUtil {
 
-    private final String URL = "https://api.hh.ru/areas";
+    private static final String URL = "https://api.hh.ru/areas";
+
+    private final HttpClient client;
 
     public Integer getAreaIdFromApi(String areaName) {
         if (areaName == null)
             return null;
 
-        var client = HttpClient.newHttpClient();
         var uri = URI.create(URL);
         var request = HttpRequest.newBuilder().uri(uri).build();
         HttpResponse<String> response;

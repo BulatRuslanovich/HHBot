@@ -2,6 +2,7 @@ package com.bipbup.service.impl;
 
 import com.bipbup.service.AreaService;
 import com.bipbup.utils.AreaUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -9,12 +10,15 @@ import org.springframework.stereotype.Service;
 
 
 @Service
+@RequiredArgsConstructor
 public class AreaServiceImpl implements AreaService {
+
+    private final AreaUtil areaUtil;
 
     @Override
     @Cacheable(value = "areaIds")
     public Integer getAreaIdByName(String areaName) {
-        return AreaUtil.getAreaIdFromApi(areaName);
+        return areaUtil.getAreaIdFromApi(areaName);
     }
 
     @Override
