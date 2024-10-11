@@ -33,7 +33,7 @@ headhunter:
     searchForVacancy: ${HH_SEARCH_FOR_VACANCY:https://api.hh.ru/vacancies}
 
 notifier:
-  period: ${NOTIFIER_PERIOD:600000}
+  period: ${NOTIFIER_PERIOD:3600000}
 
 area:
   update-period: ${AREA_PERIOD:864000000}
@@ -42,6 +42,9 @@ salt: ${SALT:qwertyuiiuytrewer}
 
 admin:
   password: ${ADMIN_PASSWORD:1234}
+
+logging:
+  config: classpath:log4j2.xml
 
 
 
