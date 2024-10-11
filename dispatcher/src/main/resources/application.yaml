@@ -4,9 +4,9 @@ server:
     enabled: false
 
 bot:
-  uri: ${BOT_URI}
-  username: ${BOT_USERNAME}
-  token: ${BOT_TOKEN}
+  uri: ${BOT_URI:unset}
+  username: ${BOT_USERNAME:unset}
+  token: ${BOT_TOKEN:unset}
 
 spring:
   kafka:
@@ -16,4 +16,7 @@ spring:
       edit-topic: ${EDIT_TOPIC:edit}
       text-update-topic: ${TEXT_UPDATE_TOPIC:text-update}
       callback-query-update-topic: ${CALLBACK_QUERY_UPDATE_TOPIC:callback-update}
+
+logging:
+  config: classpath:log4j2.xml
 
