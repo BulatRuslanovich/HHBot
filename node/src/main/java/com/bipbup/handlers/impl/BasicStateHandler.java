@@ -105,7 +105,7 @@ public class BasicStateHandler implements StateHandler {
         return QUERY_PROMPT.getTemplate();
     }
 
-    protected String processMyQueriesCommand(AppUser user) {
+    private String processMyQueriesCommand(AppUser user) {
         var configs = configService.getByUser(user);
         if (configs == null || configs.isEmpty()) {
             userService.clearUserState(user.getTelegramId());
