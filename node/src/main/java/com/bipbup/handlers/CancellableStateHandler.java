@@ -28,11 +28,11 @@ public abstract class CancellableStateHandler implements StateHandler {
 
     private final BasicStateHandler basicStateHandler;
 
-    protected boolean isCancelCommand(final String input) {
+    protected boolean isCancelCommand(String input) {
         return CANCEL.getCommand().equals(input);
     }
 
-    protected boolean isBasicCommand(final String input) {
+    protected boolean isBasicCommand(String input) {
         return MYQUERIES.getCommand().equals(input)
                 || NEWQUERY.getCommand().equals(input)
                 || START.getCommand().equals(input)
@@ -40,28 +40,28 @@ public abstract class CancellableStateHandler implements StateHandler {
                 || input.startsWith(BROADCAST.getCommand());
     }
 
-    protected boolean isConfigUpdating(final AppUser user) {
+    protected boolean isConfigUpdating(AppUser user) {
         var configId = configService.getSelectedConfigId(user.getTelegramId());
         return configId != null;
     }
 
-    protected String processCancelCommand(final AppUser user) {
+    protected String processCancelCommand(AppUser user) {
         userService.clearUserState(user.getTelegramId());
         log.info("User {} cancelled the command and state set to BASIC_STATE", user.getFirstName());
         return COMMAND_CANCELLED.getTemplate();
     }
 
-    protected String processBasicCommand(final AppUser user, final String input) {
+    protected String processBasicCommand(AppUser user, String input) {
         return basicStateHandler.process(user, input);
     }
 
-    protected String processInvalidInput(final AppUser user) {
+    protected String processInvalidInput(AppUser user) {
         userService.clearUserState(user.getTelegramId());
         log.info("User {} provided an invalid input and state set to BASIC_STATE", user.getFirstName());
         return INVALID_INPUT.getTemplate();
     }
 
-    protected String processConfigNotFoundMessage(final AppUser user) {
+    protected String processConfigNotFoundMessage(AppUser user) {
         var configId = configService.getSelectedConfigId(user.getTelegramId());
         configService.clearConfigSelection(user.getTelegramId());
         userService.clearUserState(user.getTelegramId());
@@ -69,35 +69,24 @@ public abstract class CancellableStateHandler implements StateHandler {
         return CONFIG_NOT_FOUND.getTemplate();
     }
 
-    protected AppUserConfig fetchConfig(final AppUser user) {
+    protected Optional<AppUserConfig> fetchConfig(AppUser user) {
         if (!isConfigUpdating(user))
             return fetchLastConfig(user);
 
         var telegramId = user.getTelegramId();
         var configId = configService.getSelectedConfigId(telegramId);
-        var optionalConfig = configService.getById(configId);
-
-        if (optionalConfig.isPresent()) {
-            configService.clearConfigSelection(telegramId);
-            return optionalConfig.get();
-        }
-
-        return null;
+        return configService.getById(configId);
     }
 
-    protected AppUserConfig fetchLastConfig(final AppUser user) {
+    protected Optional<AppUserConfig> fetchLastConfig(AppUser user) {
         var configs = configService.getByUser(user);
 
-        var config = configs.stream()
+        return configs.stream()
                 .filter(c -> Objects.isNull(c.getQueryText()))
                 .findFirst()
-                .orElse(null);
-
-        if (config == null) {
-            log.warn("No configurations found for user {}", user.getFirstName());
-            return null;
-        }
-
-        return config;
+                .or(() -> {
+                    log.warn("No configurations found for user {}", user.getFirstName());
+                    return Optional.empty();
+                });
     }
 }

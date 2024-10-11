@@ -27,7 +27,7 @@ public class AppConfig {
     }
 
     @Bean
-    public RestTemplate restTemplate(final RestTemplateBuilder builder) {
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.build();
     }
 

@@ -74,7 +74,7 @@ public class AppUserConfig {
 
     @Builder.Default
     private LocalDateTime lastNotificationTime = LocalDateTime.now().
-            minusDays(1);
+            minusDays(5);
 
     @ManyToOne
     @JoinColumn(name = "app_user_id", referencedColumnName = "userId")

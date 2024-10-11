@@ -31,11 +31,11 @@ public class WaitQueryStateHandler extends CancellableStateHandler {
         if (isInvalidQueryText(input))
             return processInvalidInput(user);
 
-        AppUserConfig config = fetchConfig(user);
-        if (config == null)
+        var optionalConfig = fetchConfig(user);
+        if (optionalConfig.isEmpty())
             return processConfigNotFoundMessage(user);
 
-        return processValidQuery(user, config, input);
+        return processValidQuery(user, optionalConfig.get(), input);
     }
 
     private boolean isInvalidQueryText(final String input) {
