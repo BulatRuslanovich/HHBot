@@ -3,22 +3,15 @@ package com.bipbup.service.impl;
 import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
-import com.bipbup.enums.AppUserState;
 import com.bipbup.enums.Role;
 import com.bipbup.service.UserService;
+import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
-
-import java.util.List;
-import java.util.Objects;
-
-import static com.bipbup.enums.AppUserState.BASIC_STATE;
 
 @RequiredArgsConstructor
 @Service
@@ -30,7 +23,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void deleteUser(AppUser user) {
+    public void deleteAppUser(AppUser user) {
         appUserConfigDAO.deleteAllByAppUser(user);
         appUserDAO.delete(user);
     }
@@ -58,33 +51,10 @@ public class UserServiceImpl implements UserService {
                 user.setLastName(sender.getLastName());
             }
 
-            return user;
+            return appUserDAO.save(user);
         }
 
         return saveAppUser(sender);
-    }
-
-    @Override
-    @CachePut(value = "userStates", key = "#telegramId")
-    public AppUserState saveUserState(long telegramId, AppUserState state) {
-        return state;
-    }
-
-    @Override
-    @Cacheable(value = "userStates")
-    public AppUserState getUserState(long telegramId) {
-        return BASIC_STATE;
-    }
-
-    @Override
-    public List<AppUser> getAllUsers() {
-        return appUserDAO.findAll();
-    }
-
-    @Override
-    @CacheEvict(value = "userStates")
-    public void clearUserState(long telegramId) {
-        // clearing cache, doesn't need implementing
     }
 
     private AppUser saveAppUser(User sender) {
@@ -98,5 +68,10 @@ public class UserServiceImpl implements UserService {
 
         appUserDAO.save(appUser);
         return appUser;
+    }
+
+    @Override
+    public List<AppUser> getAppUsers() {
+        return appUserDAO.findAll();
     }
 }

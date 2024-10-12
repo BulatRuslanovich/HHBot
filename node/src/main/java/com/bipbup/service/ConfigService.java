@@ -2,51 +2,20 @@ package com.bipbup.service;
 
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
-import com.bipbup.enums.impl.EducationLevelParam;
-import com.bipbup.enums.impl.ScheduleTypeParam;
-
 import java.util.List;
 import java.util.Optional;
 
 public interface ConfigService {
 
-    List<AppUserConfig> getAll(int page, int size);
+    List<AppUserConfig> getConfigsFromPage(int numOfPage, int sizeOfPage);
 
-    AppUserConfig save(AppUserConfig config);
+    AppUserConfig saveConfig(AppUserConfig config, boolean updateParams);
 
-    void delete(AppUserConfig config);
+    void deleteConfig(AppUserConfig config);
 
-    Optional<AppUserConfig> getById(long configId);
+    Optional<AppUserConfig> getConfigById(long id);
 
-    List<AppUserConfig> getByUser(AppUser user);
+    List<AppUserConfig> getConfigByUser(AppUser user);
 
-    Long saveConfigSelection(long telegramId, long configId);
-
-    Long getSelectedConfigId(long telegramId);
-
-    void clearConfigSelection(long telegramId);
-
-    List<EducationLevelParam> addEducationLevelSelection(long telegramId,
-                                                         EducationLevelParam param,
-                                                         List<EducationLevelParam> educationLevelParams);
-
-    List<EducationLevelParam> removeEducationLevelSelection(long telegramId,
-                                                            EducationLevelParam param,
-                                                            List<EducationLevelParam> educationLevelParams);
-
-    List<EducationLevelParam> getSelectedEducationLevels(long telegramId);
-
-    void clearEducationLevelSelections(long telegramId);
-
-    List<ScheduleTypeParam> addScheduleTypeSelection(long telegramId,
-                                                     ScheduleTypeParam param,
-                                                     List<ScheduleTypeParam> scheduleTypeParams);
-
-    List<ScheduleTypeParam> removeScheduleTypeSelection(long telegramId,
-                                                        ScheduleTypeParam param,
-                                                        List<ScheduleTypeParam> scheduleTypeParams);
-
-    List<ScheduleTypeParam> getSelectedScheduleTypes(long telegramId);
-
-    void clearScheduleTypeSelections(long telegramId);
+    Long countOfConfigs(AppUser user);
 }
