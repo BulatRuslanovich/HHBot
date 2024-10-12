@@ -1,43 +1,60 @@
 package com.bipbup.entity;
 
 import com.bipbup.enums.Role;
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Getter
 @Setter
+@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "app_user")
-@EqualsAndHashCode(exclude = "userId")
-@Entity
+@EqualsAndHashCode(exclude = "id")
+@Table(name = "t_app_user", schema = "hhbot")
 public class AppUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
-
-    @Column(unique = true, nullable = false)
-    private Long telegramId;
+    @Column(name = "user_id", nullable = false)
+    private Long id;
 
     @CreationTimestamp
+    @Column(name = "first_login_date")
     private LocalDateTime firstLoginDate;
 
-    private String username;
-
+    @Column(name = "first_name")
     private String firstName;
 
+    @Column(name = "last_name")
     private String lastName;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    @NotNull
+    @Column(name = "telegram_id", nullable = false, unique = true)
+    private Long telegramId;
 
-    @OneToMany
-    @JoinColumn(name = "app_user_id", referencedColumnName = "userId")
-    private List<AppUserConfig> appUserConfigs;
+    @Column(name = "username")
+    private String username;
+
+    @NotNull
+    @ColumnDefault("'USER'")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 32)
+    private Role role;
 }

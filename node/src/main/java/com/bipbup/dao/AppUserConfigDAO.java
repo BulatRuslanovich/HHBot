@@ -13,4 +13,6 @@ public interface AppUserConfigDAO extends JpaRepository<AppUserConfig, Long> {
     List<AppUserConfig> findByAppUser(AppUser appUser);
 
     void deleteAllByAppUser(AppUser appUser);
+
+    Long countAppUserConfigByAppUser(AppUser appUser);
 }
