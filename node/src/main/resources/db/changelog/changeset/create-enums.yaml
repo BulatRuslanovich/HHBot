@@ -1,9 +1,0 @@
-databaseChangeLog:
-  - changeSet:
-      id: 1
-      author: getname
-      changes:
-        - sql:
-            sql: | 
-              CREATE TYPE education_param AS ENUM ('HIGHER', 'NOT_REQUIRED_OR_NOT_SPECIFIED', 'SECONDARY_VOCATIONAL');
-              CREATE TYPE schedule_param AS ENUM ('FULL_DAY', 'REMOTE_WORKING', 'FLEXIBLE_SCHEDULE', 'SHIFT_SCHEDULE');
