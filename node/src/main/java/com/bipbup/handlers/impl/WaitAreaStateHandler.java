@@ -2,12 +2,13 @@ package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
-import com.bipbup.handlers.CancellableStateHandler;
+import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.AreaService;
 import com.bipbup.service.ConfigService;
-import com.bipbup.service.UserService;
+import com.bipbup.service.cache.UserStateCacheService;
+import com.bipbup.utils.HandlerUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -20,20 +21,18 @@ import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.AREA_SET;
 
 @Slf4j
 @Component
-public class WaitAreaStateHandler extends CancellableStateHandler {
+@RequiredArgsConstructor
+public class WaitAreaStateHandler implements StateHandler {
 
     private final AreaService areaService;
 
-    @Autowired
-    public WaitAreaStateHandler(UserService userService,
-                                ConfigService configService,
-                                BasicStateHandler basicStateHandler,
-                                AreaService areaService) {
-        super(userService, configService, basicStateHandler);
-        this.areaService = areaService;
-    }
+    private final ConfigService configService;
 
-    private static String getOutputSetArea(AppUserConfig config, String input, String area) {
+    private final UserStateCacheService userStateCacheService;
+
+    private final HandlerUtils handlerUtils;
+
+    private String getOutputAndSetArea(AppUserConfig config, String input, String area) {
         if (!input.equalsIgnoreCase(ANY)) {
             config.setArea(area);
             return String.format(AREA_SET.getTemplate(), area, config.getConfigName());
@@ -54,26 +53,26 @@ public class WaitAreaStateHandler extends CancellableStateHandler {
 
     @Override
     public String process(AppUser user, String input) {
-        if (isCancelCommand(input))
-            return processCancelCommand(user);
-        if (isBasicCommand(input))
-            return processBasicCommand(user, input);
+        if (handlerUtils.isCancelCommand(input))
+            return handlerUtils.processCancelCommand(user);
+        if (handlerUtils.isBasicCommand(input))
+            return handlerUtils.processBasicCommand(user, input);
         if (isInvalidAreaName(input))
-            return processInvalidInput(user);
+            return handlerUtils.processInvalidInput(user);
 
-        var optionalConfig = fetchConfig(user);
+        var optionalConfig = handlerUtils.fetchConfig(user);
         return optionalConfig.map(config -> processValidAreaName(user, config, input))
-                .orElseGet(() -> processConfigNotFoundMessage(user));
+                .orElseGet(() -> handlerUtils.processConfigNotFoundMessage(user));
     }
 
     private String processValidAreaName(AppUser user,
                                         AppUserConfig config,
                                         String input) {
         var area = normalizeAreaName(input);
-        var output = getOutputSetArea(config, input, area);
+        var output = getOutputAndSetArea(config, input, area);
 
-        configService.save(config);
-        userService.clearUserState(user.getTelegramId());
+        configService.saveConfig(config, false);
+        userStateCacheService.clearUserState(user.getTelegramId());
 
         log.info("User {} set area '{}' in configuration '{}'", user.getFirstName(), area, config.getConfigName());
         return output;
