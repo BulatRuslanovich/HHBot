@@ -2,15 +2,25 @@ package com.bipbup.service.impl;
 
 import com.bipbup.dto.VacancyDTO;
 import com.bipbup.entity.AppUserConfig;
+import com.bipbup.entity.EducationLevel;
+import com.bipbup.entity.ScheduleType;
 import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.enums.impl.ScheduleTypeParam;
 import com.bipbup.service.APIConnection;
 import com.bipbup.service.APIHandler;
 import com.bipbup.service.AreaService;
+import static com.bipbup.utils.factory.VacancyFactory.createVacancyDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,18 +30,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import static com.bipbup.utils.factory.VacancyFactory.createVacancyDTO;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -152,11 +150,9 @@ public class APIHandlerImpl implements APIHandler {
     }
 
     private void addEducationParam(UriComponentsBuilder builder, AppUserConfig config) {
-        var levels = Optional.ofNullable(config.getEducationLevels())
-                .stream()
-                .flatMap(Arrays::stream)
+        var levels = config.getEducationLevels().stream()
+                .map(EducationLevel::getParam)
                 .map(EducationLevelParam::getParam)
-                .filter(Objects::nonNull)
                 .toList();
 
         if (!levels.isEmpty())
@@ -164,11 +160,9 @@ public class APIHandlerImpl implements APIHandler {
     }
 
     private void addScheduleParam(UriComponentsBuilder builder, AppUserConfig config) {
-        var types = Optional.ofNullable(config.getScheduleTypes())
-                .stream()
-                .flatMap(Arrays::stream)
+        var types = config.getScheduleTypes().stream()
+                .map(ScheduleType::getParam)
                 .map(ScheduleTypeParam::getParam)
-                .filter(Objects::nonNull)
                 .toList();
 
         if (!types.isEmpty())

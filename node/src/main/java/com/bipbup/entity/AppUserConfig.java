@@ -1,82 +1,71 @@
 package com.bipbup.entity;
 
-import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.enums.impl.ExperienceParam;
-import com.bipbup.enums.impl.ScheduleTypeParam;
-import io.hypersistence.utils.hibernate.type.array.EnumArrayType;
-import io.hypersistence.utils.hibernate.type.array.internal.AbstractArrayType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import static java.time.LocalDateTime.now;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Builder(toBuilder = true)
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = "userConfigId")
-@Table(name = "app_user_config")
-@Entity
+@Builder
+@EqualsAndHashCode(exclude = "id")
+@Table(name = "t_config", schema = "hhbot")
 public class AppUserConfig {
+
+    private static final int DEFAULT_COUNT_OF_MINUS_DAYS = 5;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userConfigId;
+    @Column(name = "config_id", nullable = false)
+    private Long id;
 
+    @Column(name = "config_name")
     private String configName;
 
-    private String queryText;
-
-    private String area;
-
     @Builder.Default
+    @Column(name = "experience")
     @Enumerated(EnumType.STRING)
     private ExperienceParam experience = ExperienceParam.NO_MATTER;
 
-    @Type(
-            value = EnumArrayType.class,
-            parameters = @Parameter(name = AbstractArrayType.SQL_ARRAY_TYPE,
-                    value = "education_param")
-    )
-    @Column(
-            name = "education_params",
-            columnDefinition = "education_param[]"
-    )
-    private EducationLevelParam[] educationLevels;
-
-    @Type(
-            value = EnumArrayType.class,
-            parameters = @Parameter(name = AbstractArrayType.SQL_ARRAY_TYPE,
-                    value = "schedule_param")
-    )
-    @Column(
-            name = "schedule_params",
-            columnDefinition = "schedule_param[]"
-    )
-    private ScheduleTypeParam[] scheduleTypes;
-
     @Builder.Default
-    private LocalDateTime lastNotificationTime = LocalDateTime.now().
-            minusDays(5);
+    @Column(name = "last_notification_time")
+    private LocalDateTime lastNotificationTime = now().minusDays(DEFAULT_COUNT_OF_MINUS_DAYS);
+
+    @Column(name = "query_text")
+    private String queryText;
+
+    @Column(name = "area")
+    private String area;
 
     @ManyToOne
-    @JoinColumn(name = "app_user_id", referencedColumnName = "userId")
+    @JoinColumn(name = "app_user_id")
     private AppUser appUser;
+
+    @OneToMany(mappedBy = "config", fetch = FetchType.EAGER)
+    private List<EducationLevel> educationLevels = new ArrayList<>();
+
+    @OneToMany(mappedBy = "config", fetch = FetchType.EAGER)
+    private List<ScheduleType> scheduleTypes = new ArrayList<>();
 }
