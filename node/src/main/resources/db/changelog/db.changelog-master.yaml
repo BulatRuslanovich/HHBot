@@ -1,9 +1,11 @@
 databaseChangeLog:
   - include:
-      file: db/changelog/changeset/create-enums.yaml
+      file: db/changelog/changeset/2024-10-11_create_schema_hhbot.sql
   - include:
-      file: db/changelog/changeset/create-app-user-table.yaml
+      file: db/changelog/changeset/2024-10-11_create_table_t_app_user.sql
   - include:
-      file: db/changelog/changeset/create-app-user-config-table.yaml
+      file: db/changelog/changeset/2024-10-11_create_table_t_config.sql
   - include:
-      file: db/changelog/changeset/add-role-app-user-table.yaml
+      file: db/changelog/changeset/2024-10-11_create_table_t_edu_param.sql
+  - include:
+      file: db/changelog/changeset/2024-10-11_create_table_t_schedule_param.sql

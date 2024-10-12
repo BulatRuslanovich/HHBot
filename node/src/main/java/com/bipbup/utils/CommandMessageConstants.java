@@ -15,13 +15,13 @@ public class CommandMessageConstants {
         var source = new ReloadableResourceBundleMessageSource();
         source.setBasename("classpath:/messages");
         source.setDefaultEncoding("UTF-8");
-        messageSource = source;
+        MESSAGE_SOURCE = source;
     }
 
-    private static final MessageSource messageSource;
+    private static final MessageSource MESSAGE_SOURCE;
 
     private static String get(String code) {
-        return messageSource.getMessage(code, null, code, Locale.ROOT);
+        return MESSAGE_SOURCE.getMessage(code, null, code, Locale.ROOT);
     }
 
     public static final String ANY = "Любой";
@@ -146,6 +146,7 @@ public class CommandMessageConstants {
 
     // Command prefixes
     @UtilityClass
+    @SuppressWarnings("checkstyle:MultipleStringLiterals")
     public static class Prefix {
 
         public static final String QUERY = "query_";

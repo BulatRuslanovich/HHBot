@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
@@ -106,7 +107,8 @@ public class UpdateProcessor {
         try {
             myTelegramBot.execute(message);
         } catch (TelegramApiRequestException e) {
-            if (e.getErrorCode() == 403 && e.getApiResponse().contains("bot was blocked by the user")) {
+            if (e.getErrorCode() == HttpStatus.FORBIDDEN.value()
+                && e.getApiResponse().contains("bot was blocked by the user")) {
                 log.info("Bot was blocked by user: {}", message.getChatId());
             }
         } catch (TelegramApiException e) {

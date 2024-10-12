@@ -1,6 +1,7 @@
 package com.bipbup.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.http.HttpClient;
 import org.hashids.Hashids;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -9,18 +10,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.http.HttpClient;
-
 @Configuration
 public class AppConfig {
+
+    private static final int MIN_HASH_LENGTH = 10;
 
     @Value("${salt}")
     private String salt;
 
     @Bean
     public Hashids getHashids() {
-        var minHashLength = 10;
-        return new Hashids(salt, minHashLength);
+        return new Hashids(salt, MIN_HASH_LENGTH);
     }
 
     @Bean

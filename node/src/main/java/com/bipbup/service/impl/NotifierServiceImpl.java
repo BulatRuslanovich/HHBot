@@ -23,21 +23,23 @@ import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.VACANCY;
 @Service
 public class NotifierServiceImpl implements NotifierService {
 
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("ru"));
+
+    private static final int SIZE_OF_PAGE = 500;
+
     private final APIHandler apiHandler;
 
     private final AnswerProducer answerProducer;
 
     private final ConfigService configService;
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("ru"));
 
     @Override
     @Scheduled(fixedRateString = "${notifier.period}")
     public void searchNewVacancies() {
         var page = 0;
-        var sizeOfPage = 500;
 
-        var configs = configService.getAll(page++, sizeOfPage);
+        var configs = configService.getConfigsFromPage(page++, SIZE_OF_PAGE);
 
         while (!configs.isEmpty()) {
 
@@ -45,7 +47,7 @@ public class NotifierServiceImpl implements NotifierService {
                     .filter(this::isPresentQuery)
                     .forEach(this::processNewVacancies);
 
-            configs = configService.getAll(page, sizeOfPage);
+            configs = configService.getConfigsFromPage(page, SIZE_OF_PAGE);
             page++;
         }
     }
@@ -65,7 +67,7 @@ public class NotifierServiceImpl implements NotifierService {
             newVacancies.forEach(v -> sendVacancyMessage(v, config));
 
             config.setLastNotificationTime(lastNotificationTime);
-            configService.save(config);
+            configService.saveConfig(config, false);
         }
 
         log.info("For user {} find {} vacancies with config {}",
@@ -78,7 +80,7 @@ public class NotifierServiceImpl implements NotifierService {
                 vacancy.getNameVacancy(),
                 vacancy.getNameEmployer(),
                 vacancy.getNameArea(),
-                vacancy.getPublishedAt().toLocalDate().format(formatter),
+                vacancy.getPublishedAt().toLocalDate().format(FORMATTER),
                 vacancy.getUrl());
 
         var telegramId = config.getAppUser().getTelegramId();

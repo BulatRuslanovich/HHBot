@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @UtilityClass
 public class VacancyFactory {
 
+    @SuppressWarnings("checkstyle:MultipleStringLiterals")
     public static VacancyDTO createVacancyDTO(JsonNode vacancy,
                                               LocalDateTime publishedAt) {
         return VacancyDTO.of(
