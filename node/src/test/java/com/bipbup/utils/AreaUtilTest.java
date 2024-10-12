@@ -1,21 +1,36 @@
 package com.bipbup.utils;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
 
 class AreaUtilTest {
 
+    @Mock
+    private HttpClient client;
+
+    @InjectMocks
     private AreaUtil areaUtil;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
 
     @Test
     @DisplayName("Should return area ID for valid area name")
@@ -24,7 +39,6 @@ class AreaUtilTest {
         String areaName = "Moscow";
         String jsonResponse = "[{\"id\":\"1\", \"name\":\"Moscow\"}]";
 
-        HttpClient client = mock(HttpClient.class);
         areaUtil = new AreaUtil(client);
         HttpResponse<String> response = mock(HttpResponse.class);
         when(response.statusCode()).thenReturn(200);
@@ -45,7 +59,6 @@ class AreaUtilTest {
         String areaName = "Unknown Area";
         String jsonResponse = "[{\"id\":\"1\", \"name\":\"Moscow\"}]";
 
-        HttpClient client = mock(HttpClient.class);
         areaUtil = new AreaUtil(client);
         HttpResponse<String> response = mock(HttpResponse.class);
 
@@ -66,7 +79,6 @@ class AreaUtilTest {
         // Arrange
         String areaName = "Moscow";
 
-        HttpClient client = mock(HttpClient.class);
         areaUtil = new AreaUtil(client);
         var response = mock(HttpResponse.class);
         var request = mock(HttpRequest.class);
@@ -88,7 +100,6 @@ class AreaUtilTest {
     @DisplayName("Should return null for null area name")
     void testGetAreaIdFromApi_NullAreaName() {
         // Arrange
-        HttpClient client = mock(HttpClient.class);
         areaUtil = new AreaUtil(client);
 
         // Act
@@ -103,7 +114,6 @@ class AreaUtilTest {
     void testGetAreaIdFromApi_IOException() throws Exception {
         // Arrange
         String areaName = "Moscow";
-        HttpClient client = mock(HttpClient.class);
         areaUtil = new AreaUtil(client);
         when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString())))
                 .thenThrow(new IOException("Network error"));

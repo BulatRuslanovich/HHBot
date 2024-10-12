@@ -5,28 +5,26 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.AppUserState;
 import com.bipbup.service.ConfigService;
-import com.bipbup.service.UserService;
+import com.bipbup.service.cache.UserStateCacheService;
+import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.DELETE_CONFIRMATION;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 import com.bipbup.utils.Decoder;
+import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import java.util.Optional;
-
-import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.DELETE_CONFIRMATION;
-import static com.bipbup.utils.CommandMessageConstants.Prefix;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
 
 class QueryMenuStateHandlerTest {
 
     @Mock
-    private UserService userService;
+    private UserStateCacheService userStateCacheService;
 
     @Mock
     private ConfigService configService;
@@ -72,11 +70,11 @@ class QueryMenuStateHandlerTest {
         config.setConfigName("Test Config");
 
         when(decoder.parseIdFromCallback(input)).thenReturn(configId);
-        when(configService.getById(configId)).thenReturn(Optional.of(config));
+        when(configService.getConfigById(configId)).thenReturn(Optional.of(config));
 
         String result = queryMenuStateHandler.process(appUser, input);
 
-        verify(userService).saveUserState(appUser.getTelegramId(), AppUserState.QUERY_DELETE_STATE);
+        verify(userStateCacheService).putUserState(appUser.getTelegramId(), AppUserState.QUERY_DELETE_STATE);
         assertEquals(String.format(DELETE_CONFIRMATION.getTemplate(), config.getConfigName()), result);
     }
 

@@ -2,29 +2,31 @@ package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
+import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
 import com.bipbup.service.ConfigService;
-import com.bipbup.service.UserService;
+import com.bipbup.service.cache.UserStateCacheService;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.QUERY_OUTPUT;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 import com.bipbup.utils.Decoder;
+import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Optional;
-
-import static com.bipbup.enums.AppUserState.QUERY_MENU_STATE;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.QUERY_OUTPUT;
-import static com.bipbup.utils.CommandMessageConstants.Prefix;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
 
 class QueryListStateHandlerTest {
 
     @Mock
-    private UserService userService;
+    private UserStateCacheService userStateCacheService;
 
     @Mock
     private ConfigService configService;
@@ -55,11 +57,11 @@ class QueryListStateHandlerTest {
         config.setQueryText("LOLOLO");
 
         when(decoder.parseIdFromCallback(input)).thenReturn(configId);
-        when(configService.getById(configId)).thenReturn(Optional.of(config));
+        when(configService.getConfigById(configId)).thenReturn(Optional.of(config));
 
         String result = queryListStateHandler.process(appUser, input);
 
-        verify(userService).saveUserState(appUser.getTelegramId(), QUERY_MENU_STATE);
+        verify(userStateCacheService).putUserState(appUser.getTelegramId(), QUERY_MENU_STATE);
         assertEquals(String.format(QUERY_OUTPUT.getTemplate(), config.getConfigName(), config.getQueryText()), result);
     }
 
@@ -70,11 +72,11 @@ class QueryListStateHandlerTest {
         long configId = 1L;
 
         when(decoder.parseIdFromCallback(input)).thenReturn(configId);
-        when(configService.getById(configId)).thenReturn(Optional.empty());
+        when(configService.getConfigById(configId)).thenReturn(Optional.empty());
 
         String result = queryListStateHandler.process(appUser, input);
 
-        verify(userService, never()).saveUserState(anyLong(), any());
+        verify(userStateCacheService, never()).putUserState(anyLong(), any());
         assertEquals(CONFIG_NOT_FOUND.getTemplate(), result);
     }
 

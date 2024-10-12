@@ -39,7 +39,7 @@ class WebHookControllerTest {
 
     @Test
     @DisplayName("Should return 200 OK when update is processed successfully")
-    public void testOnUpdateReceived_Success() throws Exception {
+    void testOnUpdateReceived_Success() throws Exception {
         // Arrange
         Update update = new Update();
         when(processor.processUpdate(update)).thenReturn(true);
@@ -54,7 +54,7 @@ class WebHookControllerTest {
 
     @Test
     @DisplayName("Should return 400 Bad Request when update processing fails")
-    public void testOnUpdateReceived_Failure() throws Exception {
+    void testOnUpdateReceived_Failure() throws Exception {
         // Arrange
         Update update = new Update();
         when(processor.processUpdate(update)).thenReturn(false);
@@ -70,7 +70,7 @@ class WebHookControllerTest {
 
     @Test
     @DisplayName("Should return 500 Internal Server Error when an exception occurs during processing")
-    public void testOnUpdateReceived_Exception() throws Exception {
+    void testOnUpdateReceived_Exception() throws Exception {
         // Arrange
         Update update = new Update();
         when(processor.processUpdate(update)).thenThrow(new RuntimeException("Processing error"));

@@ -44,17 +44,17 @@ class KeyboardMarkupFactoryTest {
         // Arrange
         List<AppUserConfig> configs = new ArrayList<>();
         AppUserConfig config1 = new AppUserConfig();
-        config1.setUserConfigId(1L);
+        config1.setId(1L);
         config1.setConfigName("Config 1");
 
         AppUserConfig config2 = new AppUserConfig();
-        config2.setUserConfigId(2L);
+        config2.setId(2L);
         config2.setConfigName("Config 2");
 
         configs.add(config1);
         configs.add(config2);
 
-        when(configService.getByUser(appUser)).thenReturn(configs);
+        when(configService.getConfigByUser(appUser)).thenReturn(configs);
         when(encoder.hashOf(1L)).thenReturn("hash1");
         when(encoder.hashOf(2L)).thenReturn("hash2");
 

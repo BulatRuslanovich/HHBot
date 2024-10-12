@@ -4,28 +4,36 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.service.AreaService;
 import com.bipbup.service.ConfigService;
-import com.bipbup.service.UserService;
+import com.bipbup.service.cache.UserStateCacheService;
+import static com.bipbup.utils.CommandMessageConstants.ANY;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ANY_AREA_SET;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.AREA_SET;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.COMMAND_CANCELLED;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.INVALID_INPUT;
+import com.bipbup.utils.HandlerUtils;
+import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.anyString;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Optional;
-
-import static com.bipbup.utils.CommandMessageConstants.ANY;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
 
 class WaitAreaStateHandlerTest {
 
     @Mock
-    private UserService userService;
+    private ConfigService configService;
 
     @Mock
-    private ConfigService configService;
+    private HandlerUtils handlerUtils;
+
+    @Mock
+    private UserStateCacheService userStateCacheService;
 
     @Mock
     private AreaService areaService;
@@ -50,13 +58,16 @@ class WaitAreaStateHandlerTest {
         AppUserConfig config = new AppUserConfig();
         config.setConfigName("Test Config");
 
-        when(configService.getById(anyLong())).thenReturn(Optional.of(config));
+        when(handlerUtils.isCancelCommand(input)).thenReturn(false);
+        when(handlerUtils.isBasicCommand(input)).thenReturn(false);
+        when(handlerUtils.fetchConfig(appUser)).thenReturn(Optional.of(config));
+
         when(areaService.getAreaIdByName("New Area")).thenReturn(1);
 
         String result = waitAreaStateHandler.process(appUser, input);
 
-        verify(configService).save(config);
-        verify(userService).clearUserState(appUser.getTelegramId());
+        verify(configService).saveConfig(config, false);
+        verify(userStateCacheService).clearUserState(appUser.getTelegramId());
         assertEquals(String.format(AREA_SET.getTemplate(), "New Area", config.getConfigName()), result);
     }
 
@@ -66,12 +77,14 @@ class WaitAreaStateHandlerTest {
         AppUserConfig config = new AppUserConfig();
         config.setConfigName("Test Config");
 
-        when(configService.getById(anyLong())).thenReturn(Optional.of(config));
+        when(handlerUtils.isCancelCommand(anyString())).thenReturn(false);
+        when(handlerUtils.isBasicCommand(anyString())).thenReturn(false);
+        when(handlerUtils.fetchConfig(appUser)).thenReturn(Optional.of(config));
 
         String result = waitAreaStateHandler.process(appUser, ANY);
 
-        verify(configService).save(config);
-        verify(userService).clearUserState(appUser.getTelegramId());
+        verify(configService).saveConfig(config, false);
+        verify(userStateCacheService).clearUserState(appUser.getTelegramId());
         assertEquals(String.format(ANY_AREA_SET.getTemplate(), config.getConfigName()), result);
     }
 
@@ -80,10 +93,11 @@ class WaitAreaStateHandlerTest {
     @DisplayName("Should process cancel command")
     void testProcessCancelCommand() {
         String input = "/cancel";
+        when(handlerUtils.isCancelCommand("/cancel")).thenReturn(true);
+        when(handlerUtils.processCancelCommand(appUser)).thenReturn(COMMAND_CANCELLED.getTemplate());
 
         String result = waitAreaStateHandler.process(appUser, input);
 
-        verify(userService).clearUserState(appUser.getTelegramId());
         assertEquals(COMMAND_CANCELLED.getTemplate(), result);
     }
 
@@ -94,6 +108,9 @@ class WaitAreaStateHandlerTest {
         String input = "Invalid Area";
 
         when(areaService.getAreaIdByName(input)).thenReturn(null);
+        when(handlerUtils.isCancelCommand(input)).thenReturn(false);
+        when(handlerUtils.isBasicCommand(input)).thenReturn(false);
+        when(handlerUtils.processInvalidInput(appUser)).thenReturn(INVALID_INPUT.getTemplate());
 
         String result = waitAreaStateHandler.process(appUser, input);
 
@@ -105,7 +122,11 @@ class WaitAreaStateHandlerTest {
     void testProcessValidAreaNameWithoutConfig() {
         String input = "Kazan";
 
+        when(handlerUtils.isCancelCommand(input)).thenReturn(false);
+        when(handlerUtils.isBasicCommand(input)).thenReturn(false);
         when(areaService.getAreaIdByName(input)).thenReturn(34);
+        when(handlerUtils.fetchConfig(appUser)).thenReturn(Optional.empty());
+        when(handlerUtils.processConfigNotFoundMessage(appUser)).thenReturn(CONFIG_NOT_FOUND.getTemplate());
 
         String result = waitAreaStateHandler.process(appUser, input);
 

@@ -6,6 +6,7 @@ import com.bipbup.enums.Role;
 import com.bipbup.service.ConfigService;
 import com.bipbup.service.NotifierService;
 import com.bipbup.service.UserService;
+import com.bipbup.service.cache.UserStateCacheService;
 import com.bipbup.utils.CommandMessageConstants;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,8 @@ class BasicStateHandlerTest {
     @Mock
     private UserService userService;
     @Mock
+    private UserStateCacheService userStateCacheService;
+    @Mock
     private ConfigService configService;
     @Mock
     private NotifierService notifierService;
@@ -46,9 +49,9 @@ class BasicStateHandlerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        var adminPassword = basicStateHandler.getClass().getDeclaredField("adminPassword");
-        adminPassword.setAccessible(true);
-        adminPassword.set(basicStateHandler, "admin123");
+        var password = basicStateHandler.getClass().getDeclaredField("adminPassword");
+        password.setAccessible(true);
+        password.set(basicStateHandler, "admin123");
         appUser = new AppUser();
         appUser.setTelegramId(12345L);
         appUser.setFirstName("TestUser");
@@ -73,27 +76,27 @@ class BasicStateHandlerTest {
     @DisplayName("Should process new query command")
     void testProcessNewQueryCommand() {
         String result = basicStateHandler.process(appUser, NEWQUERY.getCommand());
-        verify(userService).saveUserState(appUser.getTelegramId(), WAIT_CONFIG_NAME_STATE);
+        verify(userStateCacheService).putUserState(appUser.getTelegramId(), WAIT_CONFIG_NAME_STATE);
         assertEquals(QUERY_PROMPT.getTemplate(), result);
     }
 
     @Test
     @DisplayName("Should process my queries command with no saved queries")
     void testProcessMyQueriesCommand_NoSavedQueries() {
-        when(configService.getByUser(appUser)).thenReturn(Collections.emptyList());
+        when(configService.getConfigByUser(appUser)).thenReturn(Collections.emptyList());
 
         String result = basicStateHandler.process(appUser, MYQUERIES.getCommand());
-        verify(userService).clearUserState(appUser.getTelegramId());
+        verify(userStateCacheService).clearUserState(appUser.getTelegramId());
         assertEquals(NO_SAVED_QUERIES.getTemplate(), result);
     }
 
     @Test
     @DisplayName("Should process my queries command with saved queries")
     void testProcessMyQueriesCommand_WithSavedQueries() {
-        when(configService.getByUser(appUser)).thenReturn(Collections.singletonList(new AppUserConfig()));
+        when(configService.getConfigByUser(appUser)).thenReturn(Collections.singletonList(new AppUserConfig()));
 
         String result = basicStateHandler.process(appUser, MYQUERIES.getCommand());
-        verify(userService).saveUserState(appUser.getTelegramId(), QUERY_LIST_STATE);
+        verify(userStateCacheService).putUserState(appUser.getTelegramId(), QUERY_LIST_STATE);
         assertEquals(USER_QUERIES.getTemplate(), result);
     }
 
@@ -102,7 +105,7 @@ class BasicStateHandlerTest {
     void testProcessBroadcastCommand_CorrectPassword() {
         String input = BROADCAST.getCommand() + " " + adminPassword;
         String result = basicStateHandler.process(appUser, input);
-        verify(userService).saveUserState(appUser.getTelegramId(), WAIT_BROADCAST_MESSAGE);
+        verify(userStateCacheService).putUserState(appUser.getTelegramId(), WAIT_BROADCAST_MESSAGE);
         assertEquals(ENTER_MESSAGE.getTemplate(), result);
     }
 

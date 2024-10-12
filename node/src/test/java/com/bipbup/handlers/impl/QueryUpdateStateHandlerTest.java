@@ -2,31 +2,34 @@ package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
+import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 import com.bipbup.service.ConfigService;
-import com.bipbup.service.UserService;
+import com.bipbup.service.cache.ConfigCacheService;
+import com.bipbup.service.cache.UserStateCacheService;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ENTER_CONFIG_NAME;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ENTER_QUERY;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 import com.bipbup.utils.Decoder;
+import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Optional;
-
-import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
-import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ENTER_CONFIG_NAME;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ENTER_QUERY;
-import static com.bipbup.utils.CommandMessageConstants.Prefix;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
 
 class QueryUpdateStateHandlerTest {
 
     @Mock
-    private UserService userService;
+    private UserStateCacheService userStateCacheService;
+
+    @Mock
+    private ConfigCacheService configCacheService;
 
     @Mock
     private ConfigService configService;
@@ -72,12 +75,12 @@ class QueryUpdateStateHandlerTest {
         config.setConfigName("Test Config");
 
         when(decoder.parseIdFromCallback(input)).thenReturn(configId);
-        when(configService.getById(configId)).thenReturn(Optional.of(config));
+        when(configService.getConfigById(configId)).thenReturn(Optional.of(config));
 
         String result = queryUpdateStateHandler.process(appUser, input);
 
-        verify(userService).saveUserState(appUser.getTelegramId(), WAIT_CONFIG_NAME_STATE);
-        verify(configService).saveConfigSelection(appUser.getTelegramId(), configId);
+        verify(userStateCacheService).putUserState(appUser.getTelegramId(), WAIT_CONFIG_NAME_STATE);
+        verify(configCacheService).putConfigId(appUser.getTelegramId(), configId);
         assertEquals(String.format(ENTER_CONFIG_NAME.getTemplate(), config.getConfigName()), result);
     }
 
@@ -88,11 +91,11 @@ class QueryUpdateStateHandlerTest {
         long configId = 1L;
 
         when(decoder.parseIdFromCallback(input)).thenReturn(configId);
-        when(configService.getById(configId)).thenReturn(Optional.empty());
+        when(configService.getConfigById(configId)).thenReturn(Optional.empty());
 
         String result = queryUpdateStateHandler.process(appUser, input);
 
-        verify(userService).clearUserState(appUser.getTelegramId());
+        verify(userStateCacheService).clearUserState(appUser.getTelegramId());
         assertEquals(CONFIG_NOT_FOUND.getTemplate(), result);
     }
 
@@ -105,12 +108,12 @@ class QueryUpdateStateHandlerTest {
         config.setConfigName("Query Config");
 
         when(decoder.parseIdFromCallback(input)).thenReturn(configId);
-        when(configService.getById(configId)).thenReturn(Optional.of(config));
+        when(configService.getConfigById(configId)).thenReturn(Optional.of(config));
 
         String result = queryUpdateStateHandler.process(appUser, input);
 
-        verify(userService).saveUserState(appUser.getTelegramId(), WAIT_QUERY_STATE);
-        verify(configService).saveConfigSelection(appUser.getTelegramId(), configId);
+        verify(userStateCacheService).putUserState(appUser.getTelegramId(), WAIT_QUERY_STATE);
+        verify(configCacheService).putConfigId(appUser.getTelegramId(), configId);
         assertEquals(String.format(ENTER_QUERY.getTemplate(), config.getConfigName()), result);
     }
 }
