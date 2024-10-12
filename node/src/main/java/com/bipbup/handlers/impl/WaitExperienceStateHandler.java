@@ -4,7 +4,7 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
-import com.bipbup.service.UserService;
+import com.bipbup.service.cache.UserStateCacheService;
 import com.bipbup.utils.Decoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ public class WaitExperienceStateHandler implements StateHandler {
 
     private final ConfigService configService;
 
-    private final UserService userService;
+    private final UserStateCacheService userStateCacheService;
 
     private final Decoder decoder;
 
@@ -39,20 +39,20 @@ public class WaitExperienceStateHandler implements StateHandler {
     private String processSetExperienceCommand(AppUser user, String input) {
         var prefix = input.substring(0, input.lastIndexOf('_') + 1);
         var configId = decoder.parseIdFromCallback(input);
-        var optionalConfig = configService.getById(configId);
+        var optionalConfig = configService.getConfigById(configId);
 
-        userService.clearUserState(user.getTelegramId());
+        userStateCacheService.clearUserState(user.getTelegramId());
 
         if (optionalConfig.isPresent()) {
             var config = optionalConfig.get();
             var experience = ExperienceParam.valueOfPrefix(prefix);
             config.setExperience(experience);
-            configService.save(config);
+            configService.saveConfig(config, false);
 
             log.info("User {} selected experience level and state set to BASIC_STATE", user.getFirstName());
             return String.format(EXP_SET.getTemplate(), experience.getDescription(), config.getConfigName());
         } else {
-            userService.clearUserState(user.getTelegramId());
+            userStateCacheService.clearUserState(user.getTelegramId());
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return CONFIG_NOT_FOUND.getTemplate();
         }

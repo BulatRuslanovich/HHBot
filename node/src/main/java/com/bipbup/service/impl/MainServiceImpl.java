@@ -18,9 +18,11 @@ import com.bipbup.handlers.impl.WaitScheduleStateHandler;
 import com.bipbup.service.AnswerProducer;
 import com.bipbup.service.MainService;
 import com.bipbup.service.UserService;
+import com.bipbup.service.cache.UserStateCacheService;
 import com.bipbup.utils.factory.KeyboardMarkupFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -52,6 +54,8 @@ public class MainServiceImpl implements MainService {
 
     private final UserService userService;
 
+    private final UserStateCacheService userStateCacheService;
+
     private final KeyboardMarkupFactory markupFactory;
 
     private final AnswerProducer answerProducer;
@@ -60,8 +64,10 @@ public class MainServiceImpl implements MainService {
 
     private final Set<CallbackHandlerProperties> callbackHandlerProperties;
 
+    @SuppressWarnings("checkstyle:ParameterNumber")
     @Autowired
     public MainServiceImpl(UserService userService,
+                           UserStateCacheService userStateCacheService,
                            KeyboardMarkupFactory markupFactory,
                            AnswerProducer answerProducer,
                            BasicStateHandler basicStateHandler,
@@ -77,6 +83,7 @@ public class MainServiceImpl implements MainService {
                            WaitScheduleStateHandler waitScheduleStateHandler,
                            WaitBroadcastMessageHandler waitBroadcastMessageHandler) {
         this.userService = userService;
+        this.userStateCacheService = userStateCacheService;
         this.markupFactory = markupFactory;
         this.answerProducer = answerProducer;
 
@@ -103,8 +110,9 @@ public class MainServiceImpl implements MainService {
     public void processMessage(Update update) {
         var text = update.getMessage().getText();
         var user = userService.findOrSaveAppUser(update);
-        var userState = userService.getUserState(user.getTelegramId());
-        var handler = messageStateHandlers.getOrDefault(userState, messageStateHandlers.get(BASIC_STATE));
+        var state = userStateCacheService.getUserState(user.getTelegramId());
+
+        var handler = messageStateHandlers.getOrDefault(state, messageStateHandlers.get(BASIC_STATE));
         var output = handler.process(user, text);
 
         if (!output.isEmpty())
@@ -115,10 +123,10 @@ public class MainServiceImpl implements MainService {
     public void processCallbackQuery(Update update) {
         var callbackData = update.getCallbackQuery().getData();
         var user = userService.findOrSaveAppUser(update);
-        var state = userService.getUserState(user.getTelegramId());
+        var state = userStateCacheService.getUserState(user.getTelegramId());
 
         if (callbackData.equals("delete_me_from_db")) {
-            userService.deleteUser(user);
+            userService.deleteAppUser(user);
             return;
         }
 
@@ -164,7 +172,7 @@ public class MainServiceImpl implements MainService {
         var callbackData = callbackQuery.getData();
         var telegramId = user.getTelegramId();
         var messageId = callbackQuery.getMessage().getMessageId();
-        var state = userService.getUserState(telegramId);
+        var state = userStateCacheService.getUserState(telegramId);
 
         if (!state.isWaiting() || isMultiSelecting(callbackData))
             editAnswer(output, telegramId, messageId, fetchKeyboardWithCallback(user, callbackData));
@@ -184,7 +192,7 @@ public class MainServiceImpl implements MainService {
                 .chatId(chatId)
                 .text(text)
                 .replyMarkup(keyboard != null ? keyboard : new ReplyKeyboardRemove(true))
-                .parseMode("Markdown")
+                .parseMode(ParseMode.MARKDOWN)
                 .build();
 
         answerProducer.produceAnswer(sendMessage);
@@ -206,7 +214,7 @@ public class MainServiceImpl implements MainService {
     }
 
     private InlineKeyboardMarkup fetchKeyboardWithCallback(AppUser user, String callbackData) {
-        var userState = userService.getUserState(user.getTelegramId());
+        var userState = userStateCacheService.getUserState(user.getTelegramId());
 
         return switch (userState) {
             case QUERY_MENU_STATE -> markupFactory.createConfigManagementKeyboard(callbackData);
@@ -221,7 +229,7 @@ public class MainServiceImpl implements MainService {
     }
 
     private InlineKeyboardMarkup fetchKeyboardWithoutCallback(AppUser user) {
-        var userState = userService.getUserState(user.getTelegramId());
+        var userState = userStateCacheService.getUserState(user.getTelegramId());
 
         if (userState.equals(QUERY_LIST_STATE))
             return markupFactory.createUserConfigListKeyboard(user);

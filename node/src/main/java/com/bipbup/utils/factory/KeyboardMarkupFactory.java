@@ -7,7 +7,10 @@ import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.enums.impl.ScheduleTypeParam;
 import com.bipbup.service.ConfigService;
+import com.bipbup.service.cache.EducationLevelCacheService;
+import com.bipbup.service.cache.ScheduleTypeCacheService;
 import com.bipbup.utils.Encoder;
+import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -31,8 +34,12 @@ public class KeyboardMarkupFactory {
 
     private final Encoder encoder;
 
+    private final ScheduleTypeCacheService scheduleTypeCacheService;
+
+    private final EducationLevelCacheService educationLevelCacheService;
+
     public InlineKeyboardMarkup createUserConfigListKeyboard(AppUser appUser) {
-        var configs = configService.getByUser(appUser);
+        var configs = configService.getConfigByUser(appUser);
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
         configs.forEach(c -> buttons.add(createButtonFromConfig(c)));
@@ -41,7 +48,7 @@ public class KeyboardMarkupFactory {
     }
 
     private InlineKeyboardButton createButtonFromConfig(AppUserConfig config) {
-        var callback = Prefix.QUERY + encoder.hashOf(config.getUserConfigId());
+        var callback = Prefix.QUERY + encoder.hashOf(config.getId());
         return createButton(config.getConfigName(), callback);
     }
 
@@ -95,10 +102,11 @@ public class KeyboardMarkupFactory {
     }
 
     public InlineKeyboardMarkup createEducationLevelSelectionKeyboard(AppUser user, String callbackData) {
-        var selectedLevels = configService.getSelectedEducationLevels(user.getTelegramId());
+        var selectedLevels = educationLevelCacheService.getEducationLevels(user.getTelegramId());
         var hash = extractHash(callbackData);
 
         var buttons = new ArrayList<>(Arrays.stream(EducationLevelParam.values())
+                .sorted(Comparator.comparing(EducationLevelParam::getDescription))
                 .map(p -> createButtonFromEnum(p, selectedLevels, hash))
                 .toList());
 
@@ -108,10 +116,11 @@ public class KeyboardMarkupFactory {
     }
 
     public InlineKeyboardMarkup createScheduleTypeSelectionKeyboard(AppUser user, String callbackData) {
-        var selectedTypes = configService.getSelectedScheduleTypes(user.getTelegramId());
+        var selectedTypes = scheduleTypeCacheService.getScheduleTypes(user.getTelegramId());
         var hash = extractHash(callbackData);
 
         var buttons = new ArrayList<>(Arrays.stream(ScheduleTypeParam.values())
+                .sorted(Comparator.comparing(ScheduleTypeParam::getDescription))
                 .map(v -> createButtonFromEnum(v, selectedTypes, hash))
                 .toList());
 
@@ -120,7 +129,8 @@ public class KeyboardMarkupFactory {
         return createMarkup(buttons, 1);
     }
 
-    private InlineKeyboardButton createButtonFromEnum(EnumParam enumParam, List<? extends EnumParam> params, String hash) {
+    private InlineKeyboardButton createButtonFromEnum(
+            EnumParam enumParam, List<? extends EnumParam> params, String hash) {
         String text = enumParam.getDescription();
 
         if (params.contains(enumParam))

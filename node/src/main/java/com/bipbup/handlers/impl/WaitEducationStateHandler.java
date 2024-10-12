@@ -1,19 +1,20 @@
 package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
+import com.bipbup.entity.EducationLevel;
 import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
-import com.bipbup.service.UserService;
-import com.bipbup.utils.Decoder;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
+import com.bipbup.service.cache.EducationLevelCacheService;
+import com.bipbup.service.cache.UserStateCacheService;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.EDU_SAVE;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.SELECT_EDUCATION;
 import static com.bipbup.utils.CommandMessageConstants.Prefix;
+import com.bipbup.utils.Decoder;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,7 +23,9 @@ public class WaitEducationStateHandler implements StateHandler {
 
     private final ConfigService configService;
 
-    private final UserService userService;
+    private final EducationLevelCacheService educationLevelCacheService;
+
+    private final UserStateCacheService userStateCacheService;
 
     private final Decoder decoder;
 
@@ -46,18 +49,24 @@ public class WaitEducationStateHandler implements StateHandler {
 
     private String processSaveEducationLevelsCommand(AppUser user, String input) {
         var configId = decoder.parseIdFromCallback(input);
-        var optionalConfig = configService.getById(configId);
+        var optionalConfig = configService.getConfigById(configId);
 
         if (optionalConfig.isPresent()) {
             var config = optionalConfig.get();
-            var selectedEducationLevels = configService.getSelectedEducationLevels(user.getTelegramId());
-            config.setEducationLevels(selectedEducationLevels.toArray(new EducationLevelParam[0]));
+            var cachedEducationLvls = educationLevelCacheService.getEducationLevels(user.getTelegramId());
 
-            configService.save(config);
-            configService.clearEducationLevelSelections(user.getTelegramId());
-            userService.clearUserState(user.getTelegramId());
+            var educationLevels = cachedEducationLvls.stream()
+                    .map(s -> new EducationLevel(null, s, config))
+                    .toList();
 
-            log.info("User {} saved education levels for configuration {} and state set to BASIC_STATE", user.getFirstName(), config.getConfigName());
+            config.setEducationLevels(educationLevels);
+            configService.saveConfig(config, true);
+
+            educationLevelCacheService.clearEducationLevels(user.getTelegramId());
+            userStateCacheService.clearUserState(user.getTelegramId());
+
+            log.info("User {} saved education levels for configuration {} and state set to BASIC_STATE",
+                    user.getFirstName(), config.getConfigName());
             return String.format(EDU_SAVE.getTemplate(), config.getConfigName());
         } else {
             return processConfigNotFoundMessage(user, configId);
@@ -67,30 +76,33 @@ public class WaitEducationStateHandler implements StateHandler {
     private String processSetEducationLevelCommand(AppUser user, String input) {
         var prefix = input.substring(0, input.lastIndexOf('_') + 1);
         var configId = decoder.parseIdFromCallback(input);
-        var optionalConfig = configService.getById(configId);
+        var optionalConfig = configService.getConfigById(configId);
 
         if (optionalConfig.isPresent()) {
             var config = optionalConfig.get();
             var currentEducationLevel = EducationLevelParam.valueOfPrefix(prefix);
-            var selectedEducationLevels = configService.getSelectedEducationLevels(user.getTelegramId());
+            var cachedEducationLvls = educationLevelCacheService.getEducationLevels(user.getTelegramId());
 
-            if (selectedEducationLevels.contains(currentEducationLevel)) {
-                configService.removeEducationLevelSelection(user.getTelegramId(), currentEducationLevel, selectedEducationLevels);
-                log.info("User {} selected education level \"{}\" for configuration \"{}\"",
-                        user.getFirstName(), currentEducationLevel.getDescription(), config.getConfigName());
+            if (cachedEducationLvls.contains(currentEducationLevel)) {
+                educationLevelCacheService.removeEducationLevels(user.getTelegramId(), currentEducationLevel,
+                        cachedEducationLvls);
+                log.info("User {} removed education level \"{}\" for configuration \"{}\"", user.getFirstName(),
+                        currentEducationLevel.getDescription(), config.getConfigName());
             } else {
-                configService.addEducationLevelSelection(user.getTelegramId(), currentEducationLevel, selectedEducationLevels);
-                log.info("User {} removed selection of education level \"{}\" for configuration \"{}\"",
+                educationLevelCacheService.putEducationLevels(user.getTelegramId(), currentEducationLevel,
+                        cachedEducationLvls);
+                log.info("User {} selected selection of education level \"{}\" for configuration \"{}\"",
                         user.getFirstName(), currentEducationLevel.getDescription(), config.getConfigName());
             }
 
             return String.format(SELECT_EDUCATION.getTemplate(), config.getConfigName());
-        } else
+        } else {
             return processConfigNotFoundMessage(user, configId);
+        }
     }
 
     private String processConfigNotFoundMessage(AppUser user, long configId) {
-        userService.clearUserState(user.getTelegramId());
+        userStateCacheService.clearUserState(user.getTelegramId());
         log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
         return CONFIG_NOT_FOUND.getTemplate();
     }

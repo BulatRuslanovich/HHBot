@@ -3,7 +3,7 @@ package com.bipbup.handlers.impl;
 import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
-import com.bipbup.service.UserService;
+import com.bipbup.service.cache.UserStateCacheService;
 import com.bipbup.utils.Decoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import static com.bipbup.utils.CommandMessageConstants.Prefix;
 @Component
 public class QueryDeleteStateHandler implements StateHandler {
 
-    private final UserService userService;
+    private final UserStateCacheService userStateCacheService;
 
     private final ConfigService configService;
 
@@ -48,24 +48,36 @@ public class QueryDeleteStateHandler implements StateHandler {
 
     private String processDeleteConfirmCommand(AppUser user, String input) {
         var configId = decoder.parseIdFromCallback(input);
-        var optionalConfig = configService.getById(configId);
+        var optionalConfig = configService.getConfigById(configId);
 
         if (optionalConfig.isPresent()) {
             var config = optionalConfig.get();
-            configService.delete(config);
-            userService.saveUserState(user.getTelegramId(), QUERY_LIST_STATE);
-            log.info("User {} deleted configuration with id {} and state set to QUERY_LIST_STATE", user.getFirstName(), configId);
-            return String.format(CONFIG_DELETED.getTemplate(), config.getConfigName()) + "\n" + USER_QUERIES.getTemplate();
+            configService.deleteConfig(config);
+
+            var count = configService.countOfConfigs(user);
+            String addingString = "";
+
+            if (count == 0) {
+                userStateCacheService.clearUserState(user.getTelegramId());
+            } else {
+                userStateCacheService.putUserState(user.getTelegramId(), QUERY_LIST_STATE);
+                addingString = "\n" + USER_QUERIES.getTemplate();
+            }
+
+            log.info("User {} deleted configuration with id {} and state set to QUERY_LIST_STATE",
+                    user.getFirstName(), configId);
+            return String.format(CONFIG_DELETED.getTemplate(), config.getConfigName()) + addingString;
         } else {
-            userService.clearUserState(user.getTelegramId());
+            userStateCacheService.clearUserState(user.getTelegramId());
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
             return CONFIG_NOT_FOUND.getTemplate();
         }
     }
 
     private String processDeleteCancelCommand(AppUser user, String input) {
-        userService.saveUserState(user.getTelegramId(), QUERY_LIST_STATE);
-        log.info("User {} chose not to delete the configuration and state set to QUERY_LIST_STATE", user.getFirstName());
+        userStateCacheService.putUserState(user.getTelegramId(), QUERY_LIST_STATE);
+        log.info("User {} chose not to delete the configuration and state set to QUERY_LIST_STATE",
+                user.getFirstName());
         return queryListStateHandler.process(user, input);
     }
 }

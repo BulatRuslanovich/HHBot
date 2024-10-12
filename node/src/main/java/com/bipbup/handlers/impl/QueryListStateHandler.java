@@ -3,7 +3,7 @@ package com.bipbup.handlers.impl;
 import com.bipbup.entity.AppUser;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.ConfigService;
-import com.bipbup.service.UserService;
+import com.bipbup.service.cache.UserStateCacheService;
 import com.bipbup.utils.Decoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import static java.lang.Boolean.TRUE;
 @Component
 public class QueryListStateHandler implements StateHandler {
 
-    private final UserService userService;
+    private final UserStateCacheService userStateCacheService;
 
     private final ConfigService configService;
 
@@ -39,7 +39,7 @@ public class QueryListStateHandler implements StateHandler {
     }
     
     private Pair<Boolean, String> generateQueryOutput(long configId) {
-        var optionalConfig = configService.getById(configId);
+        var optionalConfig = configService.getConfigById(configId);
 
         if (optionalConfig.isEmpty())
             return Pair.of(false, CONFIG_NOT_FOUND.getTemplate());
@@ -54,8 +54,9 @@ public class QueryListStateHandler implements StateHandler {
         var answer = generateQueryOutput(configId);
 
         if (TRUE.equals(answer.getFirst())) {
-            userService.saveUserState(user.getTelegramId(), QUERY_MENU_STATE);
-            log.info("User {} queried configuration with id {} and state set to QUERY_MENU_STATE", user.getFirstName(), configId);
+            userStateCacheService.putUserState(user.getTelegramId(), QUERY_MENU_STATE);
+            log.info("User {} queried configuration with id {} and state set to QUERY_MENU_STATE",
+                    user.getFirstName(), configId);
         }
 
         return answer.getSecond();
