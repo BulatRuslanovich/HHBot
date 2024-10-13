@@ -1,9 +1,11 @@
 name: Deploy
 
 on:
-  workflows: [ "Build dispatcher module", "Build node module" ]
-  types:
-    - completed
+  workflow_dispatch:
+  workflow_run:
+    workflows: [ "Build dispatcher module", "Build node module" ]
+    types:
+      - completed
 
 jobs:
   deploy:
