@@ -7,7 +7,7 @@ RUN mkdir -p ${HOME} \
     && mkdir -p /usr/share/maven/ref \
     && mkdir -p ${HOME}/dispatcher
 
-ADD ./settings.xml /usr/share/maven/ref/
+ADD ./properties/settings.xml /usr/share/maven/ref/
 
 ADD ./dispatcher ${HOME}/dispatcher
 RUN mvn -f ${HOME}/dispatcher/pom.xml -s ${MVN_SETTINGS} clean package
