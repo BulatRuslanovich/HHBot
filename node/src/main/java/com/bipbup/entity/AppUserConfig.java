@@ -63,9 +63,11 @@ public class AppUserConfig {
     @JoinColumn(name = "app_user_id")
     private AppUser appUser;
 
+    @Builder.Default
     @OneToMany(mappedBy = "config", fetch = FetchType.EAGER)
     private List<EducationLevel> educationLevels = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "config", fetch = FetchType.EAGER)
     private List<ScheduleType> scheduleTypes = new ArrayList<>();
 }

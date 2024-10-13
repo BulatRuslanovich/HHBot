@@ -22,6 +22,8 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <telegrambots.version>6.9.7.1</telegrambots.version>
+        <maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
+        <checkstyle.version>10.12.7</checkstyle.version>
     </properties>
 
     <dependencies>
@@ -42,6 +44,12 @@
             <groupId>org.telegram</groupId>
             <artifactId>telegrambots-spring-boot-starter</artifactId>
             <version>${telegrambots.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Kafka Support -->
@@ -86,6 +94,25 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${maven-checkstyle-plugin.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>${checkstyle.version}</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <configLocation>../properties/checkstyle.xml</configLocation>
+                    <consoleOutput>true</consoleOutput>
+                    <logViolationsToConsole>true</logViolationsToConsole>
+                    <failsOnError>true</failsOnError>
                 </configuration>
             </plugin>
         </plugins>

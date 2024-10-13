@@ -10,7 +10,8 @@ public interface ScheduleTypeCacheService {
     List<ScheduleTypeParam> putScheduleTypes(long telegramId, ScheduleTypeParam param, List<ScheduleTypeParam> params);
 
     @SuppressWarnings("UnusedReturnValue")
-    List<ScheduleTypeParam> removeScheduleTypes(long telegramId, ScheduleTypeParam param, List<ScheduleTypeParam> params);
+    List<ScheduleTypeParam> removeScheduleTypes(long telegramId, ScheduleTypeParam param,
+                                                List<ScheduleTypeParam> params);
 
     List<ScheduleTypeParam> getScheduleTypes(long telegramId);
 
