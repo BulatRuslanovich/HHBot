@@ -2,15 +2,15 @@ name: Build dispatcher module
 
 on:
   workflow_dispatch:
-    push:
-      branches: [ master ]
-      paths: [ .github/workflows/dispatcher.yml, dispatcher/** ]
-    pull_request:
-      branches: [ master ]
-      paths: [ .github/workflows/dispatcher.yml, dispatcher/** ]
+  push:
+    branches: [ master ]
+    paths: [ .github/workflows/dispatcher.yml, dispatcher/** ]
+  pull_request:
+    branches: [ master ]
+    paths: [ .github/workflows/dispatcher.yml, dispatcher/** ]
 
 jobs:
-  build:
+  compile:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,22 +23,50 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven
-
       - name: Run compile
         run: mvn -f dispatcher/pom.xml clean compile --no-transfer-progress
+  check_style:
+    needs: [ compile ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Run Checkstyle
+        run: mvn -f dispatcher/pom.xml clean checkstyle:check
+  test:
+    needs: [ check_style ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
       - name: Run tests
         run: mvn -f dispatcher/pom.xml clean test
+  package:
+    needs: [ test ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Run Checkstyle
-        run: mvn -f dispatcher/pom.xml checkstyle:check
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
       - name: Package the application
         run: mvn -f dispatcher/pom.xml package
