@@ -1,0 +1,17 @@
+name: Deploy
+
+on:
+  workflows: [ "Build dispatcher module", "Build node module" ]
+  types:
+    - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Deploy Application
+        run: echo "Deploying the application"
