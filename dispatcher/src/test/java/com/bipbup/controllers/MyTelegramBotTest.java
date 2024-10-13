@@ -26,7 +26,7 @@ class MyTelegramBotTest {
 
 
     @Test
-    public void testGetBotPath() {
+    void testGetBotPath() {
         // Act
         String path = myTelegramBot.getBotPath();
 
@@ -35,7 +35,7 @@ class MyTelegramBotTest {
     }
 
     @Test
-    public void testOnWebhookUpdateReceived() {
+    void testOnWebhookUpdateReceived() {
         // Act
         BotApiMethod<?> result = myTelegramBot.onWebhookUpdateReceived(null);
 

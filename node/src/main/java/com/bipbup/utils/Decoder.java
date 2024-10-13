@@ -21,6 +21,6 @@ public class Decoder {
         if (decode != null && decode.length > 0)
             return decode[0];
 
-        return 0L;
+        return null;
     }
 }

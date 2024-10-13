@@ -6,7 +6,7 @@ import com.bipbup.enums.EnumParam;
 import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.enums.impl.ScheduleTypeParam;
-import com.bipbup.service.ConfigService;
+import com.bipbup.service.db.ConfigService;
 import com.bipbup.service.cache.EducationLevelCacheService;
 import com.bipbup.service.cache.ScheduleTypeCacheService;
 import com.bipbup.utils.Encoder;

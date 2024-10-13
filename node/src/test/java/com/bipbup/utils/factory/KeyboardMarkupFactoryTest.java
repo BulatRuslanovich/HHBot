@@ -2,7 +2,7 @@ package com.bipbup.utils.factory;
 
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
-import com.bipbup.service.ConfigService;
+import com.bipbup.service.db.ConfigService;
 import com.bipbup.utils.CommandMessageConstants;
 import com.bipbup.utils.Encoder;
 import org.junit.jupiter.api.BeforeEach;

@@ -42,14 +42,14 @@ class UpdateProcessorTest {
 
     @Test
     @DisplayName("Should return false when update is null")
-    public void testProcessUpdate_NullUpdate() {
+    void testProcessUpdate_NullUpdate() {
         boolean result = updateProcessor.processUpdate(null);
         assertFalse(result);
     }
 
     @Test
     @DisplayName("Should process message update correctly")
-    public void testProcessUpdate_Message() {
+    void testProcessUpdate_Message() {
         // Arrange
         Update update = mock(Update.class);
         Message message = mock(Message.class);
@@ -72,7 +72,7 @@ class UpdateProcessorTest {
 
     @Test
     @DisplayName("Should process callback query update correctly")
-    public void testProcessUpdate_CallbackQuery() {
+    void testProcessUpdate_CallbackQuery() {
         // Arrange
         Update update = mock(Update.class);
         CallbackQuery callbackQuery = mock(CallbackQuery.class);
@@ -94,7 +94,7 @@ class UpdateProcessorTest {
 
     @Test
     @DisplayName("Should deactivate user when kicked")
-    public void testDeactivateUser() {
+    void testDeactivateUser() {
         // Arrange
         User user = new User();
         user.setFirstName("TestUser");
@@ -109,7 +109,7 @@ class UpdateProcessorTest {
     @SneakyThrows
     @Test
     @DisplayName("Should send sticker when easter egg is activated")
-    public void testEasterEgg_SendSticker() {
+    void testEasterEgg_SendSticker() {
         // Arrange
         Update update = mock(Update.class);
         Message message = mock(Message.class);
@@ -131,7 +131,7 @@ class UpdateProcessorTest {
     @SneakyThrows
     @Test
     @DisplayName("Should not send sticker if no easter egg is activated")
-    public void testEasterEgg_NoSticker() {
+    void testEasterEgg_NoSticker() {
         // Arrange
         Update update = mock(Update.class);
         Message message = mock(Message.class);

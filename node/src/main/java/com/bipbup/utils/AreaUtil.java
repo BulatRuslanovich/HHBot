@@ -1,16 +1,19 @@
 package com.bipbup.utils;
 
-import java.io.IOException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import static java.net.http.HttpResponse.BodyHandlers.ofString;
-import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -23,56 +26,43 @@ public class AreaUtil {
 
     private final HttpClient client;
 
+    private final ObjectMapper objectMapper;
+
+    @SneakyThrows
     public Integer getAreaIdFromApi(String areaName) {
-        HttpResponse<String> response;
-        try {
-            var uri = URI.create(URL);
-            var request = HttpRequest.newBuilder().uri(uri).build();
-            response = client.send(request, ofString());
-        } catch (IOException | InterruptedException e) {
-            log.error("Error querying API", e);
-            return null;
+        if (areaName == null) return null;
+
+        var request = HttpRequest.newBuilder().uri(URI.create(URL)).build();
+        var response = client.send(request, ofString());
+
+        if (response.statusCode() == HttpStatus.OK.value()) {
+            var areas = objectMapper.readValue(response.body(), new TypeReference<List<Map<String, Object>>>() {});
+            return Optional.ofNullable(findAreaId(areas, areaName))
+                    .map(Integer::valueOf)
+                    .orElse(null);
         }
 
-        if (areaName != null && response.statusCode() == HttpStatus.OK.value()) {
-            var areas = new JSONArray(response.body());
-            var areaId = findAreaId(areas, areaName);
-
-            if (areaId == null) {
-                return null;
-            }
-
-            return Integer.valueOf(areaId);
-        } else {
-            if (response != null) {
-                log.error("Error querying API {}: {} {}", response.request().method(), response.request().uri(),
-                        response.statusCode());
-            } else {
-                log.error("Error querying API, but response is null");
-            }
-
-            return null;
-        }
+        log.error("Failed to retrieve areas: {} {}", response.statusCode(), response.body());
+        return null;
     }
 
-    private String findAreaId(final JSONArray areas, final String name) {
-        Deque<JSONArray> deque = new ArrayDeque<>();
-        deque.push(areas);
-        var areasParamName = "areas";
+    private String findAreaId(List<Map<String, Object>> areas, String name) {
+        Deque<List<Map<String, Object>>> stack = new LinkedList<>();
+        stack.push(areas);
 
-        while (!deque.isEmpty()) {
-            var currentAreas = deque.pop();
-            for (int i = 0; i < currentAreas.length(); i++) {
-                var area = currentAreas.getJSONObject(i);
+        while (!stack.isEmpty()) {
+            var first = stack.pop();
+            if (first == null) continue;
 
-                var areaName = area.getString("name");
-                if (name.equalsIgnoreCase(areaName)) {
-                    return area.getString("id");
-                }
+            for (var area : first) {
+                String areaName = (String) area.get("name");
+                if (name.equalsIgnoreCase(areaName))
+                    return (String) area.get("id");
 
-                if (area.has(areasParamName)) {
-                    deque.push(area.getJSONArray(areasParamName));
-                }
+                Optional.ofNullable(area.get("areas"))
+                        .filter(List.class::isInstance)
+                        .map(List.class::cast)
+                        .ifPresent(stack::push);
             }
         }
 

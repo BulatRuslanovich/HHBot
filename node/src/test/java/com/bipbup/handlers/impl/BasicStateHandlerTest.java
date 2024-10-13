@@ -2,38 +2,46 @@ package com.bipbup.handlers.impl;
 
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
+import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_BROADCAST_MESSAGE;
+import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import com.bipbup.enums.Role;
-import com.bipbup.service.ConfigService;
-import com.bipbup.service.NotifierService;
-import com.bipbup.service.UserService;
+import com.bipbup.handlers.impl.message.BasicStateHandler;
+import com.bipbup.service.bot.NotifierService;
 import com.bipbup.service.cache.UserStateCacheService;
+import com.bipbup.service.db.ConfigService;
 import com.bipbup.utils.CommandMessageConstants;
+import static com.bipbup.utils.CommandMessageConstants.AdminCommand.BROADCAST;
+import static com.bipbup.utils.CommandMessageConstants.AdminCommand.SEARCH;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.ENTER_MESSAGE;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.INCORRECT_PASSWORD;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.NO_PERMISSION;
+import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.SEARCHING_COMPLETED;
+import static com.bipbup.utils.CommandMessageConstants.BotCommand.HELP;
+import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
+import static com.bipbup.utils.CommandMessageConstants.BotCommand.NEWQUERY;
+import static com.bipbup.utils.CommandMessageConstants.BotCommand.START;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.NO_SAVED_QUERIES;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.QUERY_PROMPT;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.USER_QUERIES;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.WELCOME;
+import java.util.Collections;
 import lombok.SneakyThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import java.util.Collections;
-
-import static com.bipbup.enums.AppUserState.*;
-import static com.bipbup.utils.CommandMessageConstants.AdminCommand.BROADCAST;
-import static com.bipbup.utils.CommandMessageConstants.AdminCommand.SEARCH;
-import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.*;
-import static com.bipbup.utils.CommandMessageConstants.BotCommand.HELP;
-import static com.bipbup.utils.CommandMessageConstants.BotCommand.*;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
 
 
 class BasicStateHandlerTest {
+
     private final String adminPassword = "admin123";
-    @Mock
-    private UserService userService;
+
     @Mock
     private UserStateCacheService userStateCacheService;
     @Mock

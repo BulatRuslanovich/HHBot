@@ -3,8 +3,8 @@ package com.bipbup.utils;
 
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
-import com.bipbup.handlers.impl.BasicStateHandler;
-import com.bipbup.service.ConfigService;
+import com.bipbup.handlers.impl.message.BasicStateHandler;
+import com.bipbup.service.db.ConfigService;
 import com.bipbup.service.cache.ConfigCacheService;
 import com.bipbup.service.cache.UserStateCacheService;
 import static com.bipbup.utils.CommandMessageConstants.AdminCommand.BROADCAST;
