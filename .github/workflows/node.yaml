@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches: [ master ]
-    paths: [ .github/workflows/node.yml, node/** ]
+    paths: [ .github/workflows/node.yaml, node/** ]
   pull_request:
     branches: [ master ]
-    paths: [ .github/workflows/node.yml, node/** ]
+    paths: [ .github/workflows/node.yaml, node/** ]
 
 jobs:
   compile:
