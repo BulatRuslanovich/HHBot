@@ -1,6 +1,8 @@
 package com.bipbup.utils;
 
 import org.hashids.Hashids;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,7 +10,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 class DecoderTest {
@@ -55,7 +56,7 @@ class DecoderTest {
         Long result = decoder.parseIdFromCallback(callback);
 
         // Assert
-        assertEquals(0L, result);
+        assertNull( result);
     }
 
     @Test
@@ -68,7 +69,7 @@ class DecoderTest {
         Long result = decoder.parseIdFromCallback(callback);
 
         // Assert
-        assertEquals(0L, result);
+        assertNull(result);
     }
 
     @Test
@@ -81,6 +82,6 @@ class DecoderTest {
         Long result = decoder.parseIdFromCallback(callback);
 
         // Assert
-        assertEquals(0L, result);
+        assertNull(result);
     }
 }
