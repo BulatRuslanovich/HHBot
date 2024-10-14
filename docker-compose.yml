@@ -16,8 +16,6 @@ services:
     build:
       context: ./
       dockerfile: ./dispatcher/Dockerfile
-#    ports:
-#      - ${DISPATCHER_PORT}:${DISPATCHER_PORT}
     environment:
       DISPATCHER_PORT: ${DISPATCHER_PORT}
       BOT_URI: ${BOT_URI}
@@ -176,7 +174,6 @@ services:
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.services.traefik.loadbalancer.server.port=8088"
 
-      # Установка пароля для входа в админку
       - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_USER}:${TRAEFIK_PASSWORD}"
       - "traefik.http.routers.traefik.middlewares=traefik-auth"
 
