@@ -2,6 +2,7 @@
 **/gradlew
 **/gradlew.bat
 **/gradle/**
+**/build/**
 
 # Compiled class file
 *.class

@@ -17,7 +17,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Getter
@@ -53,8 +52,8 @@ public class AppUser {
     private String username;
 
     @NotNull
-    @ColumnDefault("'USER'")
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 32)
-    private Role role;
+    private Role role = Role.USER;
 }

@@ -2,19 +2,19 @@ package com.bipbup.service.bot.impl;
 
 import com.bipbup.dto.VacancyDTO;
 import com.bipbup.entity.AppUserConfig;
-import com.bipbup.service.net.APIHandler;
-import com.bipbup.service.kafka.AnswerProducer;
-import com.bipbup.service.db.ConfigService;
 import com.bipbup.service.bot.NotifierService;
+import com.bipbup.service.db.ConfigService;
+import com.bipbup.service.kafka.AnswerProducer;
+import com.bipbup.service.net.APIHandler;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.Locale;
 
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.VACANCY;
 
@@ -25,7 +25,7 @@ public class NotifierServiceImpl implements NotifierService {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("ru"));
 
-    private static final int SIZE_OF_PAGE = 500;
+    private static final int SIZE_OF_PAGE = 1000;
 
     private final APIHandler apiHandler;
 
@@ -41,7 +41,7 @@ public class NotifierServiceImpl implements NotifierService {
         var configs = configService.getConfigsFromPage(page++, SIZE_OF_PAGE);
 
         while (!configs.isEmpty()) {
-            configs.stream()
+            configs.parallelStream()
                     .filter(this::isPresentQuery)
                     .forEach(this::processNewVacancies);
 
@@ -62,10 +62,13 @@ public class NotifierServiceImpl implements NotifierService {
             var lastNotificationTime = newVacancies.get(0).getPublishedAt().plusMinutes(1);
             Collections.reverse(newVacancies);
 
-            newVacancies.forEach(v -> sendVacancyMessage(v, config));
+            log.debug("Sending {} vacancies to user {} with config {}",
+                    newVacancies.size(), user.getFirstName(), config.getConfigName());
+
+            newVacancies.forEach(vacancy -> sendVacancyMessage(vacancy, config));
 
             config.setLastNotificationTime(lastNotificationTime);
-            configService.saveConfig(config, false);
+            configService.saveConfig(config);
         }
 
         log.info("For user {} find {} vacancies with config {}",

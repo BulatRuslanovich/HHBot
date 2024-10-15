@@ -9,7 +9,7 @@ public interface ConfigService {
 
     List<AppUserConfig> getConfigsFromPage(int numOfPage, int sizeOfPage);
 
-    AppUserConfig saveConfig(AppUserConfig config, boolean updateParams);
+    AppUserConfig saveConfig(AppUserConfig config);
 
     void deleteConfig(AppUserConfig config);
 

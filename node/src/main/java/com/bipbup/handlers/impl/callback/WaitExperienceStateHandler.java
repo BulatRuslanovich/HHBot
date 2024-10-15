@@ -56,7 +56,7 @@ public class WaitExperienceStateHandler implements StateHandler {
             var config = optionalConfig.get();
             var experience = ExperienceParam.valueOfPrefix(prefix);
             config.setExperience(experience);
-            configService.saveConfig(config, false);
+            configService.saveConfig(config);
 
             log.info("User {} selected experience level and state set to BASIC_STATE", user.getFirstName());
             return String.format(EXP_SET.getTemplate(), experience.getDescription(), config.getConfigName());

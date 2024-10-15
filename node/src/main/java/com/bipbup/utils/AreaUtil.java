@@ -1,6 +1,6 @@
 package com.bipbup.utils;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -8,8 +8,6 @@ import java.net.http.HttpRequest;
 import static java.net.http.HttpResponse.BodyHandlers.ofString;
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -36,7 +34,8 @@ public class AreaUtil {
         var response = client.send(request, ofString());
 
         if (response.statusCode() == HttpStatus.OK.value()) {
-            var areas = objectMapper.readValue(response.body(), new TypeReference<List<Map<String, Object>>>() {});
+            var areas = objectMapper.readTree(response.body());
+
             return Optional.ofNullable(findAreaId(areas, areaName))
                     .map(Integer::valueOf)
                     .orElse(null);
@@ -46,22 +45,19 @@ public class AreaUtil {
         return null;
     }
 
-    private String findAreaId(List<Map<String, Object>> areas, String name) {
-        Deque<List<Map<String, Object>>> stack = new LinkedList<>();
+    private String findAreaId(JsonNode areas, String name) {
+        Deque<JsonNode> stack = new LinkedList<>();
         stack.push(areas);
 
         while (!stack.isEmpty()) {
             var first = stack.pop();
-            if (first == null) continue;
 
             for (var area : first) {
-                String areaName = (String) area.get("name");
+                var areaName = area.get("name").asText();
                 if (name.equalsIgnoreCase(areaName))
-                    return (String) area.get("id");
+                    return area.get("id").asText();
 
                 Optional.ofNullable(area.get("areas"))
-                        .filter(List.class::isInstance)
-                        .map(List.class::cast)
                         .ifPresent(stack::push);
             }
         }

@@ -1,6 +1,7 @@
 package com.bipbup.entity;
 
 import com.bipbup.enums.impl.ExperienceParam;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -64,10 +65,10 @@ public class AppUserConfig {
     private AppUser appUser;
 
     @Builder.Default
-    @OneToMany(mappedBy = "config", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "config", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<EducationLevel> educationLevels = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "config", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "config", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<ScheduleType> scheduleTypes = new ArrayList<>();
 }

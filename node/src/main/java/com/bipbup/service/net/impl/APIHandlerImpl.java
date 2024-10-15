@@ -10,8 +10,6 @@ import com.bipbup.enums.impl.ScheduleTypeParam;
 import com.bipbup.service.net.APIConnection;
 import com.bipbup.service.net.APIHandler;
 import com.bipbup.service.net.AreaService;
-import static com.bipbup.utils.factory.VacancyFactory.createVacancyDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URLEncoder;
@@ -21,7 +19,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -31,158 +31,160 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+
+import static com.bipbup.utils.factory.VacancyFactory.createVacancyDTO;
+
+/**
+ * This service handles fetching vacancy data from the API. It uses the user configuration to query for new vacancies
+ * and processes the results.
+ */
 @Slf4j
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class APIHandlerImpl implements APIHandler {
 
-    public static final int COUNT_OF_DAYS = 2;
+	public static final int COUNT_OF_DAYS = 2;
 
-    private static final int COUNT_OF_VACANCIES_IN_PAGE = 100;
+	private static final int COUNT_OF_VACANCIES_IN_PAGE = 100;
 
-    private static final int TIMESTAMP_FULL_LENGTH = 24;
+	private static final int TIMESTAMP_FULL_LENGTH = 24;
 
-    private static final int TIMESTAMP_TRIMMED_LENGTH = 19;
+	private static final int TIMESTAMP_TRIMMED_LENGTH = 19;
 
-    private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
+	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
 
-    private final APIConnection apiConnection;
+	private final APIConnection apiConnection;
 
-    private final ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 
-    private final RestTemplate restTemplate;
+	private final RestTemplate restTemplate;
 
-    private final AreaService areaService;
+	private final AreaService areaService;
 
-    @Value("${headhunter.endpoint.searchForVacancy}")
-    private String searchForVacancyURI;
+	@Value("${headhunter.endpoint.searchForVacancy}")
+	private String searchForVacancyURI;
 
-    private static boolean isPresentJson(JsonNode jsonNode) {
-        return jsonNode != null && !jsonNode.isEmpty();
-    }
+	/**
+	 * Fetches new vacancies based on user configuration.
+	 *
+	 * @param config The user configuration containing query parameters.
+	 *
+	 * @return A list of new vacancies.
+	 */
+	@Override
+	public List<VacancyDTO> fetchNewVacancies(AppUserConfig config) {
+		var request = apiConnection.createRequestWithHeaders();
+		var pageCount = fetchPageCount(request, config);
+		var vacancyList = new ArrayList<VacancyDTO>();
 
-    private static void addVacanciesFromPage(AppUserConfig config,
-                                             List<VacancyDTO> vacancyList,
-                                             JsonNode vacanciesOnPage) {
-        vacanciesOnPage.forEach(v -> {
-            var publishedAt = getPublishedAtFromJson(v);
+		IntStream.range(0, pageCount)
+				.forEach(i -> processVacancyPage(config, request, i, vacancyList));
 
-            if (publishedAt.isBefore(config.getLastNotificationTime()))
-                return;
+		return vacancyList;
+	}
 
-            vacancyList.add(createVacancyDTO(v, publishedAt));
-        });
-    }
+	private int fetchPageCount(HttpEntity<HttpHeaders> request, AppUserConfig config) {
+		var firstPage = fetchVacancyPage(request, 0, config);
 
-    private static LocalDateTime getPublishedAtFromJson(JsonNode vacancy) {
-        var timestamp = vacancy.get("published_at").asText();
+		if (firstPage.isEmpty())
+			return 0;
 
-        if (timestamp.length() == TIMESTAMP_FULL_LENGTH)
-            timestamp = timestamp.substring(0, TIMESTAMP_TRIMMED_LENGTH);
+		var totalCount = firstPage.get("found")
+				.asInt(0);
+		return (int) Math.ceil((double) totalCount / COUNT_OF_VACANCIES_IN_PAGE);
+	}
 
-        return LocalDateTime.parse(timestamp,
-                DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN));
-    }
+	@SneakyThrows
+	private JsonNode fetchVacancyPage(HttpEntity<HttpHeaders> request, int pageNumber, AppUserConfig config) {
+		var vacancySearchUri = generateVacancySearchUri(pageNumber, config);
+		var response = restTemplate.exchange(vacancySearchUri, HttpMethod.GET, request, String.class)
+				.getBody();
+		return objectMapper.readTree(response);
+	}
 
-    @Override
-    public List<VacancyDTO> fetchNewVacancies(AppUserConfig config) {
-        var request = apiConnection.createRequestWithHeaders();
-        var pageCount = fetchPageCount(request, config);
-        List<VacancyDTO> vacancyList = new ArrayList<>();
+	private String generateVacancySearchUri(int pageNumber, AppUserConfig config) {
+		var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
+				.queryParam("page", pageNumber)
+				.queryParam("per_page", COUNT_OF_VACANCIES_IN_PAGE)
+				.queryParam("text", encodeQueryText(config.getQueryText()))
+				.queryParam("search_field", "name")
+				.queryParam("period", COUNT_OF_DAYS)
+				.queryParam("order_by", "publication_time");
 
-        for (int i = 0; i <= pageCount; i++) {
-            processVacancyPage(config, request, i, vacancyList);
-        }
+		addAreaParam(builder, config);
+		addExperienceParam(builder, config);
+		addEducationParam(builder, config);
+		addScheduleParam(builder, config);
 
-        return vacancyList;
-    }
+		return builder.build()
+				.toUriString();
+	}
 
-    private String encodeQueryText(String queryText) {
-        return URLEncoder.encode(queryText, StandardCharsets.UTF_8);
-    }
+	private String encodeQueryText(String queryText) {
+		return URLEncoder.encode(queryText, StandardCharsets.UTF_8);
+	}
 
-    private JsonNode fetchVacancyPage(HttpEntity<HttpHeaders> request,
-                                      int pageNumber,
-                                      AppUserConfig config) {
-        var vacancySearchUri = generateVacancySearchUri(pageNumber, config);
-        var response = restTemplate.exchange(vacancySearchUri, HttpMethod.GET, request, String.class).getBody();
+	private void addExperienceParam(UriComponentsBuilder builder, AppUserConfig config) {
+		var experience = config.getExperience();
 
-        try {
-            return objectMapper.readTree(response);
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-            return objectMapper.createObjectNode();
-        }
-    }
+		if (ExperienceParam.NO_MATTER != experience)
+			builder.queryParam("experience", experience.getParam());
+	}
 
-    private int fetchPageCount(HttpEntity<HttpHeaders> request,
-                               AppUserConfig config) {
-        var firstPage = fetchVacancyPage(request, 0, config);
+	private void addAreaParam(UriComponentsBuilder builder, AppUserConfig config) {
+		Optional.ofNullable(areaService.getAreaIdByName(config.getArea()))
+				.ifPresent(areaId -> builder.queryParam("area", areaId));
+	}
 
-        if (isPresentJson(firstPage)) {
-            var totalCount = firstPage.get("found").asInt(0);
-            return (int) Math.ceil((double) totalCount / COUNT_OF_VACANCIES_IN_PAGE);
-        }
+	public void addEducationParam(UriComponentsBuilder builder, AppUserConfig config) {
+		var levels = config.getEducationLevels()
+				.stream()
+				.map(EducationLevel::getParam)
+				.map(EducationLevelParam::getParam)
+				.toList();
 
-        return 0;
-    }
+		if (!levels.isEmpty())
+			builder.queryParam("education", levels);
+	}
 
-    private void processVacancyPage(AppUserConfig config,
-                                    HttpEntity<HttpHeaders> request,
-                                    int pageNum,
-                                    List<VacancyDTO> vacancyList) {
-        var jsonPage = fetchVacancyPage(request, pageNum, config);
+	private void addScheduleParam(UriComponentsBuilder builder, AppUserConfig config) {
+		var types = config.getScheduleTypes()
+				.stream()
+				.map(ScheduleType::getParam)
+				.map(ScheduleTypeParam::getParam)
+				.toList();
 
-        if (isPresentJson(jsonPage))
-            addVacanciesFromPage(config, vacancyList, jsonPage.get("items"));
-    }
+		if (!types.isEmpty())
+			builder.queryParam("schedule", types);
+	}
 
-    private void addAreaParam(UriComponentsBuilder builder, AppUserConfig config) {
-        Optional.ofNullable(areaService.getAreaIdByName(config.getArea()))
-                .ifPresent(areaId -> builder.queryParam("area", areaId));
-    }
+	private void processVacancyPage(
+			AppUserConfig config, HttpEntity<HttpHeaders> request, int pageNum, List<VacancyDTO> vacancyList
+	) {
+		var jsonPage = fetchVacancyPage(request, pageNum, config);
 
-    private void addExperienceParam(UriComponentsBuilder builder, AppUserConfig config) {
-        var experience = config.getExperience();
+		if (!jsonPage.isEmpty())
+			addVacanciesFromPage(config, vacancyList, jsonPage.get("items"));
+	}
 
-        if (ExperienceParam.NO_MATTER != experience)
-            builder.queryParam("experience", experience.getParam());
-    }
+	private void addVacanciesFromPage(AppUserConfig config, List<VacancyDTO> vacancyList, JsonNode vacanciesOnPage) {
+		vacanciesOnPage.forEach(vacancy -> {
+			var publishedAt = getPublishedAtFromJson(vacancy);
 
-    private void addEducationParam(UriComponentsBuilder builder, AppUserConfig config) {
-        var levels = config.getEducationLevels().stream()
-                .map(EducationLevel::getParam)
-                .map(EducationLevelParam::getParam)
-                .toList();
+			if (publishedAt.isBefore(config.getLastNotificationTime()))
+				return;
 
-        if (!levels.isEmpty())
-            builder.queryParam("education", levels);
-    }
+			vacancyList.add(createVacancyDTO(vacancy, publishedAt));
+		});
+	}
 
-    private void addScheduleParam(UriComponentsBuilder builder, AppUserConfig config) {
-        var types = config.getScheduleTypes().stream()
-                .map(ScheduleType::getParam)
-                .map(ScheduleTypeParam::getParam)
-                .toList();
+	private LocalDateTime getPublishedAtFromJson(JsonNode vacancy) {
+		var timestamp = vacancy.get("published_at")
+				.asText();
 
-        if (!types.isEmpty())
-            builder.queryParam("schedule", types);
-    }
+		if (timestamp.length() == TIMESTAMP_FULL_LENGTH)
+			timestamp = timestamp.substring(0, TIMESTAMP_TRIMMED_LENGTH);
 
-    private String generateVacancySearchUri(int pageNumber, AppUserConfig config) {
-        var builder = UriComponentsBuilder.fromUriString(searchForVacancyURI)
-                .queryParam("page", pageNumber)
-                .queryParam("per_page", COUNT_OF_VACANCIES_IN_PAGE)
-                .queryParam("text", encodeQueryText(config.getQueryText()))
-                .queryParam("search_field", "name")
-                .queryParam("period", COUNT_OF_DAYS)
-                .queryParam("order_by", "publication_time");
-
-        addAreaParam(builder, config);
-        addExperienceParam(builder, config);
-        addEducationParam(builder, config);
-        addScheduleParam(builder, config);
-
-        return builder.build().toUriString();
-    }
+		return LocalDateTime.parse(timestamp, DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN));
+	}
 }

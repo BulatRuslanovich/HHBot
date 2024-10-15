@@ -80,7 +80,7 @@ public class WaitAreaStateHandler implements StateHandler {
         var area = normalizeAreaName(input);
         var output = getOutputAndSetArea(config, input, area);
 
-        configService.saveConfig(config, false);
+        configService.saveConfig(config);
         userStateCacheService.clearUserState(user.getTelegramId());
 
         log.info("User {} set area '{}' in configuration '{}'", user.getFirstName(), area, config.getConfigName());

@@ -4,20 +4,22 @@ import com.bipbup.annotation.CallbackQualifier;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.EducationLevel;
 import com.bipbup.enums.AppUserState;
-import static com.bipbup.enums.AppUserState.WAIT_EDUCATION_STATE;
 import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.handlers.StateHandler;
-import com.bipbup.service.db.ConfigService;
 import com.bipbup.service.cache.EducationLevelCacheService;
 import com.bipbup.service.cache.UserStateCacheService;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.EDU_SAVE;
-import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.SELECT_EDUCATION;
-import static com.bipbup.utils.CommandMessageConstants.Prefix;
+import com.bipbup.service.db.ConfigService;
 import com.bipbup.utils.Decoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+
+import static com.bipbup.enums.AppUserState.WAIT_EDUCATION_STATE;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.EDU_SAVE;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.SELECT_EDUCATION;
+import static com.bipbup.utils.CommandMessageConstants.Prefix;
 
 @Slf4j
 @Component
@@ -69,7 +71,8 @@ public class WaitEducationStateHandler implements StateHandler {
                     .toList();
 
             config.setEducationLevels(educationLevels);
-            configService.saveConfig(config, true);
+
+            configService.saveConfig(config);
 
             educationLevelCacheService.clearEducationLevels(user.getTelegramId());
             userStateCacheService.clearUserState(user.getTelegramId());

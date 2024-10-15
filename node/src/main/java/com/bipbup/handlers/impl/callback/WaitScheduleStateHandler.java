@@ -79,7 +79,8 @@ public class WaitScheduleStateHandler implements StateHandler {
                     .toList();
 
             config.setScheduleTypes(scheduleTypes);
-            configService.saveConfig(config, true);
+            
+            configService.saveConfig(config);
 
             scheduleTypeCacheService.clearScheduleTypes(telegramId);
             userStateCacheService.clearUserState(telegramId);

@@ -67,7 +67,7 @@ class WaitAreaStateHandlerTest {
 
         String result = waitAreaStateHandler.process(appUser, input);
 
-        verify(configService).saveConfig(config, false);
+        verify(configService).saveConfig(config);
         verify(userStateCacheService).clearUserState(appUser.getTelegramId());
         assertEquals(String.format(AREA_SET.getTemplate(), "New Area", config.getConfigName()), result);
     }
@@ -84,7 +84,7 @@ class WaitAreaStateHandlerTest {
 
         String result = waitAreaStateHandler.process(appUser, ANY);
 
-        verify(configService).saveConfig(config, false);
+        verify(configService).saveConfig(config);
         verify(userStateCacheService).clearUserState(appUser.getTelegramId());
         assertEquals(String.format(ANY_AREA_SET.getTemplate(), config.getConfigName()), result);
     }

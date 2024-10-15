@@ -83,7 +83,7 @@ public class WaitConfigNameStateHandler implements StateHandler {
                                     String newConfigName) {
         var oldConfigName = config.getConfigName();
         config.setConfigName(newConfigName);
-        configService.saveConfig(config, false);
+        configService.saveConfig(config);
         userStateCacheService.clearUserState(user.getTelegramId());
         log.info("User {} updated name of config \"{}\" and state set to BASIC_STATE",
                 user.getFirstName(), oldConfigName);
@@ -115,7 +115,7 @@ public class WaitConfigNameStateHandler implements StateHandler {
     private String processNewConfig(AppUser user, String configName) {
         var telegramId = user.getTelegramId();
         var newConfig = createConfigWithOnlyName(user, configName);
-        configService.saveConfig(newConfig, false);
+        configService.saveConfig(newConfig);
         configCacheService.clearConfigId(telegramId);
         userStateCacheService.putUserState(telegramId, WAIT_QUERY_STATE);
         log.info("User {} created config \"{}\" and state set to WAIT_QUERY_STATE", user.getFirstName(), configName);

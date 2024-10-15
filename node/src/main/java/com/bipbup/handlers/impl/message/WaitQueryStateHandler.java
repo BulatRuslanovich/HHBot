@@ -57,7 +57,7 @@ public class WaitQueryStateHandler implements StateHandler {
                                      AppUserConfig config,
                                      String input) {
         config.setQueryText(input);
-        configService.saveConfig(config, false);
+        configService.saveConfig(config);
         userStateCacheService.clearUserState(user.getTelegramId());
         log.info("User {} set query '{}' in configuration '{}'", user.getFirstName(), input, config.getConfigName());
         return String.format(QUERY_SET.getTemplate(), input, config.getConfigName());
