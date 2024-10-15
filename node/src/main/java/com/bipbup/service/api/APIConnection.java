@@ -1,4 +1,4 @@
-package com.bipbup.service.net;
+package com.bipbup.service.api;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;

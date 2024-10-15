@@ -1,6 +1,6 @@
-package com.bipbup.service.net.impl;
+package com.bipbup.service.api.impl;
 
-import com.bipbup.service.net.APIConnection;
+import com.bipbup.service.api.APIConnection;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;

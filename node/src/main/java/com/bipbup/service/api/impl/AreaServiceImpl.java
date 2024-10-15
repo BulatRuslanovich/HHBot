@@ -1,6 +1,6 @@
-package com.bipbup.service.net.impl;
+package com.bipbup.service.api.impl;
 
-import com.bipbup.service.net.AreaService;
+import com.bipbup.service.api.AreaService;
 import com.bipbup.utils.AreaUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;

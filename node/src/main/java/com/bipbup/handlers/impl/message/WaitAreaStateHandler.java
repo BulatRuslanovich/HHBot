@@ -6,7 +6,7 @@ import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.AppUserState;
 import static com.bipbup.enums.AppUserState.WAIT_AREA_STATE;
 import com.bipbup.handlers.StateHandler;
-import com.bipbup.service.net.AreaService;
+import com.bipbup.service.api.AreaService;
 import com.bipbup.service.db.ConfigService;
 import com.bipbup.service.cache.UserStateCacheService;
 import com.bipbup.utils.HandlerUtils;

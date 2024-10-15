@@ -2,9 +2,8 @@ package com.bipbup.utils.factory;
 
 import com.bipbup.dto.VacancyDTO;
 import com.fasterxml.jackson.databind.JsonNode;
-import lombok.experimental.UtilityClass;
-
 import java.time.LocalDateTime;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class VacancyFactory {
@@ -18,7 +17,11 @@ public class VacancyFactory {
                 vacancy.get("employer").get("name").asText(),
                 vacancy.get("area").get("name").asText(),
                 publishedAt,
-                vacancy.get("alternate_url").asText()
+                vacancy.get("alternate_url").asText(),
+                vacancy.get("professional_roles").iterator().next().get("name").asText(),
+                vacancy.get("schedule").get("name").asText(),
+                vacancy.get("experience").get("name").asText(),
+                vacancy.get("employment").get("name").asText()
         );
     }
 }

@@ -1,4 +1,4 @@
-package com.bipbup.service.net.impl;
+package com.bipbup.service.api.impl;
 
 import com.bipbup.dto.VacancyDTO;
 import com.bipbup.entity.AppUserConfig;
@@ -7,9 +7,9 @@ import com.bipbup.entity.ScheduleType;
 import com.bipbup.enums.impl.EducationLevelParam;
 import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.enums.impl.ScheduleTypeParam;
-import com.bipbup.service.net.APIConnection;
-import com.bipbup.service.net.APIHandler;
-import com.bipbup.service.net.AreaService;
+import com.bipbup.service.api.APIConnection;
+import com.bipbup.service.api.APIHandler;
+import com.bipbup.service.api.AreaService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URLEncoder;
@@ -89,8 +89,7 @@ public class APIHandlerImpl implements APIHandler {
 		if (firstPage.isEmpty())
 			return 0;
 
-		var totalCount = firstPage.get("found")
-				.asInt(0);
+		var totalCount = firstPage.get("found").asInt(0);
 		return (int) Math.ceil((double) totalCount / COUNT_OF_VACANCIES_IN_PAGE);
 	}
 

@@ -3,7 +3,7 @@ package com.bipbup.handlers.impl;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.handlers.impl.message.WaitAreaStateHandler;
-import com.bipbup.service.net.AreaService;
+import com.bipbup.service.api.AreaService;
 import com.bipbup.service.db.ConfigService;
 import com.bipbup.service.cache.UserStateCacheService;
 import static com.bipbup.utils.CommandMessageConstants.ANY;

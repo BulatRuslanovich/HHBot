@@ -1,9 +1,8 @@
 package com.bipbup.dto;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor(staticName = "of")
@@ -20,4 +19,12 @@ public class VacancyDTO {
     private LocalDateTime publishedAt;
 
     private String url;
+
+    private String  professionalRoles;
+
+    private String schedule;
+
+    private String experience;
+
+    private String employment;
 }

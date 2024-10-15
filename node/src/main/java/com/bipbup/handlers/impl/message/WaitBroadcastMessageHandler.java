@@ -14,6 +14,7 @@ import com.bipbup.utils.HandlerUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 @Slf4j
@@ -52,7 +53,7 @@ public class WaitBroadcastMessageHandler implements StateHandler {
         var message = SendMessage.builder()
                 .text(output)
                 .chatId(user.getTelegramId())
-                .parseMode("MarkDown")
+                .parseMode(ParseMode.HTML)
                 .build();
         producer.produceAnswer(message);
     }
