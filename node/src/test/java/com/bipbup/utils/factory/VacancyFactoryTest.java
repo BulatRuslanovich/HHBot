@@ -19,11 +19,18 @@ class VacancyFactoryTest {
         // Arrange
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = """
-                {"id": "123",
-                "name": "Software Engineer",
-                "employer": { "name": "Tech Corp"},
-                "area": { "name": "Remote" },
-                "alternate_url": "http://example.com"}""";
+                {
+                    "id": "123",
+                    "name": "Software Engineer",
+                    "employer": { "name": "Tech Corp" },
+                    "area": { "name": "Remote" },
+                    "alternate_url": "http://example.com",
+                    "professional_roles": [{ "name": "develop" }],
+                    "schedule": { "name": "Remote" },
+                    "experience": { "name": "Remote" },
+                    "employment": { "name": "Remote" }
+                }
+                """;
 
         JsonNode vacancyNode = objectMapper.readTree(jsonString);
         LocalDateTime publishedAt = LocalDateTime.now();
