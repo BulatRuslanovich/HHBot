@@ -44,19 +44,19 @@ public class QueryUpdateStateHandler implements StateHandler {
 
     private final ConfigCacheService configCacheService;
 
-    private static final Map<String, ActionProperties> ACTION_PROPERTIES_MAP = Map.of(
-            Prefix.UPDATE_CONFIG_NAME, new ActionProperties(WAIT_CONFIG_NAME_STATE,
-                    ENTER_CONFIG_NAME.getTemplate(), true),
-            Prefix.UPDATE_QUERY, new ActionProperties(WAIT_QUERY_STATE,
-                    ENTER_QUERY.getTemplate(), true),
-            Prefix.UPDATE_EXPERIENCE, new ActionProperties(WAIT_EXPERIENCE_STATE,
-                    SELECT_EXPERIENCE.getTemplate(), false),
-            Prefix.UPDATE_AREA, new ActionProperties(WAIT_AREA_STATE,
-                    ENTER_AREA.getTemplate(), true),
-            Prefix.UPDATE_EDUCATION, new ActionProperties(WAIT_EDUCATION_STATE,
-                    SELECT_EDUCATION.getTemplate(), false),
-            Prefix.UPDATE_SCHEDULE, new ActionProperties(WAIT_SCHEDULE_STATE,
-                    SELECT_SCHEDULE.getTemplate(), false)
+    private static final Map<String, ActionInfo> ACTION_PROPERTIES_MAP = Map.of(
+            Prefix.UPDATE_CONFIG_NAME,
+            new ActionInfo(WAIT_CONFIG_NAME_STATE, ENTER_CONFIG_NAME.toString(), true),
+            Prefix.UPDATE_QUERY,
+            new ActionInfo(WAIT_QUERY_STATE, ENTER_QUERY.toString(), true),
+            Prefix.UPDATE_EXPERIENCE,
+            new ActionInfo(WAIT_EXPERIENCE_STATE, SELECT_EXPERIENCE.toString(), false),
+            Prefix.UPDATE_AREA,
+            new ActionInfo(WAIT_AREA_STATE, ENTER_AREA.toString(), true),
+            Prefix.UPDATE_EDUCATION,
+            new ActionInfo(WAIT_EDUCATION_STATE, SELECT_EDUCATION.toString(), false),
+            Prefix.UPDATE_SCHEDULE,
+            new ActionInfo(WAIT_SCHEDULE_STATE, SELECT_SCHEDULE.toString(), false)
     );
 
     @Override
@@ -95,7 +95,7 @@ public class QueryUpdateStateHandler implements StateHandler {
 
     private String updateConfigSelectionAndUserState(AppUser user,
                                                      String input,
-                                                     ActionProperties properties) {
+                                                     ActionInfo properties) {
         var configId = decoder.parseIdFromCallback(input);
         var optionalConfig = configService.getConfigById(configId);
 
@@ -112,7 +112,7 @@ public class QueryUpdateStateHandler implements StateHandler {
         } else {
             userStateCacheService.clearUserState(user.getTelegramId());
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-            return CONFIG_NOT_FOUND.getTemplate();
+            return CONFIG_NOT_FOUND.toString();
         }
     }
 }
