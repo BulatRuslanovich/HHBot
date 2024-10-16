@@ -66,7 +66,7 @@ class QueryDeleteStateHandlerTest {
         String result = queryDeleteStateHandler.process(appUser, input);
 
         verify(configService).deleteConfig(config);
-        assertEquals(String.format(CONFIG_DELETED.getTemplate(), config.getConfigName()), result);
+        assertEquals(String.format(CONFIG_DELETED.toString(), config.getConfigName()), result);
     }
 
     @Test
@@ -85,7 +85,7 @@ class QueryDeleteStateHandlerTest {
 
         verify(configService).deleteConfig(config);
         verify(userStateCacheService).putUserState(appUser.getTelegramId(), QUERY_LIST_STATE);
-        assertEquals(String.format(CONFIG_DELETED.getTemplate(), config.getConfigName()) + "\n" + USER_QUERIES.getTemplate(), result);
+        assertEquals(String.format(CONFIG_DELETED.toString(), config.getConfigName()) + "\n" + USER_QUERIES, result);
     }
 
     @Test
@@ -100,7 +100,7 @@ class QueryDeleteStateHandlerTest {
         String result = queryDeleteStateHandler.process(appUser, input);
 
         verify(userStateCacheService).clearUserState(appUser.getTelegramId());
-        assertEquals(CONFIG_NOT_FOUND.getTemplate(), result);
+        assertEquals(CONFIG_NOT_FOUND.toString(), result);
     }
 
     @Test

@@ -69,23 +69,23 @@ class BasicStateHandlerTest {
     @Test
     @DisplayName("Should process start command")
     void testProcessStartCommand() {
-        String result = basicStateHandler.process(appUser, START.getCommand());
-        assertEquals(String.format(WELCOME.getTemplate(), appUser.getFirstName()), result);
+        String result = basicStateHandler.process(appUser, START.toString());
+        assertEquals(String.format(WELCOME.toString(), appUser.getFirstName()), result);
     }
 
     @Test
     @DisplayName("Should process help command")
     void testProcessHelpCommand() {
-        String result = basicStateHandler.process(appUser, HELP.getCommand());
-        assertEquals(CommandMessageConstants.MessageTemplate.HELP.getTemplate(), result);
+        String result = basicStateHandler.process(appUser, HELP.toString());
+        assertEquals(CommandMessageConstants.MessageTemplate.HELP.toString(), result);
     }
 
     @Test
     @DisplayName("Should process new query command")
     void testProcessNewQueryCommand() {
-        String result = basicStateHandler.process(appUser, NEWQUERY.getCommand());
+        String result = basicStateHandler.process(appUser, NEWQUERY.toString());
         verify(userStateCacheService).putUserState(appUser.getTelegramId(), WAIT_CONFIG_NAME_STATE);
-        assertEquals(QUERY_PROMPT.getTemplate(), result);
+        assertEquals(QUERY_PROMPT.toString(), result);
     }
 
     @Test
@@ -93,9 +93,9 @@ class BasicStateHandlerTest {
     void testProcessMyQueriesCommand_NoSavedQueries() {
         when(configService.getConfigByUser(appUser)).thenReturn(Collections.emptyList());
 
-        String result = basicStateHandler.process(appUser, MYQUERIES.getCommand());
+        String result = basicStateHandler.process(appUser, MYQUERIES.toString());
         verify(userStateCacheService).clearUserState(appUser.getTelegramId());
-        assertEquals(NO_SAVED_QUERIES.getTemplate(), result);
+        assertEquals(NO_SAVED_QUERIES.toString(), result);
     }
 
     @Test
@@ -103,50 +103,50 @@ class BasicStateHandlerTest {
     void testProcessMyQueriesCommand_WithSavedQueries() {
         when(configService.getConfigByUser(appUser)).thenReturn(Collections.singletonList(new AppUserConfig()));
 
-        String result = basicStateHandler.process(appUser, MYQUERIES.getCommand());
+        String result = basicStateHandler.process(appUser, MYQUERIES.toString());
         verify(userStateCacheService).putUserState(appUser.getTelegramId(), QUERY_LIST_STATE);
-        assertEquals(USER_QUERIES.getTemplate(), result);
+        assertEquals(USER_QUERIES.toString(), result);
     }
 
     @Test
     @DisplayName("Should process broadcast command with correct password")
     void testProcessBroadcastCommand_CorrectPassword() {
-        String input = BROADCAST.getCommand() + " " + adminPassword;
+        String input = BROADCAST + " " + adminPassword;
         String result = basicStateHandler.process(appUser, input);
         verify(userStateCacheService).putUserState(appUser.getTelegramId(), WAIT_BROADCAST_MESSAGE);
-        assertEquals(ENTER_MESSAGE.getTemplate(), result);
+        assertEquals(ENTER_MESSAGE.toString(), result);
     }
 
     @Test
     @DisplayName("Should deny broadcast command with incorrect password")
     void testProcessBroadcastCommand_IncorrectPassword() {
-        String input = BROADCAST.getCommand() + " wrongPassword";
+        String input = BROADCAST + " wrongPassword";
         String result = basicStateHandler.process(appUser, input);
-        assertEquals(INCORRECT_PASSWORD.getTemplate(), result);
+        assertEquals(INCORRECT_PASSWORD.toString(), result);
     }
 
     @Test
     @DisplayName("Should process search command")
     void testProcessSearchCommand() {
-        String input = SEARCH.getCommand() + " " + adminPassword;
+        String input = SEARCH + " " + adminPassword;
         String result = basicStateHandler.process(appUser, input);
         verify(notifierService).searchNewVacancies();
-        assertEquals(SEARCHING_COMPLETED.getTemplate(), result);
+        assertEquals(SEARCHING_COMPLETED.toString(), result);
     }
 
     @Test
     @DisplayName("Should deny search command with incorrect password")
     void testProcessSearchCommand_IncorrectPassword() {
-        String input = SEARCH.getCommand() + " wrongPassword";
+        String input = SEARCH + " wrongPassword";
         String result = basicStateHandler.process(appUser, input);
-        assertEquals(INCORRECT_PASSWORD.getTemplate(), result);
+        assertEquals(INCORRECT_PASSWORD.toString(), result);
     }
 
     @Test
     @DisplayName("Should deny admin commands for non-admin users")
     void testAdminCommand_NonAdminUser() {
         appUser.setRole(Role.USER); // Change role to non-admin
-        String result = basicStateHandler.process(appUser, BROADCAST.getCommand() + " " + adminPassword);
-        assertEquals(NO_PERMISSION.getTemplate(), result);
+        String result = basicStateHandler.process(appUser, BROADCAST + " " + adminPassword);
+        assertEquals(NO_PERMISSION.toString(), result);
     }
 }

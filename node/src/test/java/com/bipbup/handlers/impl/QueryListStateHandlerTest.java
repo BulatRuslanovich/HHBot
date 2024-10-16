@@ -63,7 +63,7 @@ class QueryListStateHandlerTest {
         String result = queryListStateHandler.process(appUser, input);
 
         verify(userStateCacheService).putUserState(appUser.getTelegramId(), QUERY_MENU_STATE);
-        assertEquals(String.format(QUERY_OUTPUT.getTemplate(), config.getConfigName(), config.getQueryText()), result);
+        assertEquals(String.format(QUERY_OUTPUT.toString(), config.getConfigName(), config.getQueryText()), result);
     }
 
     @Test
@@ -78,7 +78,7 @@ class QueryListStateHandlerTest {
         String result = queryListStateHandler.process(appUser, input);
 
         verify(userStateCacheService, never()).putUserState(anyLong(), any());
-        assertEquals(CONFIG_NOT_FOUND.getTemplate(), result);
+        assertEquals(CONFIG_NOT_FOUND.toString(), result);
     }
 
     @Test

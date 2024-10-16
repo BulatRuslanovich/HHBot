@@ -3,7 +3,7 @@ package com.bipbup.handlers.impl;
 import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.handlers.impl.message.WaitAreaStateHandler;
-import com.bipbup.service.api.AreaService;
+import com.bipbup.service.cache.AreaCacheService;
 import com.bipbup.service.db.ConfigService;
 import com.bipbup.service.cache.UserStateCacheService;
 import static com.bipbup.utils.CommandMessageConstants.ANY;
@@ -37,7 +37,7 @@ class WaitAreaStateHandlerTest {
     private UserStateCacheService userStateCacheService;
 
     @Mock
-    private AreaService areaService;
+    private AreaCacheService areaCacheService;
 
     @InjectMocks
     private WaitAreaStateHandler waitAreaStateHandler;
@@ -63,13 +63,13 @@ class WaitAreaStateHandlerTest {
         when(handlerUtils.isBasicCommand(input)).thenReturn(false);
         when(handlerUtils.fetchConfig(appUser)).thenReturn(Optional.of(config));
 
-        when(areaService.getAreaIdByName("New Area")).thenReturn(1);
+        when(areaCacheService.getAreaIdByName("New Area")).thenReturn(1);
 
         String result = waitAreaStateHandler.process(appUser, input);
 
         verify(configService).saveConfig(config);
         verify(userStateCacheService).clearUserState(appUser.getTelegramId());
-        assertEquals(String.format(AREA_SET.getTemplate(), "New Area", config.getConfigName()), result);
+        assertEquals(String.format(AREA_SET.toString(), "New Area", config.getConfigName()), result);
     }
 
     @Test
@@ -86,7 +86,7 @@ class WaitAreaStateHandlerTest {
 
         verify(configService).saveConfig(config);
         verify(userStateCacheService).clearUserState(appUser.getTelegramId());
-        assertEquals(String.format(ANY_AREA_SET.getTemplate(), config.getConfigName()), result);
+        assertEquals(String.format(ANY_AREA_SET.toString(), config.getConfigName()), result);
     }
 
 
@@ -95,11 +95,11 @@ class WaitAreaStateHandlerTest {
     void testProcessCancelCommand() {
         String input = "/cancel";
         when(handlerUtils.isCancelCommand("/cancel")).thenReturn(true);
-        when(handlerUtils.processCancelCommand(appUser)).thenReturn(COMMAND_CANCELLED.getTemplate());
+        when(handlerUtils.processCancelCommand(appUser)).thenReturn(COMMAND_CANCELLED.toString());
 
         String result = waitAreaStateHandler.process(appUser, input);
 
-        assertEquals(COMMAND_CANCELLED.getTemplate(), result);
+        assertEquals(COMMAND_CANCELLED.toString(), result);
     }
 
 
@@ -108,14 +108,14 @@ class WaitAreaStateHandlerTest {
     void testProcessInvalidAreaName() {
         String input = "Invalid Area";
 
-        when(areaService.getAreaIdByName(input)).thenReturn(null);
+        when(areaCacheService.getAreaIdByName(input)).thenReturn(null);
         when(handlerUtils.isCancelCommand(input)).thenReturn(false);
         when(handlerUtils.isBasicCommand(input)).thenReturn(false);
-        when(handlerUtils.processInvalidInput(appUser)).thenReturn(INVALID_INPUT.getTemplate());
+        when(handlerUtils.processInvalidInput(appUser)).thenReturn(INVALID_INPUT.toString());
 
         String result = waitAreaStateHandler.process(appUser, input);
 
-        assertEquals(INVALID_INPUT.getTemplate(), result);
+        assertEquals(INVALID_INPUT.toString(), result);
     }
 
     @Test
@@ -125,12 +125,12 @@ class WaitAreaStateHandlerTest {
 
         when(handlerUtils.isCancelCommand(input)).thenReturn(false);
         when(handlerUtils.isBasicCommand(input)).thenReturn(false);
-        when(areaService.getAreaIdByName(input)).thenReturn(34);
+        when(areaCacheService.getAreaIdByName(input)).thenReturn(34);
         when(handlerUtils.fetchConfig(appUser)).thenReturn(Optional.empty());
-        when(handlerUtils.processConfigNotFoundMessage(appUser)).thenReturn(CONFIG_NOT_FOUND.getTemplate());
+        when(handlerUtils.processConfigNotFoundMessage(appUser)).thenReturn(CONFIG_NOT_FOUND.toString());
 
         String result = waitAreaStateHandler.process(appUser, input);
 
-        assertEquals(CONFIG_NOT_FOUND.getTemplate(), result);
+        assertEquals(CONFIG_NOT_FOUND.toString(), result);
     }
 }

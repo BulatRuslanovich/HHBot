@@ -53,13 +53,13 @@ class QueryMenuStateHandlerTest {
     @Test
     @DisplayName("Should process back to query list command")
     void testProcessBackToQueryListCommand() {
-        String input = MYQUERIES.getCommand();
+        String input = MYQUERIES.toString();
 
-        when(basicStateHandler.process(appUser, MYQUERIES.getCommand())).thenReturn("Query List");
+        when(basicStateHandler.process(appUser, MYQUERIES.toString())).thenReturn("Query List");
 
         String result = queryMenuStateHandler.process(appUser, input);
 
-        verify(basicStateHandler).process(appUser, MYQUERIES.getCommand());
+        verify(basicStateHandler).process(appUser, MYQUERIES.toString());
         assertEquals("Query List", result);
     }
 
@@ -77,7 +77,7 @@ class QueryMenuStateHandlerTest {
         String result = queryMenuStateHandler.process(appUser, input);
 
         verify(userStateCacheService).putUserState(appUser.getTelegramId(), AppUserState.QUERY_DELETE_STATE);
-        assertEquals(String.format(DELETE_CONFIRMATION.getTemplate(), config.getConfigName()), result);
+        assertEquals(String.format(DELETE_CONFIRMATION.toString(), config.getConfigName()), result);
     }
 
     @Test

@@ -83,7 +83,7 @@ class QueryUpdateStateHandlerTest {
 
         verify(userStateCacheService).putUserState(appUser.getTelegramId(), WAIT_CONFIG_NAME_STATE);
         verify(configCacheService).putConfigId(appUser.getTelegramId(), configId);
-        assertEquals(String.format(ENTER_CONFIG_NAME.getTemplate(), config.getConfigName()), result);
+        assertEquals(String.format(ENTER_CONFIG_NAME.toString(), config.getConfigName()), result);
     }
 
     @Test
@@ -98,7 +98,7 @@ class QueryUpdateStateHandlerTest {
         String result = queryUpdateStateHandler.process(appUser, input);
 
         verify(userStateCacheService).clearUserState(appUser.getTelegramId());
-        assertEquals(CONFIG_NOT_FOUND.getTemplate(), result);
+        assertEquals(CONFIG_NOT_FOUND.toString(), result);
     }
 
     @Test
@@ -116,6 +116,6 @@ class QueryUpdateStateHandlerTest {
 
         verify(userStateCacheService).putUserState(appUser.getTelegramId(), WAIT_QUERY_STATE);
         verify(configCacheService).putConfigId(appUser.getTelegramId(), configId);
-        assertEquals(String.format(ENTER_QUERY.getTemplate(), config.getConfigName()), result);
+        assertEquals(String.format(ENTER_QUERY.toString(), config.getConfigName()), result);
     }
 }
