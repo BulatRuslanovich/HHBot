@@ -11,11 +11,12 @@ bot:
 spring:
   kafka:
     bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:29092}
-    topics:
-      answer-topic: ${ANSWER_TOPIC:answer}
-      edit-topic: ${EDIT_TOPIC:edit}
-      text-update-topic: ${TEXT_UPDATE_TOPIC:text-update}
-      callback-query-update-topic: ${CALLBACK_QUERY_UPDATE_TOPIC:callback-update}
+
+topics:
+  answer-topic: ${ANSWER_TOPIC:answer}
+  edit-topic: ${EDIT_TOPIC:edit}
+  text-update-topic: ${TEXT_UPDATE_TOPIC:text-update}
+  callback-query-update-topic: ${CALLBACK_QUERY_UPDATE_TOPIC:callback-update}
 
 logging:
   config: classpath:log4j2.xml

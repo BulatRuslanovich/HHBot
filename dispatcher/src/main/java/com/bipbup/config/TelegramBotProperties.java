@@ -1,19 +1,10 @@
 package com.bipbup.config;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
-@Getter
-@Setter
-@Configuration
-@ConfigurationProperties(prefix = "bot")
-public class TelegramBotProperties {
-
-	private String username;
-
-	private String url;
-
-	private String token;
-}
+@ConfigurationProperties(prefix = "bot", ignoreUnknownFields = false)
+public record TelegramBotProperties(
+		String url,
+		String username,
+		String token
+) {}

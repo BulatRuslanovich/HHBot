@@ -14,21 +14,21 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic answerTopic() {
-        return TopicBuilder.name(kafkaTopicProperties.getAnswerTopic()).build();
+        return TopicBuilder.name(kafkaTopicProperties.answerTopic()).build();
     }
 
     @Bean
     public NewTopic textUpdateTopic() {
-        return TopicBuilder.name(kafkaTopicProperties.getTextUpdateTopic()).build();
+        return TopicBuilder.name(kafkaTopicProperties.textUpdateTopic()).build();
     }
 
     @Bean
     public NewTopic callbackQueryUpdateTopic() {
-        return TopicBuilder.name(kafkaTopicProperties.getCallbackQueryUpdateTopic()).build();
+        return TopicBuilder.name(kafkaTopicProperties.callbackQueryUpdateTopic()).build();
     }
 
     @Bean
     public NewTopic editTopic() {
-        return TopicBuilder.name(kafkaTopicProperties.getEditTopic()).build();
+        return TopicBuilder.name(kafkaTopicProperties.editTopic()).build();
     }
 }

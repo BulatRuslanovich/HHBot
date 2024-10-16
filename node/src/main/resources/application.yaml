@@ -10,11 +10,6 @@ spring:
       time-to-live: -1
   kafka:
     bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:29092}
-    topics:
-      answer-topic: ${ANSWER_TOPIC:answer}
-      edit-topic: ${EDIT_TOPIC:edit}
-      text-update-topic: ${TEXT_UPDATE_TOPIC:text-update}
-      callback-query-update-topic: ${CALLBACK_QUERY_UPDATE_TOPIC:callback-update}
   datasource:
     url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/hhb_db}
     username: ${POSTGRES_USERNAME:getname}
@@ -27,10 +22,17 @@ spring:
   liquibase:
     enabled: true
 
+topics:
+  answer-topic: ${ANSWER_TOPIC:answer}
+  edit-topic: ${EDIT_TOPIC:edit}
+  text-update-topic: ${TEXT_UPDATE_TOPIC:text-update}
+  callback-query-update-topic: ${CALLBACK_QUERY_UPDATE_TOPIC:callback-update}
+
 headhunter:
-  user-agent: ${HH_USER_AGENT:HHBot/1.0 (bulatruslanovich@gmail.com)}
-  endpoint:
-    searchForVacancy: ${HH_SEARCH_FOR_VACANCY:https://api.hh.ru/vacancies}
+  count-vacancies-in-page: 100
+  period-of-days: 2
+  vacancies-get-url: ${HH_SEARCH_FOR_VACANCY:https://api.hh.ru/vacancies}
+  area-get-url: https://api.hh.ru/areas
 
 notifier:
   period: ${NOTIFIER_PERIOD:3600000}
