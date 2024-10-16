@@ -1,59 +1,34 @@
 package com.bipbup.config;
 
-import org.apache.kafka.clients.admin.AdminClientConfig;
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
-import org.springframework.kafka.core.KafkaAdmin;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
+@RequiredArgsConstructor
 public class KafkaTopicConfig {
 
-    @Value("${spring.kafka.topics.answer-topic}")
-    private String answerTopic;
-
-    @Value("${spring.kafka.topics.text-update-topic}")
-    private String textUpdateTopic;
-
-    @Value("${spring.kafka.topics.callback-query-update-topic}")
-    private String callbackQueryUpdateTopic;
-
-    @Value("${spring.kafka.topics.edit-topic}")
-    private String editTopic;
-
-    @Value("${spring.kafka.bootstrap-servers}")
-    private String server;
-
-    @Bean
-    public KafkaAdmin admin() {
-        Map<String, Object> configs = new HashMap<>();
-        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, server);
-
-        return new KafkaAdmin(configs);
-    }
+    private final KafkaTopicProperties kafkaTopicProperties;
 
     @Bean
     public NewTopic answerTopic() {
-        return TopicBuilder.name(answerTopic).build();
+        return TopicBuilder.name(kafkaTopicProperties.getAnswerTopic()).build();
     }
 
     @Bean
     public NewTopic textUpdateTopic() {
-        return TopicBuilder.name(textUpdateTopic).build();
+        return TopicBuilder.name(kafkaTopicProperties.getTextUpdateTopic()).build();
     }
 
     @Bean
     public NewTopic callbackQueryUpdateTopic() {
-        return TopicBuilder.name(callbackQueryUpdateTopic).build();
+        return TopicBuilder.name(kafkaTopicProperties.getCallbackQueryUpdateTopic()).build();
     }
 
     @Bean
     public NewTopic editTopic() {
-        return TopicBuilder.name(editTopic).build();
+        return TopicBuilder.name(kafkaTopicProperties.getEditTopic()).build();
     }
 }

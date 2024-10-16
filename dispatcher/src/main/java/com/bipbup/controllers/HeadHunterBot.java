@@ -1,8 +1,8 @@
 package com.bipbup.controllers;
 
+import com.bipbup.config.TelegramBotProperties;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -12,20 +12,16 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Slf4j
 @Component
-public class MyTelegramBot extends TelegramWebhookBot {
+public class HeadHunterBot extends TelegramWebhookBot {
 
     private final UpdateProcessor updateProcessor;
 
-    @Value("${bot.uri}")
-    private String botUri;
+    private final TelegramBotProperties telegramBotProperties;
 
-    @Value("${bot.username}")
-    private String botUsername;
-
-    public MyTelegramBot(final UpdateProcessor updateProcessor,
-                         final @Value("${bot.token}") String botToken) {
-        super(botToken);
+    public HeadHunterBot(UpdateProcessor updateProcessor, TelegramBotProperties telegramBotProperties) {
+        super(telegramBotProperties.getToken());
         this.updateProcessor = updateProcessor;
+        this.telegramBotProperties = telegramBotProperties;
     }
 
     @PostConstruct
@@ -34,7 +30,7 @@ public class MyTelegramBot extends TelegramWebhookBot {
 
         try {
             var webhook = SetWebhook.builder()
-                    .url(botUri)
+                    .url(telegramBotProperties.getUrl())
                     .build();
             this.setWebhook(webhook);
         } catch (TelegramApiException e) {
@@ -44,7 +40,7 @@ public class MyTelegramBot extends TelegramWebhookBot {
 
     @Override
     public String getBotUsername() {
-        return botUsername;
+        return telegramBotProperties.getUsername();
     }
 
     @Override
