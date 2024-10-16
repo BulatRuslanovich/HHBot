@@ -9,21 +9,21 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class AnswerConsumerImpl implements AnswerConsumer {
 
     private final UpdateProcessor updateProcessor;
 
     @Override
     @KafkaListener(topics = "${topics.answer-topic}", groupId = "groupId")
-    public void consumeSendMessage(final SendMessageWrapper sendMessage) {
+    public void consumeSendMessage(SendMessageWrapper sendMessage) {
         updateProcessor.sendToTelegram(sendMessage.getMessage());
     }
 
     @Override
     @KafkaListener(topics = "${topics.edit-topic}", groupId = "groupId")
-    public void consumeEditMessage(final EditMessageWrapper editMessage) {
+    public void consumeEditMessage(EditMessageWrapper editMessage) {
         updateProcessor.sendToTelegram(editMessage.getMessage());
     }
 }

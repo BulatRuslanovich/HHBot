@@ -72,7 +72,7 @@ public class UpdateProcessor {
 			easterEggService.getSendSticker(update)
 					.ifPresent(this::sendStickerToTelegram);
 
-			updateProducer.produce(kafkaTopicProperties.getTextUpdateTopic(), update);
+			updateProducer.produce(kafkaTopicProperties.textUpdateTopic(), update);
 		}
 	}
 
@@ -81,7 +81,7 @@ public class UpdateProcessor {
 
 		log.info("User {} sent callback query with data: {}", callbackQuery.getFrom()
 				.getFirstName(), callbackQuery.getData());
-		updateProducer.produce(kafkaTopicProperties.getCallbackQueryUpdateTopic(), update);
+		updateProducer.produce(kafkaTopicProperties.callbackQueryUpdateTopic(), update);
 	}
 
 	public void sendToTelegram(BotApiMethod<?> method) {
@@ -108,6 +108,6 @@ public class UpdateProcessor {
 		var update = new Update();
 		update.setCallbackQuery(callbackQuery);
 
-		updateProducer.produce(kafkaTopicProperties.getCallbackQueryUpdateTopic(), update);
+		updateProducer.produce(kafkaTopicProperties.callbackQueryUpdateTopic(), update);
 	}
 }

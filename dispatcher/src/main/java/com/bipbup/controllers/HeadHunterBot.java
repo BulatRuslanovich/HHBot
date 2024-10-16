@@ -19,7 +19,7 @@ public class HeadHunterBot extends TelegramWebhookBot {
     private final TelegramBotProperties telegramBotProperties;
 
     public HeadHunterBot(UpdateProcessor updateProcessor, TelegramBotProperties telegramBotProperties) {
-        super(telegramBotProperties.getToken());
+        super(telegramBotProperties.token());
         this.updateProcessor = updateProcessor;
         this.telegramBotProperties = telegramBotProperties;
     }
@@ -30,7 +30,7 @@ public class HeadHunterBot extends TelegramWebhookBot {
 
         try {
             var webhook = SetWebhook.builder()
-                    .url(telegramBotProperties.getUrl())
+                    .url(telegramBotProperties.url())
                     .build();
             this.setWebhook(webhook);
         } catch (TelegramApiException e) {
@@ -40,7 +40,7 @@ public class HeadHunterBot extends TelegramWebhookBot {
 
     @Override
     public String getBotUsername() {
-        return telegramBotProperties.getUsername();
+        return telegramBotProperties.username();
     }
 
     @Override
