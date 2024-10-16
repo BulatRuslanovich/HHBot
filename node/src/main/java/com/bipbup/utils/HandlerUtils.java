@@ -36,15 +36,15 @@ public class HandlerUtils {
     private final BasicStateHandler basicStateHandler;
 
     public boolean isCancelCommand(String input) {
-        return CANCEL.getCommand().equals(input);
+        return CANCEL.toString().equals(input);
     }
 
     public boolean isBasicCommand(String input) {
-        return MYQUERIES.getCommand().equals(input)
-               || NEWQUERY.getCommand().equals(input)
-               || START.getCommand().equals(input)
-               || HELP.getCommand().equals(input)
-               || input.startsWith(BROADCAST.getCommand());
+        return MYQUERIES.toString().equals(input)
+               || NEWQUERY.toString().equals(input)
+               || START.toString().equals(input)
+               || HELP.toString().equals(input)
+               || input.startsWith(BROADCAST.toString());
     }
 
     public boolean isConfigUpdating(AppUser user) {
@@ -55,7 +55,7 @@ public class HandlerUtils {
     public String processCancelCommand(AppUser user) {
         userStateCacheService.clearUserState(user.getTelegramId());
         log.info("User {} cancelled the command and state set to BASIC_STATE", user.getFirstName());
-        return COMMAND_CANCELLED.getTemplate();
+        return COMMAND_CANCELLED.toString();
     }
 
     public String processBasicCommand(AppUser user, String input) {
@@ -65,7 +65,7 @@ public class HandlerUtils {
     public String processInvalidInput(AppUser user) {
         userStateCacheService.clearUserState(user.getTelegramId());
         log.info("User {} provided an invalid input and state set to BASIC_STATE", user.getFirstName());
-        return INVALID_INPUT.getTemplate();
+        return INVALID_INPUT.toString();
     }
 
     public String processConfigNotFoundMessage(AppUser user) {
@@ -73,7 +73,7 @@ public class HandlerUtils {
         configCacheService.clearConfigId(user.getTelegramId());
         userStateCacheService.clearUserState(user.getTelegramId());
         log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-        return CONFIG_NOT_FOUND.getTemplate();
+        return CONFIG_NOT_FOUND.toString();
     }
 
     public Optional<AppUserConfig> fetchConfig(AppUser user) {

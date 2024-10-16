@@ -9,7 +9,7 @@
     <Appenders>
         <Console name="CONSOLE" target="SYSTEM_OUT">
             <PatternLayout
-                    pattern="%highlight{%-5p} %d{yyyy-MM-dd HH:mm:ss} %style{%marker} %c{1} -- %highlight{%m}%ex{short}%n"
+                    pattern="%highlight{%-5p} %d{yyyy-MM-dd HH:mm:ss} %style{%marker} %c{1} -- %highlight{%m}%ex%n"
             />
         </Console>
 

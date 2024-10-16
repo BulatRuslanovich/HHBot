@@ -1,6 +1,6 @@
-package com.bipbup.service.api.impl;
+package com.bipbup.service.cache.impl;
 
-import com.bipbup.service.api.AreaService;
+import com.bipbup.service.cache.AreaCacheService;
 import com.bipbup.utils.AreaUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AreaServiceImpl implements AreaService {
+public class AreaCacheCacheServiceImpl implements AreaCacheService {
 
     private final AreaUtil areaUtil;
 

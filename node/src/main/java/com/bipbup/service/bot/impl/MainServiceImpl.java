@@ -56,8 +56,7 @@ public class MainServiceImpl implements MainService {
 
     private final BasicStateHandler basicStateHandler;
 
-
-    private final Map<AppUserState, String> statePrefixMap =
+    private final Map<AppUserState, String> stateToPrefix =
             Map.of(QUERY_LIST_STATE, Prefix.QUERY,
                     QUERY_MENU_STATE, Prefix.MENU_STATE,
                     QUERY_DELETE_STATE, Prefix.DELETE_STATE,
@@ -116,7 +115,7 @@ public class MainServiceImpl implements MainService {
         var prefix = extractPrefix(callbackData);
 
         return callbackStateHandlers.stream()
-                .filter(c -> statePrefixMap.get(c.state()).equals(prefix))
+                .filter(c -> stateToPrefix.get(c.state()).equals(prefix))
                 .findFirst()
                 .orElse(basicStateHandler);
     }
@@ -126,9 +125,7 @@ public class MainServiceImpl implements MainService {
     }
 
     private void processMessageOutput(AppUser user, String output) {
-        var telegramId = user.getTelegramId();
-
-        sendAnswer(output, telegramId, fetchKeyboardWithoutCallback(user));
+        sendAnswer(output, user.getTelegramId(), fetchKeyboardWithoutCallback(user));
     }
 
     private void processCallbackQueryOutput(AppUser user, CallbackQuery callbackQuery, String output) {

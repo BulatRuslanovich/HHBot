@@ -42,7 +42,7 @@ public class KeyboardMarkupFactory {
         var configs = configService.getConfigByUser(appUser);
         List<InlineKeyboardButton> buttons = new ArrayList<>();
 
-        configs.forEach(c -> buttons.add(createButtonFromConfig(c)));
+        configs.forEach(config -> buttons.add(createButtonFromConfig(config)));
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
@@ -58,7 +58,7 @@ public class KeyboardMarkupFactory {
         List<InlineKeyboardButton> buttons = List.of(
                 createButton(ButtonText.UPDATE, Prefix.UPDATE + hash),
                 createButton(ButtonText.DELETE, Prefix.DELETE + hash),
-                createButton(ButtonText.BACK, MYQUERIES.getCommand())
+                createButton(ButtonText.BACK, MYQUERIES.toString())
         );
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
@@ -95,7 +95,7 @@ public class KeyboardMarkupFactory {
         var hash = extractHash(callbackData);
 
         var buttons = Arrays.stream(ExperienceParam.values())
-                .map(p -> createButton(p.getDescription(), p.getPrefix() + hash))
+                .map(param -> createButton(param.getDescription(), param.getPrefix() + hash))
                 .toList();
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
@@ -107,7 +107,7 @@ public class KeyboardMarkupFactory {
 
         var buttons = new ArrayList<>(Arrays.stream(EducationLevelParam.values())
                 .sorted(Comparator.comparing(EducationLevelParam::getDescription))
-                .map(p -> createButtonFromEnum(p, selectedLevels, hash))
+                .map(param -> createButtonFromEnum(param, selectedLevels, hash))
                 .toList());
 
         buttons.add(createButton(ButtonText.SAVE, Prefix.EDU_SAVE + hash));
@@ -121,7 +121,7 @@ public class KeyboardMarkupFactory {
 
         var buttons = new ArrayList<>(Arrays.stream(ScheduleTypeParam.values())
                 .sorted(Comparator.comparing(ScheduleTypeParam::getDescription))
-                .map(v -> createButtonFromEnum(v, selectedTypes, hash))
+                .map(param -> createButtonFromEnum(param, selectedTypes, hash))
                 .toList());
 
         buttons.add(createButton(ButtonText.SAVE, Prefix.SCHEDULE_SAVE + hash));
