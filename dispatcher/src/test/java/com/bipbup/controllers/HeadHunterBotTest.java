@@ -1,5 +1,6 @@
 package com.bipbup.controllers;
 
+import com.bipbup.config.TelegramBotProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -10,25 +11,28 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-class MyTelegramBotTest {
+class HeadHunterBotTest {
     @Mock
     private UpdateProcessor updateProcessor;
 
+    @Mock
+    private TelegramBotProperties telegramBotProperties;
+
     @InjectMocks
-    private MyTelegramBot myTelegramBot;
+    private HeadHunterBot headHunterBot;
 
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        myTelegramBot = new MyTelegramBot(updateProcessor, "dummyToken");
+        headHunterBot = new HeadHunterBot(updateProcessor, telegramBotProperties);
     }
 
 
     @Test
     void testGetBotPath() {
         // Act
-        String path = myTelegramBot.getBotPath();
+        String path = headHunterBot.getBotPath();
 
         // Assert
         assertEquals("/update", path);
@@ -37,7 +41,7 @@ class MyTelegramBotTest {
     @Test
     void testOnWebhookUpdateReceived() {
         // Act
-        BotApiMethod<?> result = myTelegramBot.onWebhookUpdateReceived(null);
+        BotApiMethod<?> result = headHunterBot.onWebhookUpdateReceived(null);
 
         // Assert
         assertNull(result);

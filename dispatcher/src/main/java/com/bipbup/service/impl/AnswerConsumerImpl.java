@@ -16,14 +16,14 @@ public class AnswerConsumerImpl implements AnswerConsumer {
     private final UpdateProcessor updateProcessor;
 
     @Override
-    @KafkaListener(topics = "${spring.kafka.topics.answer-topic}", groupId = "groupId")
+    @KafkaListener(topics = "${topics.answer-topic}", groupId = "groupId")
     public void consumeSendMessage(final SendMessageWrapper sendMessage) {
-        updateProcessor.setView(sendMessage.getMessage());
+        updateProcessor.sendToTelegram(sendMessage.getMessage());
     }
 
     @Override
-    @KafkaListener(topics = "${spring.kafka.topics.edit-topic}", groupId = "groupId")
+    @KafkaListener(topics = "${topics.edit-topic}", groupId = "groupId")
     public void consumeEditMessage(final EditMessageWrapper editMessage) {
-        updateProcessor.setEdit(editMessage.getMessage());
+        updateProcessor.sendToTelegram(editMessage.getMessage());
     }
 }

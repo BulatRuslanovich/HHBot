@@ -1,5 +1,6 @@
 package com.bipbup.controllers;
 
+import com.bipbup.exception.NullUpdateException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -16,16 +17,13 @@ public class WebHookController {
     private final UpdateProcessor processor;
 
     @PostMapping("/callback/update")
-    public ResponseEntity<?> onUpdateReceived(@RequestBody Update update) {
+    public ResponseEntity<String> onUpdateReceived(@RequestBody Update update) {
         try {
-            if (processor.processUpdate(update))
-                return ResponseEntity.ok().build();
-            else
-                return ResponseEntity.badRequest().body("Failed to process the update.");
-        } catch (Exception e) {
+            processor.processUpdate(update);
+            return ResponseEntity.ok().build();
+        } catch (NullUpdateException e) {
             log.error("Error processing update: {}", update, e);
-            return ResponseEntity.internalServerError()
-                    .body("Internal Server Error: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Failed to process the update.");
         }
     }
 }
