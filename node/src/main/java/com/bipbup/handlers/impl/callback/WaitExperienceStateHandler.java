@@ -31,7 +31,8 @@ public class WaitExperienceStateHandler implements StateHandler {
 
     @Override
     public String process(AppUser user, String input) {
-        if (hasExperiencePrefix(input)) return processSetExperienceCommand(user, input);
+        if (hasExperiencePrefix(input))
+            return processSetExperienceCommand(user, input);
 
         return "";
     }
@@ -59,11 +60,11 @@ public class WaitExperienceStateHandler implements StateHandler {
             configService.saveConfig(config);
 
             log.info("User {} selected experience level and state set to BASIC_STATE", user.getFirstName());
-            return String.format(EXP_SET.getTemplate(), experience.getDescription(), config.getConfigName());
+            return String.format(EXP_SET.toString(), experience.getDescription(), config.getConfigName());
         } else {
             userStateCacheService.clearUserState(user.getTelegramId());
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-            return CONFIG_NOT_FOUND.getTemplate();
+            return CONFIG_NOT_FOUND.toString();
         }
     }
 }

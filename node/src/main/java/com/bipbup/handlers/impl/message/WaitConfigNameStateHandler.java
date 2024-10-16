@@ -5,11 +5,15 @@ import com.bipbup.entity.AppUser;
 import com.bipbup.entity.AppUserConfig;
 import com.bipbup.enums.AppUserState;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
+
+
+import com.bipbup.enums.impl.ExperienceParam;
 import com.bipbup.handlers.StateHandler;
 import com.bipbup.service.db.ConfigService;
 import com.bipbup.service.cache.ConfigCacheService;
 import com.bipbup.service.cache.UserStateCacheService;
 import com.bipbup.utils.HandlerUtils;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -73,6 +77,8 @@ public class WaitConfigNameStateHandler implements StateHandler {
 
     private AppUserConfig createConfigWithOnlyName(AppUser user, String configName) {
         return AppUserConfig.builder()
+                .experience(ExperienceParam.NO_MATTER)
+                .lastNotificationTime(LocalDateTime.now().minusDays(5))
                 .configName(configName)
                 .appUser(user)
                 .build();
@@ -87,14 +93,14 @@ public class WaitConfigNameStateHandler implements StateHandler {
         userStateCacheService.clearUserState(user.getTelegramId());
         log.info("User {} updated name of config \"{}\" and state set to BASIC_STATE",
                 user.getFirstName(), oldConfigName);
-        return String.format(CONFIG_NAME_UPDATED.getTemplate(), oldConfigName, newConfigName);
+        return String.format(CONFIG_NAME_UPDATED.toString(), oldConfigName, newConfigName);
     }
 
     private String processExistingConfig(AppUser user, String configName) {
         userStateCacheService.clearUserState(user.getTelegramId());
         log.info("User {} attempted to create an existing config \"{}\" and state set to BASIC_STATE",
                 user.getFirstName(), configName);
-        return String.format(CONFIG_EXISTS.getTemplate(), configName);
+        return String.format(CONFIG_EXISTS.toString(), configName);
     }
 
     private String processUpdatingConfig(AppUser user, String configName) {
@@ -119,6 +125,6 @@ public class WaitConfigNameStateHandler implements StateHandler {
         configCacheService.clearConfigId(telegramId);
         userStateCacheService.putUserState(telegramId, WAIT_QUERY_STATE);
         log.info("User {} created config \"{}\" and state set to WAIT_QUERY_STATE", user.getFirstName(), configName);
-        return String.format(ENTER_QUERY.getTemplate(), configName);
+        return String.format(ENTER_QUERY.toString(), configName);
     }
 }

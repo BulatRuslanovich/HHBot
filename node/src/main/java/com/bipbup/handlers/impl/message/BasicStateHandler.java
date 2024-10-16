@@ -78,79 +78,79 @@ public class BasicStateHandler implements StateHandler {
     }
 
     private boolean isSearchCommand(String input) {
-        return input.split(" ", 2)[0].equals(SEARCH.getCommand());
+        return input.split(" ", 2)[0].equals(SEARCH.toString());
     }
 
     private boolean isBroadcastCommand(String input) {
-        return input.split(" ", 2)[0].equals(BROADCAST.getCommand());
+        return input.split(" ", 2)[0].equals(BROADCAST.toString());
     }
 
     private boolean isStartCommand(String input) {
-        return START.getCommand().equals(input);
+        return input.equals(START.toString());
     }
 
     private boolean isHelpCommand(String input) {
-        return HELP.getCommand().equals(input);
+        return input.equals(HELP.toString());
     }
 
     private boolean isNewQueryCommand(String input) {
-        return NEWQUERY.getCommand().equals(input);
+        return input.equals(NEWQUERY.toString());
     }
 
     private boolean isMyQueriesCommand(String input) {
-        return MYQUERIES.getCommand().equals(input);
+        return input.equals(MYQUERIES.toString());
     }
 
     private String processStartCommand(AppUser user) {
-        return String.format(WELCOME.getTemplate(), user.getFirstName());
+        return String.format(WELCOME.toString(), user.getFirstName());
     }
 
     private String processHelpCommand() {
-        return MessageTemplate.HELP.getTemplate();
+        return MessageTemplate.HELP.toString();
     }
 
     private String processNewQueryCommand(AppUser user) {
         userStateCacheService.putUserState(user.getTelegramId(), WAIT_CONFIG_NAME_STATE);
         log.info("State of user {} set to WAIT_CONFIG_NAME_STATE", user.getFirstName());
-        return QUERY_PROMPT.getTemplate();
+        return QUERY_PROMPT.toString();
     }
 
     private String processMyQueriesCommand(AppUser user) {
         var configs = configService.getConfigByUser(user);
         if (configs == null || configs.isEmpty()) {
             userStateCacheService.clearUserState(user.getTelegramId());
-            return NO_SAVED_QUERIES.getTemplate();
+            return NO_SAVED_QUERIES.toString();
         }
 
         userStateCacheService.putUserState(user.getTelegramId(), QUERY_LIST_STATE);
         log.info("State of user {} set to QUERY_LIST_STATE", user.getFirstName());
-        return USER_QUERIES.getTemplate();
+        return USER_QUERIES.toString();
     }
 
     private String processBroadcastCommand(AppUser user, String input) {
-        return processAdminCommand(user, input, BROADCAST.getCommand(), () -> {
+        return processAdminCommand(user, input, BROADCAST.toString(), () -> {
             userStateCacheService.putUserState(user.getTelegramId(), WAIT_BROADCAST_MESSAGE);
-            return ENTER_MESSAGE.getTemplate();
+            return ENTER_MESSAGE.toString();
         });
     }
 
     private String processSearchCommand(AppUser user, String input) {
-        return processAdminCommand(user, input, SEARCH.getCommand(), () -> {
+        return processAdminCommand(user, input, SEARCH.toString(), () -> {
             log.info(ADMIN_LOG, "{} launched vacancies searching", user.getFirstName());
             notifierService.searchNewVacancies();
-            return SEARCHING_COMPLETED.getTemplate();
+            return SEARCHING_COMPLETED.toString();
         });
     }
 
     private String processAdminCommand(AppUser user, String input, String command, Supplier<String> action) {
         if (!user.getRole().equals(Role.ADMIN)) {
-            return NO_PERMISSION.getTemplate();
+            return NO_PERMISSION.toString();
         }
 
         var split = input.split(" ", 2);
 
         if (split.length != 2) {
-            return USAGE.getTemplate().formatted(command);
+            return USAGE.toString().formatted(command);
         }
 
         var password = split[1];
@@ -159,6 +159,6 @@ public class BasicStateHandler implements StateHandler {
             return action.get();
         }
 
-        return INCORRECT_PASSWORD.getTemplate();
+        return INCORRECT_PASSWORD.toString();
     }
 }

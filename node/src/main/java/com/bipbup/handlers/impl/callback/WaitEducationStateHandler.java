@@ -79,7 +79,7 @@ public class WaitEducationStateHandler implements StateHandler {
 
             log.info("User {} saved education levels for configuration {} and state set to BASIC_STATE",
                     user.getFirstName(), config.getConfigName());
-            return String.format(EDU_SAVE.getTemplate(), config.getConfigName());
+            return String.format(EDU_SAVE.toString(), config.getConfigName());
         } else {
             return processConfigNotFoundMessage(user, configId);
         }
@@ -107,7 +107,7 @@ public class WaitEducationStateHandler implements StateHandler {
                         user.getFirstName(), currentEducationLevel.getDescription(), config.getConfigName());
             }
 
-            return String.format(SELECT_EDUCATION.getTemplate(), config.getConfigName());
+            return String.format(SELECT_EDUCATION.toString(), config.getConfigName());
         } else {
             return processConfigNotFoundMessage(user, configId);
         }
@@ -116,6 +116,6 @@ public class WaitEducationStateHandler implements StateHandler {
     private String processConfigNotFoundMessage(AppUser user, long configId) {
         userStateCacheService.clearUserState(user.getTelegramId());
         log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-        return CONFIG_NOT_FOUND.getTemplate();
+        return CONFIG_NOT_FOUND.toString();
     }
 }

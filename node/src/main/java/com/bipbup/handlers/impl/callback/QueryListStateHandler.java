@@ -51,10 +51,10 @@ public class QueryListStateHandler implements StateHandler {
         var optionalConfig = configService.getConfigById(configId);
 
         if (optionalConfig.isEmpty())
-            return Pair.of(false, CONFIG_NOT_FOUND.getTemplate());
+            return Pair.of(false, CONFIG_NOT_FOUND.toString());
 
         var config = optionalConfig.get();
-        var answer = String.format(QUERY_OUTPUT.getTemplate(), config.getConfigName(), config.getQueryText());
+        var answer = String.format(QUERY_OUTPUT.toString(), config.getConfigName(), config.getQueryText());
         return Pair.of(true, answer);
     }
 

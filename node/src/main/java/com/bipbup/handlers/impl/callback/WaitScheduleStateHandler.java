@@ -61,7 +61,7 @@ public class WaitScheduleStateHandler implements StateHandler {
     private String processConfigNotFoundMessage(AppUser user, long configId) {
         userStateCacheService.clearUserState(user.getTelegramId());
         log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-        return CONFIG_NOT_FOUND.getTemplate();
+        return CONFIG_NOT_FOUND.toString();
     }
 
 
@@ -87,7 +87,7 @@ public class WaitScheduleStateHandler implements StateHandler {
 
             log.info("User {} saved schedule types for configuration {} and state set to BASIC_STATE",
                     user.getFirstName(), config.getConfigName());
-            return String.format(SCHEDULE_SAVE.getTemplate(), config.getConfigName());
+            return String.format(SCHEDULE_SAVE.toString(), config.getConfigName());
         } else {
             return processConfigNotFoundMessage(user, configId);
         }
@@ -114,7 +114,7 @@ public class WaitScheduleStateHandler implements StateHandler {
                         user.getFirstName(), currentScheduleType.getDescription(), config.getConfigName());
             }
 
-            return String.format(SELECT_SCHEDULE.getTemplate(), config.getConfigName());
+            return String.format(SELECT_SCHEDULE.toString(), config.getConfigName());
         } else {
             return processConfigNotFoundMessage(user, configId);
         }

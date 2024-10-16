@@ -70,16 +70,16 @@ public class QueryDeleteStateHandler implements StateHandler {
                 userStateCacheService.clearUserState(user.getTelegramId());
             } else {
                 userStateCacheService.putUserState(user.getTelegramId(), QUERY_LIST_STATE);
-                addingString = "\n" + USER_QUERIES.getTemplate();
+                addingString = "\n" + USER_QUERIES;
             }
 
             log.info("User {} deleted configuration with id {} and state set to QUERY_LIST_STATE",
                     user.getFirstName(), configId);
-            return String.format(CONFIG_DELETED.getTemplate(), config.getConfigName()) + addingString;
+            return String.format(CONFIG_DELETED.toString(), config.getConfigName()) + addingString;
         } else {
             userStateCacheService.clearUserState(user.getTelegramId());
             log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-            return CONFIG_NOT_FOUND.getTemplate();
+            return CONFIG_NOT_FOUND.toString();
         }
     }
 

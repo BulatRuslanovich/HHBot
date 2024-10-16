@@ -41,7 +41,7 @@ public class WaitBroadcastMessageHandler implements StateHandler {
         sendBroadcast(user, input);
         userStateCacheService.clearUserState(user.getTelegramId());
 
-        return MESSAGE_SENT.getTemplate();
+        return MESSAGE_SENT.toString();
     }
 
     @Override

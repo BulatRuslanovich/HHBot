@@ -26,7 +26,6 @@ public class CommandMessageConstants {
 
     public static final String ANY = "Любой";
 
-    @Getter
     @RequiredArgsConstructor
     public enum BotCommand {
 
@@ -41,20 +40,30 @@ public class CommandMessageConstants {
         MYQUERIES("/myqueries");
 
         private final String command;
+
+        @Override
+        public String toString() {
+            return command;
+        }
     }
 
-    @Getter
     @RequiredArgsConstructor
     public enum AdminCommand {
 
         BROADCAST("!broadcast"),
 
-        SEARCH("!search");
+        SEARCH("!search"),
+
+        USERS("!users"); //TODO: задумака на будущее
 
         private final String command;
+
+        @Override
+        public String toString() {
+            return command;
+        }
     }
 
-    @Getter
     @RequiredArgsConstructor
     public enum MessageTemplate {
 
@@ -123,9 +132,13 @@ public class CommandMessageConstants {
         VACANCY(get("message.vacancy"));
 
         private final String template;
+
+        @Override
+        public String toString() {
+            return template;
+        }
     }
 
-    @Getter
     @RequiredArgsConstructor
     public enum AdminMessageTemplate {
 
@@ -142,6 +155,11 @@ public class CommandMessageConstants {
         SEARCHING_COMPLETED(get("admin.message.searching.completed"));
 
         private final String template;
+
+        @Override
+        public String toString() {
+            return template;
+        }
     }
 
     // Command prefixes

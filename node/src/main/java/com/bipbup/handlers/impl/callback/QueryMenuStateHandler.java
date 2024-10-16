@@ -65,11 +65,11 @@ public class QueryMenuStateHandler implements StateHandler {
 	}
 
 	private String processBackToQueryListCommand(AppUser user) {
-		return basicStateHandler.process(user, MYQUERIES.getCommand());
+		return basicStateHandler.process(user, MYQUERIES.toString());
 	}
 
 	private boolean isBackToQueryListCommand(String input) {
-		return MYQUERIES.getCommand().equals(input);
+		return MYQUERIES.toString().equals(input);
 	}
 
 	private boolean hasUpdatePrefix(String input) {
@@ -96,13 +96,13 @@ public class QueryMenuStateHandler implements StateHandler {
 	}
 
 	private String showDetailedQueryOutput(AppUserConfig config) {
-		StringBuilder output = new StringBuilder().append(MENU_CONFIG_NAME.getTemplate())
+		StringBuilder output = new StringBuilder().append(MENU_CONFIG_NAME)
 				.append(config.getConfigName()).append("\n")
-				.append(MENU_QUERY.getTemplate())
+				.append(MENU_QUERY)
 				.append(config.getQueryText()).append("\n")
-				.append(MENU_AREA.getTemplate())
+				.append(MENU_AREA)
 				.append(config.getArea() == null ? "Любой" : config.getArea()).append("\n")
-				.append(MENU_EXPERIENCE.getTemplate())
+				.append(MENU_EXPERIENCE)
 				.append(config.getExperience().getDescription());
 		var eduParams = config.getEducationLevels()
 				.stream()
@@ -114,8 +114,8 @@ public class QueryMenuStateHandler implements StateHandler {
 				.map(ScheduleType::getParam)
 				.toList();
 
-		appendEnumParams(output, eduParams, MENU_EDUCATION.getTemplate());
-		appendEnumParams(output, scheduleParams, MENU_SCHEDULE.getTemplate());
+		appendEnumParams(output, eduParams, MENU_EDUCATION.toString());
+		appendEnumParams(output, scheduleParams, MENU_SCHEDULE.toString());
 
 		return output.toString();
 	}
@@ -132,10 +132,10 @@ public class QueryMenuStateHandler implements StateHandler {
 			if (state == QUERY_UPDATE_STATE)
 				return showDetailedQueryOutput(config);
 
-			return String.format(DELETE_CONFIRMATION.getTemplate(), config.getConfigName());
+			return String.format(DELETE_CONFIRMATION.toString(), config.getConfigName());
 		} else {
 			log.debug("Configuration with id {} not found for user {}", configId, user.getFirstName());
-			return CONFIG_NOT_FOUND.getTemplate();
+			return CONFIG_NOT_FOUND.toString();
 		}
 	}
 }
