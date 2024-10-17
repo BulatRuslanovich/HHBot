@@ -4,7 +4,7 @@ server:
     enabled: false
 
 bot:
-  uri: ${BOT_URI:unset}
+  url: ${BOT_URI:unset}
   username: ${BOT_USERNAME:headh_v2_bot}
   token: ${BOT_TOKEN:token}
 
