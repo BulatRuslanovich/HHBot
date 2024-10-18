@@ -23,10 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-/**
- * This service handles fetching vacancy data from the API. It uses the user configuration to query for new vacancies
- * and processes the results.
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -42,16 +38,8 @@ public class VacancyServiceImpl implements VacancyService {
 
 	private AppUserConfig config;
 
-	/**
-	 * Fetches new vacancies based on user configuration.
-	 *
-	 * @param config The user configuration containing query parameters.
-	 *
-	 * @return A list of new vacancies.
-	 */
 	@Override
 	public List<Vacancy> fetchNewVacancies(AppUserConfig config) {
-		// TODO: будет ли работать на синглтоне бина
 		this.config = config;
 		var pageCount = fetchPageCount();
 		vacancyList = new ArrayList<>();
@@ -83,7 +71,7 @@ public class VacancyServiceImpl implements VacancyService {
 		var builder = UriComponentsBuilder.fromUriString(headHunterProperties.vacanciesGetUrl())
 				.queryParam("page", pageNumber)
 				.queryParam("per_page", headHunterProperties.countVacanciesInPage())
-				.queryParam("text", encodeQueryText(config.getQueryText()))
+				.queryParam("text", encodeForURLForm(config.getQueryText()))
 				.queryParam("search_field", "name")
 				.queryParam("period", headHunterProperties.periodOfDays())
 				.queryParam("order_by", "publication_time");
@@ -92,11 +80,12 @@ public class VacancyServiceImpl implements VacancyService {
 		addExperience(builder);
 		addEducation(builder);
 		addSchedule(builder);
+		addExclusion(builder);
 
 		return builder.build().toString();
 	}
 
-	private String encodeQueryText(String queryText) {
+	private String encodeForURLForm(String queryText) {
 		return URLEncoder.encode(queryText, StandardCharsets.UTF_8);
 	}
 
@@ -132,6 +121,13 @@ public class VacancyServiceImpl implements VacancyService {
 
 		if (!types.isEmpty())
 			builder.queryParam("schedule", types);
+	}
+
+	private void addExclusion(UriComponentsBuilder builder) {
+		var exclusion = config.getExclusion();
+
+		if (exclusion != null)
+			builder.queryParam("excluded_text", encodeForURLForm(exclusion));
 	}
 
 	private void processVacancyPage(int pageNum) {

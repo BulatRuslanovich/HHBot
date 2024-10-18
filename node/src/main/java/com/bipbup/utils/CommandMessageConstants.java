@@ -1,12 +1,10 @@
 package com.bipbup.utils;
 
-import lombok.Getter;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-
-import java.util.Locale;
 
 @UtilityClass
 public class CommandMessageConstants {
@@ -24,7 +22,9 @@ public class CommandMessageConstants {
         return MESSAGE_SOURCE.getMessage(code, null, code, Locale.ROOT);
     }
 
-    public static final String ANY = "Любой";
+    public static final String ANY = "any";
+
+    public static final String EMPTY = "empty";
 
     @RequiredArgsConstructor
     public enum BotCommand {
@@ -89,6 +89,10 @@ public class CommandMessageConstants {
 
         QUERY_SET(get("message.query.set")),
 
+        EXCLUSION_SET(get("message.exclusion.set")),
+
+        EMPTY_EXCLUSION_SET(get("message.empty.exclusion.set")),
+
         EXP_SET(get("message.exp.set")),
 
         AREA_SET(get("message.area.set")),
@@ -107,6 +111,8 @@ public class CommandMessageConstants {
 
         ENTER_QUERY(get("message.enter.query")),
 
+        ENTER_EXCLUSION(get("message.enter.exclusion")),
+
         ENTER_AREA(get("message.enter.area")),
 
         SELECT_EXPERIENCE(get("message.select.experience")),
@@ -120,6 +126,8 @@ public class CommandMessageConstants {
         MENU_CONFIG_NAME(get("message.menu.config.name")),
 
         MENU_QUERY(get("message.menu.config.query")),
+
+        MENU_EXCLUSION(get("message.menu.config.exclusion")),
 
         MENU_AREA(get("message.menu.config.area")),
 
@@ -181,6 +189,8 @@ public class CommandMessageConstants {
 
         public static final String UPDATE_QUERY = UPDATE_STATE + "query_";
 
+        public static final String UPDATE_EXCLUSION = UPDATE_STATE + "exclusion_";
+
         public static final String UPDATE_AREA = UPDATE_STATE + "area_";
 
         public static final String UPDATE_EXPERIENCE = UPDATE_STATE + "experience_";
@@ -218,6 +228,8 @@ public class CommandMessageConstants {
         public static final String UPDATE_CONFIG_NAME = get("button.update.config.name");
 
         public static final String UPDATE_QUERY = get("button.update.query");
+
+        public static final String UPDATE_EXCLUSION = get("button.update.exclusion");
 
         public static final String UPDATE_AREA = get("button.update.area");
 

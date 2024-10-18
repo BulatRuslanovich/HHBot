@@ -7,6 +7,7 @@ import static com.bipbup.enums.AppUserState.QUERY_UPDATE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_AREA_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_EDUCATION_STATE;
+import static com.bipbup.enums.AppUserState.WAIT_EXCLUSION_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_EXPERIENCE_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_QUERY_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_SCHEDULE_STATE;
@@ -17,6 +18,7 @@ import com.bipbup.service.cache.UserStateCacheService;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.CONFIG_NOT_FOUND;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ENTER_AREA;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ENTER_CONFIG_NAME;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ENTER_EXCLUSION;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.ENTER_QUERY;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.SELECT_EDUCATION;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.SELECT_EXPERIENCE;
@@ -49,6 +51,8 @@ public class QueryUpdateStateHandler implements StateHandler {
             new ActionInfo(WAIT_CONFIG_NAME_STATE, ENTER_CONFIG_NAME.toString(), true),
             Prefix.UPDATE_QUERY,
             new ActionInfo(WAIT_QUERY_STATE, ENTER_QUERY.toString(), true),
+            Prefix.UPDATE_EXCLUSION,
+            new ActionInfo(WAIT_EXCLUSION_STATE, ENTER_EXCLUSION.toString(), true),
             Prefix.UPDATE_EXPERIENCE,
             new ActionInfo(WAIT_EXPERIENCE_STATE, SELECT_EXPERIENCE.toString(), false),
             Prefix.UPDATE_AREA,

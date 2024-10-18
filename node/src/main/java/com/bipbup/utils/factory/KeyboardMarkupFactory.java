@@ -40,22 +40,17 @@ public class KeyboardMarkupFactory {
 
     public InlineKeyboardMarkup createUserConfigListKeyboard(AppUser appUser) {
         var configs = configService.getConfigByUser(appUser);
-        List<InlineKeyboardButton> buttons = new ArrayList<>();
+        var buttons = new ArrayList<InlineKeyboardButton>();
 
         configs.forEach(config -> buttons.add(createButtonFromConfig(config)));
 
         return createMarkup(buttons, BUTTONS_PER_ROW);
     }
 
-    private InlineKeyboardButton createButtonFromConfig(AppUserConfig config) {
-        var callback = Prefix.QUERY + encoder.hashOf(config.getId());
-        return createButton(config.getConfigName(), callback);
-    }
-
     public InlineKeyboardMarkup createConfigManagementKeyboard(String callbackData) {
         var hash = extractHash(callbackData);
 
-        List<InlineKeyboardButton> buttons = List.of(
+        var buttons = List.of(
                 createButton(ButtonText.UPDATE, Prefix.UPDATE + hash),
                 createButton(ButtonText.DELETE, Prefix.DELETE + hash),
                 createButton(ButtonText.BACK, MYQUERIES.toString())
@@ -67,7 +62,7 @@ public class KeyboardMarkupFactory {
     public InlineKeyboardMarkup createDeleteConfirmationKeyboard(String callbackData) {
         var hash = extractHash(callbackData);
 
-        List<InlineKeyboardButton> buttons = List.of(
+        var buttons = List.of(
                 createButton(ButtonText.DELETE_CONFIRM, Prefix.DELETE_CONFIRM + hash),
                 createButton(ButtonText.DELETE_CANCEL, Prefix.QUERY + hash)
         );
@@ -78,9 +73,10 @@ public class KeyboardMarkupFactory {
     public InlineKeyboardMarkup createUpdateConfigKeyboard(String callbackData) {
         var hash = extractHash(callbackData);
 
-        List<InlineKeyboardButton> buttons = List.of(
+        var buttons = List.of(
                 createButton(ButtonText.UPDATE_CONFIG_NAME, Prefix.UPDATE_CONFIG_NAME + hash),
                 createButton(ButtonText.UPDATE_QUERY, Prefix.UPDATE_QUERY + hash),
+                createButton(ButtonText.UPDATE_EXCLUSION, Prefix.UPDATE_EXCLUSION + hash),
                 createButton(ButtonText.UPDATE_AREA, Prefix.UPDATE_AREA + hash),
                 createButton(ButtonText.UPDATE_EXPERIENCE, Prefix.UPDATE_EXPERIENCE + hash),
                 createButton(ButtonText.UPDATE_EDUCATION, Prefix.UPDATE_EDUCATION + hash),
@@ -106,9 +102,9 @@ public class KeyboardMarkupFactory {
         var hash = extractHash(callbackData);
 
         var buttons = new ArrayList<>(Arrays.stream(EducationLevelParam.values())
-                .sorted(Comparator.comparing(EducationLevelParam::getDescription))
-                .map(param -> createButtonFromEnum(param, selectedLevels, hash))
-                .toList());
+                                              .sorted(Comparator.comparing(EducationLevelParam::getDescription))
+                                              .map(param -> createButtonFromEnum(param, selectedLevels, hash))
+                                              .toList());
 
         buttons.add(createButton(ButtonText.SAVE, Prefix.EDU_SAVE + hash));
 
@@ -120,17 +116,21 @@ public class KeyboardMarkupFactory {
         var hash = extractHash(callbackData);
 
         var buttons = new ArrayList<>(Arrays.stream(ScheduleTypeParam.values())
-                .sorted(Comparator.comparing(ScheduleTypeParam::getDescription))
-                .map(param -> createButtonFromEnum(param, selectedTypes, hash))
-                .toList());
+                                              .sorted(Comparator.comparing(ScheduleTypeParam::getDescription))
+                                              .map(param -> createButtonFromEnum(param, selectedTypes, hash))
+                                              .toList());
 
         buttons.add(createButton(ButtonText.SAVE, Prefix.SCHEDULE_SAVE + hash));
 
         return createMarkup(buttons, 1);
     }
 
-    private InlineKeyboardButton createButtonFromEnum(
-            EnumParam enumParam, List<? extends EnumParam> params, String hash) {
+    private InlineKeyboardButton createButtonFromConfig(AppUserConfig config) {
+        var callback = Prefix.QUERY + encoder.hashOf(config.getId());
+        return createButton(config.getConfigName(), callback);
+    }
+
+    private InlineKeyboardButton createButtonFromEnum(EnumParam enumParam, List<? extends EnumParam> params, String hash) {
         String text = enumParam.getDescription();
 
         if (params.contains(enumParam))
@@ -148,13 +148,13 @@ public class KeyboardMarkupFactory {
     }
 
     private InlineKeyboardMarkup createMarkup(List<InlineKeyboardButton> buttons, int buttonsPerRow) {
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        var rows = new ArrayList<List<InlineKeyboardButton>>();
 
         for (int i = 0; i < buttons.size(); i += buttonsPerRow) {
             rows.add(buttons.subList(i, Math.min(i + buttonsPerRow, buttons.size())));
         }
 
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        var markup = new InlineKeyboardMarkup();
         markup.setKeyboard(rows);
         return markup;
     }

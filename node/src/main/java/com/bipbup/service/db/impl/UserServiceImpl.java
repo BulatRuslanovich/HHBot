@@ -1,6 +1,5 @@
 package com.bipbup.service.db.impl;
 
-import com.bipbup.dao.AppUserConfigDAO;
 import com.bipbup.dao.AppUserDAO;
 import com.bipbup.entity.AppUser;
 import com.bipbup.enums.Role;
@@ -9,27 +8,22 @@ import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final AppUserDAO appUserDAO;
 
-    private final AppUserConfigDAO appUserConfigDAO;
-
     @Override
-    @Transactional
-    public void deleteAppUser(AppUser user) {
-        appUserConfigDAO.deleteAllByAppUser(user);
-        appUserDAO.delete(user);
+    public void deactivate(AppUser user) {
+        user.setActive(false);
+        appUserDAO.save(user);
     }
 
     @Override
-    @Transactional
     public AppUser findOrSaveAppUser(Update update) {
         var sender = update.hasMessage()
                 ? update.getMessage().getFrom()
@@ -38,20 +32,31 @@ public class UserServiceImpl implements UserService {
 
         if (optionalUser.isPresent()) {
             var user = optionalUser.get();
+            boolean needUpdate = false;
 
             if (!Objects.equals(user.getUsername(), sender.getUserName())) {
                 user.setUsername(sender.getUserName());
+                needUpdate = true;
             }
 
             if (!Objects.equals(user.getFirstName(), sender.getFirstName())) {
                 user.setFirstName(sender.getFirstName());
+                needUpdate = true;
             }
 
             if (!Objects.equals(user.getLastName(), sender.getLastName())) {
                 user.setLastName(sender.getLastName());
+                needUpdate = true;
             }
 
-            return appUserDAO.save(user);
+            if (!user.getActive()) {
+                user.setActive(true);
+                needUpdate = true;
+            }
+
+            if (needUpdate)
+                return appUserDAO.save(user);
+            return user;
         }
 
         return saveAppUser(sender);
@@ -64,6 +69,7 @@ public class UserServiceImpl implements UserService {
                 .firstName(sender.getFirstName())
                 .lastName(sender.getLastName())
                 .role(Role.USER)
+                .active(true)
                 .build();
 
         appUserDAO.save(appUser);

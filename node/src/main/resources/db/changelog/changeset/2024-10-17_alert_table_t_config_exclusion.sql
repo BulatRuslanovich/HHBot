@@ -1,0 +1,1 @@
+alter table hhbot.t_config add column exclusion varchar(255);

@@ -13,6 +13,8 @@ public enum AppUserState {
 
     WAIT_QUERY_STATE(true),
 
+    WAIT_EXCLUSION_STATE(true),
+
     QUERY_LIST_STATE(false),
 
     QUERY_MENU_STATE(false),

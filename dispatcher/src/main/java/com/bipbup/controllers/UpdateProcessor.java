@@ -103,7 +103,7 @@ public class UpdateProcessor {
 	private void deactivateUser(User user) {
 		var callbackQuery = new CallbackQuery();
 		callbackQuery.setFrom(user);
-		callbackQuery.setData("delete_me_from_db");
+		callbackQuery.setData("deactivate_me");
 
 		var update = new Update();
 		update.setCallbackQuery(callbackQuery);

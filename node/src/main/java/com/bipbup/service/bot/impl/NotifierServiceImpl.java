@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.LinkPreviewOptions;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -94,8 +95,7 @@ public class NotifierServiceImpl implements NotifierService {
 				            String.format("• <i>Роль:</i> <b>%s</b>", roles),
 				            String.format("• <i>Опыт:</i> <b>%s</b>", experience),
 				            String.format("• <i>Тип занятости:</i> <b>%s</b>", employmentType),
-				            String.format("• <i>График:</i> <b>%s</b>", workSchedule),
-				            String.format("• (Ссылка)[%s]", jobLink));
+				            String.format("• <i>График:</i> <b>%s</b>", workSchedule));
 
 		var telegramId = config.getAppUser()
 				.getTelegramId();
@@ -103,6 +103,8 @@ public class NotifierServiceImpl implements NotifierService {
 		var sendMessage = SendMessage.builder()
 				.text(message)
 				.parseMode(ParseMode.HTML)
+				.disableWebPagePreview(false)
+				.linkPreviewOptions(new LinkPreviewOptions(false, jobLink, true, false, true))
 				.chatId(telegramId)
 				.build();
 

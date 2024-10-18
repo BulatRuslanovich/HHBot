@@ -9,3 +9,8 @@ databaseChangeLog:
       file: db/changelog/changeset/2024-10-11_create_table_t_edu_param.sql
   - include:
       file: db/changelog/changeset/2024-10-11_create_table_t_schedule_param.sql
+  - include:
+      file: db/changelog/changeset/2024-10-17_alert_table_t_config_exclusion.sql
+  - include:
+      file: db/changelog/changeset/2024-10-17_alert_table_t_app_user_active.sql
+

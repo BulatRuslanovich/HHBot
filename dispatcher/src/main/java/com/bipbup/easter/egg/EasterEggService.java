@@ -18,7 +18,11 @@ public class EasterEggService {
 			"javascript" , "CAACAgIAAxkBAAIFdmbI5bDHR6rHgpLIXtLtIPy8ro-tAAL2QQACctF4S6_e0ZZv1pzyNQQ",
 			"python" , "CAACAgIAAxkBAAIFd2bI5hnwHgT_BL5jTZtoeT1aL9JwAALISAAC5PF5S7Se8n5ySpqANQQ",
 			"c#" , "CAACAgIAAxkBAAIFeGbI5kjF58JJGk4yeE-hYI6RwyvuAAJfQwACJad4SypZPWXZRAYeNQQ",
-			"котик" , "CAACAgIAAxkBAAIFeWbI5mG6zqA00c19q65qlyCqqJE2AAJ4FAACiQ5BS8wYzPDMMcXINQQ"
+			"котик" , "CAACAgIAAxkBAAIFeWbI5mG6zqA00c19q65qlyCqqJE2AAJ4FAACiQ5BS8wYzPDMMcXINQQ",
+			"assembler", "CAACAgIAAxkBAAIO8GcRrXoCcvRQp6FqPFwy9NhxDO4GAAL3IwACXpZISL-caYTJXWsLNgQ",
+			"spring", "CAACAgIAAxkBAAIO72cRrWWo_T_CDtDoIAKpZb5S2kTGAALARwACx9DJS1jIpYXzWxeJNgQ",
+			"1с", "CAACAgIAAxkBAAIO82cRrkssAAE5ROLBqlWz0PlUiLwnfQACV0AAAohqSUjWTTvAooLXNTYE",
+			"authors", "CAACAgIAAxkBAAIO9GcRrmF87jiheDcRgr-5-s-dpO7WAAKCTgACv9p4SN-YAf7zsPlCNgQ"
 	);
 
 	public Optional<SendSticker> getSendSticker(Update update) {

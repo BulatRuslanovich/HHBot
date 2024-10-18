@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface UserService {
 
-    void deleteAppUser(AppUser user);
+    void deactivate(AppUser user);
 
     AppUser findOrSaveAppUser(Update update);
 

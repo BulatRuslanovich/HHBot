@@ -56,7 +56,10 @@ public class AppUserConfig {
     @Column(name = "area")
     private String area;
 
-    @ManyToOne
+    @Column(name = "exclusion")
+    private String exclusion;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "app_user_id")
     private AppUser appUser;
 

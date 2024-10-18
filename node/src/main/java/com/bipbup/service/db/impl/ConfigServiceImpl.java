@@ -9,10 +9,9 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class ConfigServiceImpl implements ConfigService {
 
 	private final AppUserConfigDAO appUserConfigDAO;
@@ -30,7 +29,6 @@ public class ConfigServiceImpl implements ConfigService {
 	}
 
 	@Override
-	@Transactional
 	public void deleteConfig(AppUserConfig config) {
 		appUserConfigDAO.delete(config);
 	}

@@ -28,6 +28,7 @@ import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.DELETE_CO
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_AREA;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_CONFIG_NAME;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_EDUCATION;
+import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_EXCLUSION;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_EXPERIENCE;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_QUERY;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.MENU_SCHEDULE;
@@ -100,10 +101,21 @@ public class QueryMenuStateHandler implements StateHandler {
 				.append(config.getConfigName()).append("\n")
 				.append(MENU_QUERY)
 				.append(config.getQueryText()).append("\n")
-				.append(MENU_AREA)
-				.append(config.getArea() == null ? "Любой" : config.getArea()).append("\n")
 				.append(MENU_EXPERIENCE)
-				.append(config.getExperience().getDescription());
+				.append(config.getExperience().getDescription()).append("\n");
+
+		if (config.getArea() != null) {
+			output.append(MENU_AREA)
+					.append(config.getArea())
+					.append("\n");
+		}
+
+		if (config.getExclusion() != null) {
+			output.append(MENU_EXCLUSION)
+					.append(config.getExclusion())
+					.append("\n");
+		}
+
 		var eduParams = config.getEducationLevels()
 				.stream()
 				.map(EducationLevel::getParam)
