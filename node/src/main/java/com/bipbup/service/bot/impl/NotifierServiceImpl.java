@@ -43,6 +43,7 @@ public class NotifierServiceImpl implements NotifierService {
 		while (!configs.isEmpty()) {
 			configs.stream()
 					.filter(this::queryExist)
+					.filter(config -> config.getAppUser().getActive())
 					.forEach(this::processNewVacancies);
 
 			configs = configService.getConfigsFromPage(page, SIZE_OF_PAGE);

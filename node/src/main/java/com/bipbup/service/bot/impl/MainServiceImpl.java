@@ -94,6 +94,7 @@ public class MainServiceImpl implements MainService {
         var state = userStateCacheService.getUserState(user.getTelegramId());
 
         if (callbackData.equals("deactivate_me")) {
+            userStateCacheService.clearUserState(user.getTelegramId());
             userService.deactivate(user);
             return;
         }
