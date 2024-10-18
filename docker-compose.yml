@@ -2,11 +2,7 @@
 volumes:
   postgres-data:
     driver: local
-  kafka-data:
-    driver: local
   redis-data:
-    driver: local
-  traefik-certs:
     driver: local
 
 services:

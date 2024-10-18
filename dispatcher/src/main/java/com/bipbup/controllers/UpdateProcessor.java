@@ -46,6 +46,11 @@ public class UpdateProcessor {
 	}
 
 	private void logEmptyMessageUpdate(Update update) {
+		if (update.getMyChatMember() == null) {
+			log.warn("Chat member is null");
+			return;
+		}
+
 		var status = update.getMyChatMember()
 				.getNewChatMember()
 				.getStatus();
