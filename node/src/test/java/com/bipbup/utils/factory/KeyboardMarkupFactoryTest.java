@@ -120,6 +120,6 @@ class KeyboardMarkupFactoryTest {
         assertNotNull(markup);
         assertEquals(4, markup.getKeyboard().size()); // Should have 7 buttons
         assertEquals(CommandMessageConstants.ButtonText.UPDATE_CONFIG_NAME, markup.getKeyboard().get(0).get(0).getText());
-        assertEquals(CommandMessageConstants.ButtonText.BACK, markup.getKeyboard().get(3).get(0).getText());
+        assertEquals(CommandMessageConstants.ButtonText.UPDATE_SCHEDULE, markup.getKeyboard().get(3).get(0).getText());
     }
 }
