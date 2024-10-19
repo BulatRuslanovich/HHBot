@@ -3,15 +3,23 @@ package com.bipbup.handlers.impl.message;
 import com.bipbup.annotation.MessageQualifier;
 import com.bipbup.entity.AppUser;
 import com.bipbup.enums.AppUserState;
+import com.bipbup.enums.Role;
+import com.bipbup.handlers.StateHandler;
+import com.bipbup.service.bot.NotifierService;
+import com.bipbup.service.cache.UserStateCacheService;
+import com.bipbup.service.db.ConfigService;
+import com.bipbup.utils.CommandMessageConstants.MessageTemplate;
+import java.util.function.Supplier;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+
 import static com.bipbup.enums.AppUserState.BASIC_STATE;
 import static com.bipbup.enums.AppUserState.QUERY_LIST_STATE;
 import static com.bipbup.enums.AppUserState.WAIT_BROADCAST_MESSAGE;
 import static com.bipbup.enums.AppUserState.WAIT_CONFIG_NAME_STATE;
-import com.bipbup.enums.Role;
-import com.bipbup.handlers.StateHandler;
-import com.bipbup.service.db.ConfigService;
-import com.bipbup.service.bot.NotifierService;
-import com.bipbup.service.cache.UserStateCacheService;
 import static com.bipbup.utils.CommandMessageConstants.AdminCommand.BROADCAST;
 import static com.bipbup.utils.CommandMessageConstants.AdminCommand.SEARCH;
 import static com.bipbup.utils.CommandMessageConstants.AdminMessageTemplate.ENTER_MESSAGE;
@@ -23,26 +31,16 @@ import static com.bipbup.utils.CommandMessageConstants.BotCommand.HELP;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.MYQUERIES;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.NEWQUERY;
 import static com.bipbup.utils.CommandMessageConstants.BotCommand.START;
-import com.bipbup.utils.CommandMessageConstants.MessageTemplate;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.NO_SAVED_QUERIES;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.QUERY_PROMPT;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.USER_QUERIES;
 import static com.bipbup.utils.CommandMessageConstants.MessageTemplate.WELCOME;
-import java.util.function.Supplier;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 @MessageQualifier
 @RequiredArgsConstructor
 public class BasicStateHandler implements StateHandler {
-
-    public static final Marker ADMIN_LOG = MarkerFactory.getMarker("ADMIN");
 
     private final UserStateCacheService userStateCacheService;
 
@@ -136,7 +134,7 @@ public class BasicStateHandler implements StateHandler {
 
     private String processSearchCommand(AppUser user, String input) {
         return processAdminCommand(user, input, SEARCH.toString(), () -> {
-            log.info(ADMIN_LOG, "{} launched vacancies searching", user.getFirstName());
+            log.info("Admin: {} launched vacancies searching", user.getFirstName());
             notifierService.searchNewVacancies();
             return SEARCHING_COMPLETED.toString();
         });
